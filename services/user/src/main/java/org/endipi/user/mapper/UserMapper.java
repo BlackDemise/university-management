@@ -11,7 +11,7 @@ import org.mapstruct.MappingTarget;
 import org.springframework.stereotype.Component;
 
 @Component
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {TeacherMapper.class, StudentMapper.class})
 public interface UserMapper {
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "teacher", ignore = true)
@@ -21,6 +21,8 @@ public interface UserMapper {
     User toEntity(UserRequest userRequest,
                   @Context RoleRepository roleRepository);
 
+    @Mapping(target = "teacherResponse", source = "teacher")
+    @Mapping(target = "studentResponse", source = "student")
     @Mapping(target = "role",
             expression = "java(user.getRole().getRoleTitle().getRoleTitle())")
     UserResponse toResponse(User user);

@@ -16,4 +16,6 @@ public class UserResponse {
     private String identityNumber;
     private String permanentAddress;
     private String currentAddress;
+    private TeacherResponse teacherResponse;
+    private StudentResponse studentResponse;
 }

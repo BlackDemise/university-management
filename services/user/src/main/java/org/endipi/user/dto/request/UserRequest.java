@@ -16,4 +16,6 @@ public class UserRequest {
     private String identityNumber;
     private String permanentAddress;
     private String currentAddress;
+    private TeacherRequest teacherRequest;
+    private StudentRequest studentRequest;
 }
