@@ -1,7 +1,7 @@
 package org.endipi.auth.config;
 
 import lombok.RequiredArgsConstructor;
-import org.endipi.auth.repository.UserRepository;
+import org.endipi.auth.repository.AuthUserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,11 +16,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @RequiredArgsConstructor
 public class AppConfig {
-    private final UserRepository userRepository;
+    private final AuthUserRepository authUserRepository;
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByEmail(username)
+        return username -> authUserRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 

@@ -2,9 +2,9 @@ package org.endipi.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.endipi.auth.enums.token.TokenType;
 
 import java.time.Instant;
-import org.um.enums.token.TokenType;
 
 @Entity
 @Getter

@@ -16,34 +16,21 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements UserDetails {
+public class AuthUser implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String fullName;
-
-    private String phone;
-
-    /// CCCD in Vietnam
-    private String identityNumber;
-
-    private String permanentAddress;
-
-    private String currentAddress;
 
     private String email;
 
     private String password;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
+    private String role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return role == null ? Collections.emptyList() :
-                List.of(new SimpleGrantedAuthority("ROLE_" + role.getRoleTitle().name()));
+                List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.um.enums.token;
+package org.endipi.auth.enums.token;
 
 public enum TokenType {
     ACCESS,
