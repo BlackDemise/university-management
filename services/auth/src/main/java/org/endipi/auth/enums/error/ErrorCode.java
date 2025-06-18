@@ -8,10 +8,7 @@ public enum ErrorCode {
     /**
      * 400 Bad Request
      */
-    INCORRECT_OLD_PASSWORD(400, "Mật khẩu cũ không chính xác!", HttpStatus.BAD_REQUEST),
-    UNMATCHED_PASSWORD(400, "Mật khẩu mới không khớp!", HttpStatus.BAD_REQUEST),
     INVALID_LOGIN_REQUEST(400, "Không đủ thông tin đăng nhập!", HttpStatus.BAD_REQUEST),
-    SAME_PASSWORD(400, "Mật khẩu mới không được trùng với mật khẩu cũ!", HttpStatus.BAD_REQUEST),
 
     /**
      * 401 Unauthorized
@@ -27,20 +24,11 @@ public enum ErrorCode {
      * 404 Not Found
      */
     USER_NOT_FOUND(404, "Không tìm thấy người dùng!", HttpStatus.NOT_FOUND),
-    DEPARTMENT_NOT_FOUND(404, "Không tìm thấy khoa!", HttpStatus.NOT_FOUND),
-    MAJOR_NOT_FOUND(404, "Không tìm thấy chuyên ngành!", HttpStatus.NOT_FOUND),
-    COURSE_NOT_FOUND(404, "Không tìm thấy môn học!", HttpStatus.NOT_FOUND),
-
-    /**
-     * 409 Conflict
-     */
-    CONFLICT_OPERATION(409, "Đã xảy ra lỗi trong quá trình thực hiện yêu cầu! Vui lòng thử lại sau.", HttpStatus.CONFLICT),
 
     /**
      * 500 Internal Server Error
      */
-    GENERIC_ERROR(500, "Đã xảy ra lỗi trong quá trình xử lý yêu cầu! Hãy liên hệ với chúng tôi nếu điều này tiếp tục tái diễn.", HttpStatus.INTERNAL_SERVER_ERROR),
-    REGISTER_ERROR(500, "Đã xảy ra lỗi trong quá trình đăng ký!", HttpStatus.INTERNAL_SERVER_ERROR);
+    GENERIC_ERROR(500, "Đã xảy ra lỗi trong quá trình xử lý yêu cầu! Hãy liên hệ với chúng tôi nếu điều này tiếp tục tái diễn.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;
     private final String message;

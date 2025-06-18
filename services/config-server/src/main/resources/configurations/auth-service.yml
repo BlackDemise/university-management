@@ -14,9 +14,25 @@ spring:
       hibernate:
         format_sql: true
     open-in-view: false
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: auth-service-group
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: org.endipi.auth.consumer.data.UserEvent
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
 
 server:
   port: 8000
 
 jwt:
   secret-key: e7a2f7c23966b7b076f8719c0407857ab8d3976d4a12df232229c872d98d4fde
+
+kafka:
+  topic:
+    user-events: user-events
