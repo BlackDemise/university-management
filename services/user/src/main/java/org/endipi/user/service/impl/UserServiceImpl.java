@@ -242,7 +242,7 @@ public class UserServiceImpl implements UserService {
         String hashedPassword = passwordUtil.hashPassword(rawPassword, passwordEncoder);
         user.setPassword(hashedPassword);
 
-        emailService.sendEmail(user.getEmail(), "Account Created", "Your password is: " + rawPassword);
+//        emailService.sendEmail(user.getEmail(), "Account Created", "Your password is: " + rawPassword);
     }
 
     private void publishUserEvent(User user, boolean isUpdate) {

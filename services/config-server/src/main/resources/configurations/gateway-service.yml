@@ -15,6 +15,10 @@ spring:
               uri: lb://USER-SERVICE
               predicates:
                 - Path=/api/v1/user/**
+            - id: academic-service
+              uri: lb://ACADEMIC-SERVICE
+              predicates:
+                - Path=/api/v1/major/**,/api/v1/department/**,/api/v1/course/**,/api/v1/program-curriculum/**
 
 server:
   port: 8222

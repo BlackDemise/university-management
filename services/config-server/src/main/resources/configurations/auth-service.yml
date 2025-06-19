@@ -30,9 +30,6 @@ spring:
 server:
   port: 8000
 
-jwt:
-  secret-key: e7a2f7c23966b7b076f8719c0407857ab8d3976d4a12df232229c872d98d4fde
-
 kafka:
   topic:
     user-events: user-events

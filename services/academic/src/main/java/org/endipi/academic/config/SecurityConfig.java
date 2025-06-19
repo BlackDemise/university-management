@@ -1,7 +1,7 @@
-package org.endipi.user.config;
+package org.endipi.academic.config;
 
 import lombok.RequiredArgsConstructor;
-import org.endipi.user.filter.JwtAuthFilter;
+import org.endipi.academic.filter.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,7 +24,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/v1/user/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/course/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/department/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/major/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/program-curriculum/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
