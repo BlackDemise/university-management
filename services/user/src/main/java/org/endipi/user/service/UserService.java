@@ -1,6 +1,7 @@
 package org.endipi.user.service;
 
 import org.endipi.user.dto.request.UserRequest;
+import org.endipi.user.dto.response.TeacherValidationResponse;
 import org.endipi.user.dto.response.UserResponse;
 
 import java.util.List;
@@ -13,4 +14,6 @@ public interface UserService {
     UserResponse saveWithRetry(UserRequest userRequest);
 
     void deleteById(Long id);
+
+    TeacherValidationResponse validateTeacher(Long teacherId);
 }

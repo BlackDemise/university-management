@@ -43,3 +43,4 @@ retry:
 kafka:
   topic:
     user-events: user-events
+    teacher-events: teacher-events

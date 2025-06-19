@@ -18,7 +18,7 @@ spring:
             - id: academic-service
               uri: lb://ACADEMIC-SERVICE
               predicates:
-                - Path=/api/v1/major/**,/api/v1/department/**,/api/v1/course/**,/api/v1/program-curriculum/**
+                - Path=/api/v1/major/**,/api/v1/department/**,/api/v1/course/**,/api/v1/program-curriculum/**,/api/v1/prerequisite-course/**,/api/v1/department-member/**
 
 server:
   port: 8222

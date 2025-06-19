@@ -28,6 +28,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/department/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/major/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/program-curriculum/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/prerequisite-course/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/department-member/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

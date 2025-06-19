@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.endipi.user.dto.request.StudentRequest;
 import org.endipi.user.dto.request.TeacherRequest;
 import org.endipi.user.dto.request.UserRequest;
+import org.endipi.user.dto.response.TeacherValidationResponse;
 import org.endipi.user.dto.response.UserResponse;
 import org.endipi.user.entity.Student;
 import org.endipi.user.entity.Teacher;
@@ -14,6 +15,7 @@ import org.endipi.user.exception.ApplicationException;
 import org.endipi.user.mapper.StudentMapper;
 import org.endipi.user.mapper.TeacherMapper;
 import org.endipi.user.mapper.UserMapper;
+import org.endipi.user.producer.TeacherEventProducer;
 import org.endipi.user.producer.UserEventProducer;
 import org.endipi.user.repository.RoleRepository;
 import org.endipi.user.repository.StudentRepository;
@@ -29,6 +31,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -45,6 +48,7 @@ public class UserServiceImpl implements UserService {
     private final StudentMapper studentMapper;
     private final TeacherRepository teacherRepository;
     private final TeacherMapper teacherMapper;
+    private final TeacherEventProducer teacherEventProducer;
 
     @Value("${retry.user.attempts}")
     private long retryAttempts;
@@ -84,18 +88,59 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
 
+        // Check if user was a teacher before deletion
+        boolean wasTeacher = user.getRole() != null &&
+                "TEACHER".equals(user.getRole().getRoleTitle().name());
+
         userRepository.deleteById(id);
 
+        // Publish event to auth service
         userEventProducer.publishUserDeleted(user);
+
+        // If a teacher...
+        if (wasTeacher) {
+            // ... publish event to academic service
+            teacherEventProducer.publishTeacherRemoved(user);
+        }
+    }
+
+    @Override
+    public TeacherValidationResponse validateTeacher(Long teacherId) {
+        Optional<User> userOpt = userRepository.findById(teacherId);
+
+        if (userOpt.isEmpty()) {
+            return TeacherValidationResponse.builder()
+                    .exists(false)
+                    .isTeacher(false)
+                    .build();
+        }
+
+        User user = userOpt.get();
+        boolean isTeacher = user.getRole() != null &&
+                "TEACHER".equals(user.getRole().getRoleTitle().name());
+
+        return TeacherValidationResponse.builder()
+                .exists(true)
+                .isTeacher(isTeacher)
+                .fullName(user.getFullName())
+                .teacherCode(user.getTeacher() != null ? user.getTeacher().getTeacherCode() : null)
+                .build();
     }
 
     private UserResponse save(UserRequest userRequest) {
         User user;
         boolean isUpdated = userRequest.getId() != null;
 
+        // Use this field to handle the case where user's role is changed away from TEACHER.
+        // At that point, an event must be fired to academic service to remove the teacher.
+        boolean wasTeacher = false;
+
         if (isUpdated) {
             user = userRepository.findById(userRequest.getId())
                     .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
+
+            wasTeacher = user.getRole() != null &&
+                    "TEACHER".equals(user.getRole().getRoleTitle().name());
 
             userMapper.updateFromRequest(userRequest, user, roleRepository);
         } else {
@@ -109,7 +154,7 @@ public class UserServiceImpl implements UserService {
         // Handle Student/Teacher based on role and scenario
         handleUserRoleSpecificEntity(user, userRequest, isUpdated);
 
-        publishUserEvent(user, isUpdated);
+        publishUserEvent(user, isUpdated, wasTeacher);
 
         return userMapper.toResponse(user);
     }
@@ -245,14 +290,41 @@ public class UserServiceImpl implements UserService {
 //        emailService.sendEmail(user.getEmail(), "Account Created", "Your password is: " + rawPassword);
     }
 
-    private void publishUserEvent(User user, boolean isUpdate) {
+    private void publishUserEvent(User user, boolean isUpdate, boolean wasTeacher) {
         if (isUpdate) {
             log.info("Publishing user updated event for user {}", user.getId());
             userEventProducer.publishUserUpdated(user);
+
+            // CHECK FOR TEACHER STATUS CHANGES
+            checkForTeacherStatusChange(user, wasTeacher);
         } else {
             log.info("Publishing user created event for user {}", user.getId());
             userEventProducer.publishUserCreated(user);
         }
+    }
+
+    /**
+     * Checks if user's teacher status has changed and publishes appropriate events
+     *
+     * @param user The updated user entity
+     * @param wasTeacher Whether the user was a teacher before the update
+     */
+    private void checkForTeacherStatusChange(User user, boolean wasTeacher) {
+        // Determine current teacher status
+        boolean isTeacherNow = user.getRole() != null &&
+                "TEACHER".equals(user.getRole().getRoleTitle().name());
+
+        log.info("Teacher status check for user {}: was={}, isNow={}",
+                user.getId(), wasTeacher, isTeacherNow);
+
+        // Handle different teacher status change scenarios
+        if (wasTeacher && !isTeacherNow) {
+            // SCENARIO: User was a teacher but is no longer a teacher
+            log.info("User {} is no longer a teacher, publishing teacher role removed event", user.getId());
+            teacherEventProducer.publishTeacherRoleRemoved(user);
+        }
+
+        // Leave the rest for later logic checking if needed.
     }
 }
 

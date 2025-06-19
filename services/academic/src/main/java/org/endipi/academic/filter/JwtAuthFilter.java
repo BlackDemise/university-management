@@ -52,7 +52,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             // Create authentication token with role
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     userEmail,
-                    null,
+                    jwt,
                     List.of(new SimpleGrantedAuthority("ROLE_" + role))
             );
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

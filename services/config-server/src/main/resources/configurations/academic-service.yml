@@ -14,6 +14,18 @@ spring:
       hibernate:
         format_sql: true
     open-in-view: false
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: academic-service-group
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: org.endipi.academic.consumer.data.TeacherEvent
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
 
 server:
   port: 8002
@@ -27,3 +39,11 @@ retry:
     attempts: 3
   program-curriculum:
     attempts: 3
+  prerequisite-course:
+    attempts: 3
+  department-member:
+    attempts: 3
+
+kafka:
+  topic:
+    teacher-events: teacher-events

@@ -3,6 +3,7 @@ package org.endipi.user.resource;
 import lombok.RequiredArgsConstructor;
 import org.endipi.user.dto.request.UserRequest;
 import org.endipi.user.dto.response.ApiResponse;
+import org.endipi.user.dto.response.TeacherValidationResponse;
 import org.endipi.user.dto.response.UserResponse;
 import org.endipi.user.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -70,5 +71,13 @@ public class UserResource {
                 .build();
 
         return ResponseEntity.ok(apiResponse);
+    }
+
+    // S2S VALIDATION ENDPOINT -> no ApiResponse wrapper
+    @GetMapping("/teachers/{teacherId}/validate")
+    public ResponseEntity<TeacherValidationResponse> validateTeacher(@PathVariable Long teacherId) {
+        TeacherValidationResponse validation = userService.validateTeacher(teacherId);
+
+        return ResponseEntity.ok(validation);
     }
 }
