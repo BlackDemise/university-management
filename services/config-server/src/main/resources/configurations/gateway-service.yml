@@ -19,6 +19,18 @@ spring:
               uri: lb://ACADEMIC-SERVICE
               predicates:
                 - Path=/api/v1/major/**,/api/v1/department/**,/api/v1/course/**,/api/v1/program-curriculum/**,/api/v1/prerequisite-course/**,/api/v1/department-member/**
+            - id: facility-service
+              uri: lb://FACILITY-SERVICE
+              predicates:
+                - Path=/api/v1/facility/**
+            - id: assessment-service
+              uri: lb://ASSESSMENT-SERVICE
+              predicates:
+                - Path=/api/v1/assessment/**
+            - id: enrollment-service
+              uri: lb://ENROLLMENT-SERVICE
+              predicates:
+                - Path=/api/v1/enrollment/**
 
 server:
   port: 8222

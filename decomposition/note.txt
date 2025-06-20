@@ -1,14 +1,14 @@
-📁 auth-service
-├── AuthUser
+📁 auth-service (done)
+├── AuthUser (referencing object)
 ├── BlacklistedToken
 
-📁 user-service
+📁 user-service (done)
 ├── User
-├── Role (business-focused)
+├── Role
 ├── Student
 ├── Teacher
 
-📁 academic-service
+📁 academic-service (done)
 ├── Course
 ├── Department
 ├── Major
@@ -30,5 +30,3 @@
 📁 facility-service
 ├── Classroom
 └── Schedule (facility perspective)
-
-1. Establish link from Student -> Major is enough. Major belongs to a Department, so if we know the major, we know the department.
