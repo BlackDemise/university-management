@@ -1,6 +1,7 @@
 package org.endipi.facility.resource;
 
 import lombok.RequiredArgsConstructor;
+import org.endipi.facility.dto.external.ClassroomValidationResponse;
 import org.endipi.facility.dto.request.ClassroomRequest;
 import org.endipi.facility.dto.response.ApiResponse;
 import org.endipi.facility.dto.response.ClassroomResponse;
@@ -73,5 +74,13 @@ public class ClassroomResource {
                 .build();
 
         return ResponseEntity.ok(apiResponse);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/validate/{classroomId}")
+    public ResponseEntity<ClassroomValidationResponse> validateClassroom(@PathVariable Long classroomId) {
+        ClassroomValidationResponse isValid = classroomService.validateClassroom(classroomId);
+
+        return ResponseEntity.ok(isValid);
     }
 }

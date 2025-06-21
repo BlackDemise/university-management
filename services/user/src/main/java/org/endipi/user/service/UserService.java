@@ -1,6 +1,7 @@
 package org.endipi.user.service;
 
 import org.endipi.user.dto.request.UserRequest;
+import org.endipi.user.dto.response.StudentValidationResponse;
 import org.endipi.user.dto.response.TeacherValidationResponse;
 import org.endipi.user.dto.response.UserResponse;
 
@@ -16,4 +17,6 @@ public interface UserService {
     void deleteById(Long id);
 
     TeacherValidationResponse validateTeacher(Long teacherId);
+
+    StudentValidationResponse validateStudent(Long studentId);
 }

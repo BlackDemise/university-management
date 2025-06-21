@@ -2,6 +2,11 @@ package org.endipi.enrollment.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.endipi.enrollment.client.classroomservice.ClassroomServiceClient;
+import org.endipi.enrollment.client.courseservice.CourseServiceClient;
+import org.endipi.enrollment.client.userservice.UserServiceClient;
+import org.endipi.enrollment.dto.external.ClassroomValidationResponse;
+import org.endipi.enrollment.dto.external.TeacherValidationResponse;
 import org.endipi.enrollment.dto.request.CourseOfferingRequest;
 import org.endipi.enrollment.dto.response.CourseOfferingResponse;
 import org.endipi.enrollment.entity.CourseOffering;
@@ -25,6 +30,9 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
     private final CourseOfferingRepository courseOfferingRepository;
     private final CourseOfferingMapper courseOfferingMapper;
     private final SemesterRepository semesterRepository;
+    private final CourseServiceClient courseServiceClient;
+    private final UserServiceClient userServiceClient;
+    private final ClassroomServiceClient classroomServiceClient;
 
     @Value("${retry.course-offering.attempts}")
     private long retryAttempts;
@@ -60,6 +68,51 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
     }
 
     private CourseOfferingResponse save(CourseOfferingRequest request) {
+        // Validate course existence
+        boolean isCourseExists = courseServiceClient.validateCourse(request.getCourseId());
+
+        if (!isCourseExists) {
+            throw new ApplicationException(ErrorCode.COURSE_NOT_FOUND);
+        }
+
+        // Validate semester existence
+        if (!semesterRepository.existsById(request.getSemesterId())) {
+            throw new ApplicationException(ErrorCode.SEMESTER_NOT_FOUND);
+        }
+
+        // Validate teacher existence
+        try {
+            TeacherValidationResponse validation = userServiceClient.validateTeacher(request.getTeacherId());
+
+            if (!validation.isExists()) {
+                throw new ApplicationException(ErrorCode.TEACHER_NOT_FOUND);
+            }
+
+            if (!validation.isTeacher()) {
+                throw new ApplicationException(ErrorCode.USER_NOT_A_TEACHER);
+            }
+
+            log.info("Teacher validation successful: {} ({})", validation.getFullName(), validation.getTeacherCode());
+
+        } catch (Exception e) {
+            log.error("Failed to validate teacher with ID: {}", request.getTeacherId(), e);
+            throw new ApplicationException(ErrorCode.TEACHER_VALIDATION_FAILED);
+        }
+
+        // Validate classroom existence
+        try {
+            ClassroomValidationResponse validation = classroomServiceClient.validateClassroom(request.getClassroomId());
+
+            if (!validation.isExists()) {
+                throw new ApplicationException(ErrorCode.CLASSROOM_NOT_FOUND);
+            }
+
+            log.info("Classroom validation successful: {}", validation.getClassroomType());
+        } catch (Exception e) {
+            log.error("Failed to validate classroom with ID: {}", request.getClassroomId(), e);
+            throw new ApplicationException(ErrorCode.CLASSROOM_VALIDATION_FAILED);
+        }
+
         CourseOffering courseOffering;
         boolean isUpdate = request.getId() != null;
 
@@ -70,11 +123,6 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
         } else {
             courseOffering = courseOfferingMapper.toEntity(request, semesterRepository);
         }
-
-        // TODO: Add S2S validation calls here:
-        // - validateCourse(request.getCourseId())
-        // - validateTeacher(request.getTeacherId())
-        // - validateClassroom(request.getClassroomId())
 
         courseOffering = courseOfferingRepository.save(courseOffering);
         return courseOfferingMapper.toResponse(courseOffering);

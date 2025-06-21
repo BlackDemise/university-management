@@ -66,6 +66,13 @@ public class CourseServiceImpl implements CourseService {
         courseRepository.deleteById(id);
     }
 
+    // This's for S2S
+    @Override
+    public boolean validateCourse(Long courseId) {
+        return courseRepository.findById(courseId)
+                .isPresent();
+    }
+
     private CourseResponse save(CourseRequest courseRequest) {
         Course course;
 

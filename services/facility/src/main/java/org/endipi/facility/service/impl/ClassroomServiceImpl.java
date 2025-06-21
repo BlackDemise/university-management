@@ -2,6 +2,7 @@ package org.endipi.facility.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.endipi.facility.dto.external.ClassroomValidationResponse;
 import org.endipi.facility.dto.request.ClassroomRequest;
 import org.endipi.facility.dto.response.ClassroomResponse;
 import org.endipi.facility.entity.Classroom;
@@ -65,6 +66,18 @@ public class ClassroomServiceImpl implements ClassroomService {
         }
 
         classroomRepository.deleteById(id);
+    }
+
+    @Override
+    public ClassroomValidationResponse validateClassroom(Long classroomId) {
+        return classroomRepository.findById(classroomId)
+                .map((c) -> ClassroomValidationResponse.builder()
+                        .isExists(true)
+                        .classroomType(c.getClassroomType().name())
+                        .build())
+                .orElse(ClassroomValidationResponse.builder()
+                        .isExists(false)
+                        .build());
     }
 
     private ClassroomResponse save(ClassroomRequest classroomRequest) {

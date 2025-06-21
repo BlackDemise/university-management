@@ -13,4 +13,7 @@ public interface CourseService {
     CourseResponse saveWithRetry(CourseRequest courseRequest);
 
     void deleteById(Long id);
+
+    // Endpoints for S2S communication
+    boolean validateCourse(Long courseId);
 }

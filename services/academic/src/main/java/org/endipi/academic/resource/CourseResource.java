@@ -71,4 +71,12 @@ public class CourseResource {
 
         return ResponseEntity.ok(apiResponse);
     }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/validate/{courseId}")
+    public ResponseEntity<Boolean> validateCourse(@PathVariable Long courseId) {
+        boolean isValid = courseService.validateCourse(courseId);
+
+        return ResponseEntity.ok(isValid);
+    }
 }

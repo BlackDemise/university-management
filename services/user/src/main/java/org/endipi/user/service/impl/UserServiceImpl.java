@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.endipi.user.dto.request.StudentRequest;
 import org.endipi.user.dto.request.TeacherRequest;
 import org.endipi.user.dto.request.UserRequest;
+import org.endipi.user.dto.response.StudentValidationResponse;
 import org.endipi.user.dto.response.TeacherValidationResponse;
 import org.endipi.user.dto.response.UserResponse;
 import org.endipi.user.entity.Student;
@@ -124,6 +125,30 @@ public class UserServiceImpl implements UserService {
                 .isTeacher(isTeacher)
                 .fullName(user.getFullName())
                 .teacherCode(user.getTeacher() != null ? user.getTeacher().getTeacherCode() : null)
+                .build();
+    }
+
+    @Override
+    public StudentValidationResponse validateStudent(Long studentId) {
+        Optional<User> userOpt = userRepository.findById(studentId);
+
+        if (userOpt.isEmpty()) {
+            return StudentValidationResponse.builder()
+                    .exists(false)
+                    .isStudent(false)
+                    .build();
+        }
+
+        User user = userOpt.get();
+        boolean isStudent = user.getRole() != null &&
+                "STUDENT".equals(user.getRole().getRoleTitle().name());
+
+        return StudentValidationResponse.builder()
+                .exists(true)
+                .isStudent(isStudent)
+                .fullName(user.getFullName())
+                .studentCode(user.getStudent() != null ? user.getStudent().getStudentCode() : null)
+                .email(user.getEmail())
                 .build();
     }
 

@@ -2,6 +2,8 @@ package org.endipi.enrollment.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.endipi.enrollment.client.userservice.UserServiceClient;
+import org.endipi.enrollment.dto.external.StudentValidationResponse;
 import org.endipi.enrollment.dto.request.CourseRegistrationRequest;
 import org.endipi.enrollment.dto.response.CourseRegistrationResponse;
 import org.endipi.enrollment.entity.CourseRegistration;
@@ -26,6 +28,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
     private final CourseRegistrationRepository courseRegistrationRepository;
     private final CourseRegistrationMapper courseRegistrationMapper;
     private final CourseOfferingRepository courseOfferingRepository;
+    private final UserServiceClient userServiceClient;
 
     @Value("${retry.course-registration.attempts}")
     private long retryAttempts;
@@ -62,14 +65,38 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
 
     @Override
     public void deleteById(Long id) {
-        CourseRegistration courseRegistration = courseRegistrationRepository.findById(id)
-                .orElseThrow(() -> new ApplicationException(ErrorCode.COURSE_REGISTRATION_NOT_FOUND));
+        if (!courseRegistrationRepository.existsById(id)) {
+            throw new ApplicationException(ErrorCode.COURSE_REGISTRATION_NOT_FOUND);
+        }
 
         courseRegistrationRepository.deleteById(id);
         log.info("Successfully deleted course registration with ID: {}", id);
     }
 
     private CourseRegistrationResponse save(CourseRegistrationRequest request) {
+        // Validate course offering existence
+        if (!courseOfferingRepository.existsById(request.getCourseOfferingId())) {
+            throw new ApplicationException(ErrorCode.COURSE_OFFERING_NOT_FOUND);
+        }
+
+        // Validate student existence
+        try {
+            StudentValidationResponse validation = userServiceClient.validateStudent(request.getStudentId());
+
+            if (!validation.isExists()) {
+                throw new ApplicationException(ErrorCode.USER_NOT_FOUND);
+            }
+
+            if (!validation.isStudent()) {
+                throw new ApplicationException(ErrorCode.USER_NOT_A_STUDENT);
+            }
+
+            log.info("Student validation successful: {} ({})", validation.getFullName(), validation.getStudentCode());
+        } catch (Exception e) {
+            log.error("Failed to validate student with ID: {}", request.getStudentId(), e);
+            throw new ApplicationException(ErrorCode.STUDENT_VALIDATION_FAILED);
+        }
+
         CourseRegistration courseRegistration;
         boolean isUpdate = request.getId() != null;
 
