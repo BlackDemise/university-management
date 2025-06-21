@@ -22,15 +22,15 @@ spring:
             - id: facility-service
               uri: lb://FACILITY-SERVICE
               predicates:
-                - Path=/api/v1/facility/**
+                - Path=/api/v1/classroom/**
             - id: assessment-service
               uri: lb://ASSESSMENT-SERVICE
               predicates:
-                - Path=/api/v1/assessment/**
+                - Path=/api/v1/grade/**,/api/v1/attendance/**,/api/v1/schedule/**
             - id: enrollment-service
               uri: lb://ENROLLMENT-SERVICE
               predicates:
-                - Path=/api/v1/enrollment/**
+                - Path=/api/v1/course-offering/**,/api/v1/course-registration/**,/api/v1/semester/**
 
 server:
   port: 8222

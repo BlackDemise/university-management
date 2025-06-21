@@ -1,10 +1,10 @@
-package org.endipi.facility.resource;
+package org.endipi.enrollment.resource;
 
 import lombok.RequiredArgsConstructor;
-import org.endipi.facility.dto.request.ClassroomRequest;
-import org.endipi.facility.dto.response.ApiResponse;
-import org.endipi.facility.dto.response.ClassroomResponse;
-import org.endipi.facility.service.ClassroomService;
+import org.endipi.enrollment.dto.request.CourseOfferingRequest;
+import org.endipi.enrollment.dto.response.ApiResponse;
+import org.endipi.enrollment.dto.response.CourseOfferingResponse;
+import org.endipi.enrollment.service.CourseOfferingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,20 +13,20 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/classroom")
-public class ClassroomResource {
-    private final ClassroomService classroomService;
+@RequestMapping("/api/v1/course-offering")
+public class CourseOfferingResource {
+    private final CourseOfferingService courseOfferingService;
 
     @GetMapping("/all")
     public ResponseEntity<?> findAll() {
-        List<ClassroomResponse> classroomResponses = classroomService.findAll();
+        List<CourseOfferingResponse> responses = courseOfferingService.findAll();
 
-        ApiResponse<String, List<ClassroomResponse>> apiResponse =
-                ApiResponse.<String, List<ClassroomResponse>>builder()
+        ApiResponse<String, List<CourseOfferingResponse>> apiResponse =
+                ApiResponse.<String, List<CourseOfferingResponse>>builder()
                         .timestamp(System.currentTimeMillis())
                         .statusCode(HttpStatus.OK.value())
                         .message("OK")
-                        .result(classroomResponses)
+                        .result(responses)
                         .build();
 
         return ResponseEntity.ok(apiResponse);
@@ -34,29 +34,29 @@ public class ClassroomResource {
 
     @GetMapping("/details/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
-        ClassroomResponse classroomResponse = classroomService.findById(id);
+        CourseOfferingResponse response = courseOfferingService.findById(id);
 
-        ApiResponse<String, ClassroomResponse> apiResponse =
-                ApiResponse.<String, ClassroomResponse>builder()
+        ApiResponse<String, CourseOfferingResponse> apiResponse =
+                ApiResponse.<String, CourseOfferingResponse>builder()
                         .timestamp(System.currentTimeMillis())
                         .statusCode(HttpStatus.OK.value())
                         .message("OK")
-                        .result(classroomResponse)
+                        .result(response)
                         .build();
 
         return ResponseEntity.ok(apiResponse);
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody ClassroomRequest classroomRequest) {
-        ClassroomResponse classroomResponse = classroomService.saveWithRetry(classroomRequest);
+    public ResponseEntity<?> save(@RequestBody CourseOfferingRequest request) {
+        CourseOfferingResponse response = courseOfferingService.saveWithRetry(request);
 
-        ApiResponse<String, ClassroomResponse> apiResponse =
-                ApiResponse.<String, ClassroomResponse>builder()
+        ApiResponse<String, CourseOfferingResponse> apiResponse =
+                ApiResponse.<String, CourseOfferingResponse>builder()
                         .timestamp(System.currentTimeMillis())
                         .statusCode(HttpStatus.OK.value())
                         .message("OK")
-                        .result(classroomResponse)
+                        .result(response)
                         .build();
 
         return ResponseEntity.ok(apiResponse);
@@ -64,7 +64,7 @@ public class ClassroomResource {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteById(@PathVariable Long id) {
-        classroomService.deleteById(id);
+        courseOfferingService.deleteById(id);
 
         ApiResponse<String, Void> apiResponse = ApiResponse.<String, Void>builder()
                 .timestamp(System.currentTimeMillis())
