@@ -17,6 +17,7 @@ public enum ErrorCode {
     CIRCULAR_PREREQUISITE_DEPENDENCY(400, "Môn học không thể có quan hệ tiên quyết với chính nó!", HttpStatus.BAD_REQUEST),
     INVALID_REQUEST(400, "Yêu cầu không hợp lệ!", HttpStatus.BAD_REQUEST),
     INVALID_SCORE_VALUE(400, "Điểm không hợp lệ! Điểm phải nằm trong khoảng từ 0 đến 10.", HttpStatus.BAD_REQUEST),
+    INVALID_SCHEDULE_TIME(400, "Thời gian biểu không hợp lệ! Thời gian bắt đầu phải trước thời gian kết thúc.", HttpStatus.BAD_REQUEST),
 
     /**
      * 401 Unauthorized
@@ -43,6 +44,8 @@ public enum ErrorCode {
     TEACHER_VALIDATION_FAILED(404, "Không thể xác thực giáo viên!", HttpStatus.NOT_FOUND),
     DUPLICATE_DEPARTMENT_MEMBERSHIP(404, "Khoa đã có thành viên này!", HttpStatus.NOT_FOUND),
     GRADE_NOT_FOUND(404, "Không tìm thấy điểm!", HttpStatus.NOT_FOUND),
+    ATTENDANCE_NOT_FOUND(404, "Không tìm thấy điểm danh!", HttpStatus.NOT_FOUND),
+    SCHEDULE_NOT_FOUND(404, "Không tìm thấy thời gian biểu!", HttpStatus.NOT_FOUND),
 
     /**
      * 409 Conflict
@@ -55,6 +58,7 @@ public enum ErrorCode {
     GENERIC_ERROR(500, "Đã xảy ra lỗi trong quá trình xử lý yêu cầu! Hãy liên hệ với chúng tôi nếu điều này tiếp tục tái diễn.", HttpStatus.INTERNAL_SERVER_ERROR),
     REGISTER_ERROR(500, "Đã xảy ra lỗi trong quá trình đăng ký!", HttpStatus.INTERNAL_SERVER_ERROR),
     USER_SERVICE_ERROR(500, "Dịch vụ người dùng hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.INTERNAL_SERVER_ERROR),
+    SCHEDULE_HAS_ATTENDANCE_RECORDS(500, "Không thể xóa thời gian biểu vì nó có điểm danh liên quan!", HttpStatus.INTERNAL_SERVER_ERROR),
 
     /**
      * 503 Service Unavailable
