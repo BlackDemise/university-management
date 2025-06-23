@@ -2,10 +2,12 @@ package org.endipi.assessment.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.endipi.assessment.client.enrollmentservice.EnrollmentServiceClient;
 import org.endipi.assessment.dto.request.GradeRequest;
 import org.endipi.assessment.dto.response.GradeResponse;
 import org.endipi.assessment.entity.Grade;
 import org.endipi.assessment.enums.error.ErrorCode;
+import org.endipi.assessment.enums.score.ScoreType;
 import org.endipi.assessment.exception.ApplicationException;
 import org.endipi.assessment.mapper.GradeMapper;
 import org.endipi.assessment.repository.GradeRepository;
@@ -23,6 +25,7 @@ import java.util.List;
 public class GradeServiceImpl implements GradeService {
     private final GradeRepository gradeRepository;
     private final GradeMapper gradeMapper;
+    private final EnrollmentServiceClient enrollmentServiceClient;
 
     @Value("${retry.grade.attempts}")
     private long retryAttempts;
@@ -90,26 +93,29 @@ public class GradeServiceImpl implements GradeService {
     }
 
     private void validateBusinessRules(GradeRequest gradeRequest, boolean isUpdate) {
-        // 1. Validate score value range (0-10 for Vietnamese system)
+        // 1. Validate score value range [0, 10]
         if (gradeRequest.getScoreValue() != null) {
             if (gradeRequest.getScoreValue() < 0 || gradeRequest.getScoreValue() > 10) {
                 throw new ApplicationException(ErrorCode.INVALID_SCORE_VALUE);
             }
         }
 
-        // 2. TODO: Validate course registration exists
-        // EnrollmentValidationResponse validation = enrollmentServiceClient.validateCourseRegistration(gradeRequest.getCourseRegistrationId());
+        // 2. Validate course registration exists
+        boolean validation = enrollmentServiceClient.validateCourseRegistration(gradeRequest.getCourseRegistrationId());
+        if (!validation) {
+            throw new ApplicationException(ErrorCode.COURSE_REGISTRATION_NOT_FOUND);
+        }
 
-        // 3. TODO: Check for duplicate grade entries (same scoreType for same courseRegistration)
-        // if (!isUpdate) {
-        //     boolean exists = gradeRepository.existsByCourseRegistrationIdAndScoreType(
-        //         gradeRequest.getCourseRegistrationId(),
-        //         ScoreType.valueOf(gradeRequest.getScoreType())
-        //     );
-        //     if (exists) {
-        //         throw new ApplicationException(ErrorCode.DUPLICATE_GRADE_ENTRY);
-        //     }
-        // }
+        // 3. Check for duplicate grade entries (same scoreType for same courseRegistration)
+         if (!isUpdate) {
+             boolean exists = gradeRepository.existsByCourseRegistrationIdAndScoreType(
+                 gradeRequest.getCourseRegistrationId(),
+                 ScoreType.valueOf(gradeRequest.getScoreType())
+             );
+             if (exists) {
+                 throw new ApplicationException(ErrorCode.DUPLICATE_GRADE_ENTRY);
+             }
+         }
 
         log.info("Validating business rules for grade - CourseRegistration: {}, ScoreType: {}, Value: {}",
                 gradeRequest.getCourseRegistrationId(), gradeRequest.getScoreType(), gradeRequest.getScoreValue());

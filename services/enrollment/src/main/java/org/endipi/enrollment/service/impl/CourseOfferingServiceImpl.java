@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -124,6 +125,18 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
             courseOffering = courseOfferingMapper.toEntity(request, semesterRepository);
         }
 
+        if (!isValidDuration(courseOffering)) {
+            throw new ApplicationException(ErrorCode.INVALID_DURATION);
+        }
+
+        if (!hasAvailableSlots(courseOffering)) {
+            throw new ApplicationException(ErrorCode.MAXIMUM_CAPACITY_REACHED);
+        }
+
+        if (!isRegistrationOpen(courseOffering)) {
+            throw new ApplicationException(ErrorCode.REGISTRATION_CLOSED);
+        }
+
         courseOffering = courseOfferingRepository.save(courseOffering);
         return courseOfferingMapper.toResponse(courseOffering);
     }
@@ -135,5 +148,23 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
         }
 
         courseOfferingRepository.deleteById(id);
+    }
+
+    /// Capacity management check
+    private boolean hasAvailableSlots(CourseOffering courseOffering) {
+        return courseOffering.getCurrentStudents() < courseOffering.getMaxStudents();
+    }
+
+    /// Registration duration check
+    private boolean isRegistrationOpen(CourseOffering courseOffering) {
+        LocalDateTime now = LocalDateTime.now();
+        return now.isAfter(courseOffering.getOpenTime()) && now.isBefore(courseOffering.getCloseTime());
+    }
+
+    /// Duration creation logic check
+    private boolean isValidDuration(CourseOffering courseOffering) {
+        LocalDateTime openTime = courseOffering.getOpenTime();
+        LocalDateTime closeTime = courseOffering.getCloseTime();
+        return openTime != null && closeTime != null && openTime.isBefore(closeTime);
     }
 }

@@ -13,4 +13,7 @@ public interface CourseRegistrationService {
     CourseRegistrationResponse saveWithRetry(CourseRegistrationRequest courseRegistrationRequest);
 
     void deleteById(Long id);
+
+    // S2S
+    boolean validateCourseRegistration(Long courseRegistrationId);
 }

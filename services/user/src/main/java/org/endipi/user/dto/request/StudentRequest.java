@@ -14,4 +14,5 @@ public class StudentRequest {
     private Integer courseYear;
     private String studentStatus;
     private Long userId;
+    private Long majorId;
 }

@@ -8,6 +8,7 @@ import org.endipi.assessment.entity.Schedule;
 import org.endipi.assessment.enums.error.ErrorCode;
 import org.endipi.assessment.exception.ApplicationException;
 import org.endipi.assessment.mapper.ScheduleMapper;
+import org.endipi.assessment.repository.ClassDurationRepository;
 import org.endipi.assessment.repository.ScheduleRepository;
 import org.endipi.assessment.service.ScheduleService;
 import org.hibernate.StaleObjectStateException;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,6 +26,7 @@ import java.util.List;
 public class ScheduleServiceImpl implements ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final ScheduleMapper scheduleMapper;
+    private final ClassDurationRepository classDurationRepository;
 
     @Value("${retry.schedule.attempts}")
     private long retryAttempts;
@@ -79,9 +82,9 @@ public class ScheduleServiceImpl implements ScheduleService {
         if (isUpdate) {
             schedule = scheduleRepository.findById(scheduleRequest.getId())
                     .orElseThrow(() -> new ApplicationException(ErrorCode.SCHEDULE_NOT_FOUND));
-            scheduleMapper.updateFromRequest(scheduleRequest, schedule);
+            scheduleMapper.updateFromRequest(scheduleRequest, schedule, classDurationRepository);
         } else {
-            schedule = scheduleMapper.toEntity(scheduleRequest);
+            schedule = scheduleMapper.toEntity(scheduleRequest, classDurationRepository);
         }
 
         // Business rule validations
@@ -98,8 +101,11 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     private void validateBusinessRules(Schedule schedule, boolean isUpdate) {
         // 1. Validate time logic: startTime should be before endTime
-        if (schedule.getStartTime() != null && schedule.getEndTime() != null) {
-            if (schedule.getStartTime().isAfter(schedule.getEndTime())) {
+        LocalDate startTime = schedule.getClassDuration().getStartTime();
+        LocalDate endTime = schedule.getClassDuration().getEndTime();
+
+        if (startTime != null && endTime != null) {
+            if (startTime.isAfter(endTime)) {
                 throw new ApplicationException(ErrorCode.INVALID_SCHEDULE_TIME);
             }
         }

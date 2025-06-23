@@ -25,6 +25,7 @@ public class User {
 
     private String currentAddress;
 
+    @Column(unique = true, nullable = false)
     private String email;
 
     private String password;

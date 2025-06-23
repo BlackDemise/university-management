@@ -17,6 +17,7 @@ public enum ErrorCode {
     SEMESTER_HAS_COURSE_OFFERINGS(400, "Học kỳ này đang có lớp học! Không thể xóa!", HttpStatus.BAD_REQUEST),
     USER_NOT_A_TEACHER(400, "Người này không phải giảng viên!", HttpStatus.BAD_REQUEST),
     USER_NOT_A_STUDENT(400, "Người này không phải sinh viên!", HttpStatus.BAD_REQUEST),
+    INVALID_DURATION(400, "Thời gian không hợp lệ! Thời gian bắt đầu phải trước thời gian kết thúc!", HttpStatus.BAD_REQUEST),
 
     /**
      * 401 Unauthorized
@@ -54,6 +55,9 @@ public enum ErrorCode {
     TEACHER_VALIDATION_FAILED(500, "Đã xảy ra lỗi trong quá trình xác thực giảng viên!", HttpStatus.INTERNAL_SERVER_ERROR),
     CLASSROOM_VALIDATION_FAILED(500, "Đã xảy ra lỗi trong quá trình xác thực phòng học!", HttpStatus.INTERNAL_SERVER_ERROR),
     STUDENT_VALIDATION_FAILED(500, "Đã xảy ra lỗi trong quá trình xác thực sinh viên!", HttpStatus.INTERNAL_SERVER_ERROR),
+    MAXIMUM_CAPACITY_REACHED(500, "Đã đạt đến số lượng tối đa cho lớp học này! Không thể đăng ký thêm.", HttpStatus.INTERNAL_SERVER_ERROR),
+    REGISTRATION_CLOSED(500, "Đăng ký học đã đóng! Không thể đăng ký thêm.", HttpStatus.INTERNAL_SERVER_ERROR),
+    COURSE_OFFERING_TRANSFER_NOT_ALLOWED(500, "Bạn không thể chuyển lớp học! Hãy liên hệ với phía quản lý để đăng ký lại.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     /**
      * 503 Service Unavailable

@@ -16,6 +16,8 @@ public enum ErrorCode {
     DUPLICATE_PREREQUISITE_RELATIONSHIP(400, "Môn học đã có quan hệ tiên quyết với môn học này!", HttpStatus.BAD_REQUEST),
     CIRCULAR_PREREQUISITE_DEPENDENCY(400, "Môn học không thể có quan hệ tiên quyết với chính nó!", HttpStatus.BAD_REQUEST),
     INVALID_REQUEST(400, "Yêu cầu không hợp lệ!", HttpStatus.BAD_REQUEST),
+    INVALID_CREDITS_REQUIRED(400, "Số tín chỉ ít nhất là 1!", HttpStatus.BAD_REQUEST),
+    INVALID_SEMESTER_RECOMMENDED(400, "Học kỳ đề nghị ít nhất là 0!", HttpStatus.BAD_REQUEST),
 
     /**
      * 401 Unauthorized

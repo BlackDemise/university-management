@@ -68,6 +68,11 @@ public class MajorServiceImpl implements MajorService {
         majorRepository.deleteById(id);
     }
 
+    @Override
+    public boolean validateMajor(Long majorId) {
+        return majorRepository.existsById(majorId);
+    }
+
     private MajorResponse save(MajorRequest majorRequest) {
         Major major;
 
@@ -80,7 +85,15 @@ public class MajorServiceImpl implements MajorService {
             major = majorMapper.toEntity(majorRequest, departmentRepository);
         }
 
+        validateBusinessRules(major);
+
         major = majorRepository.save(major);
         return majorMapper.toResponse(major);
+    }
+
+    private void validateBusinessRules(Major major) {
+        if (major.getTotalCreditsRequired() != null && major.getTotalCreditsRequired() < 0) {
+            throw new ApplicationException(ErrorCode.INVALID_CREDITS_REQUIRED);
+        }
     }
 }

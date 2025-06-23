@@ -2,6 +2,8 @@ package org.endipi.assessment.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.endipi.assessment.client.userservice.UserServiceClient;
+import org.endipi.assessment.dto.external.StudentValidationResponse;
 import org.endipi.assessment.dto.request.AttendanceRequest;
 import org.endipi.assessment.dto.response.AttendanceResponse;
 import org.endipi.assessment.entity.Attendance;
@@ -16,12 +18,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AttendanceServiceImpl implements AttendanceService {
+    private final UserServiceClient userServiceClient;
     private final AttendanceRepository attendanceRepository;
     private final AttendanceMapper attendanceMapper;
     private final ScheduleRepository scheduleRepository;
@@ -82,8 +86,13 @@ public class AttendanceServiceImpl implements AttendanceService {
             attendance = attendanceMapper.toEntity(attendanceRequest, scheduleRepository);
         }
 
-        // Business rule validations
+        // ==== Business rule validations ==== //
+        if (!validateAttendanceTimeWindow(attendance)) {
+            throw new ApplicationException(ErrorCode.ATTENDANCE_TIME_WINDOW_EXPIRED);
+        }
+
         validateBusinessRules(attendanceRequest, isUpdate);
+        // ==== Business rule validations ==== //
 
         attendance = attendanceRepository.save(attendance);
 
@@ -94,23 +103,51 @@ public class AttendanceServiceImpl implements AttendanceService {
         return attendanceMapper.toResponse(attendance);
     }
 
-    private void validateBusinessRules(AttendanceRequest attendanceRequest, boolean isUpdate) {
-        // 1. TODO: Validate student exists
-        // StudentValidationResponse validation = userServiceClient.validateStudent(attendanceRequest.getStudentId());
+    /// Validate attendance window
+    private boolean validateAttendanceTimeWindow(Attendance attendance) {
+        LocalDateTime now = LocalDateTime.now();
 
-        // 2. TODO: Validate schedule exists and is active
-        // ScheduleValidationResponse scheduleValidation = validateSchedule(attendanceRequest.getScheduleId());
+        LocalDateTime endTime = attendance.getSchedule().getClassDuration().getEndTime().atStartOfDay();
+
+        if (now.isAfter(endTime)) {
+            log.warn("Attendance time window has expired for attendance ID: {}", attendance.getId());
+            return false;
+        }
+        return true;
+    }
+
+    private void validateBusinessRules(AttendanceRequest attendanceRequest, boolean isUpdate) {
+        // 1: Validate student exists
+        StudentValidationResponse validation = userServiceClient.validateStudent(attendanceRequest.getStudentId());
+
+        if (!validation.isExists()) {
+            log.warn("Invalid student ID: {} for attendance request", attendanceRequest.getStudentId());
+            throw new ApplicationException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        if (!validation.isStudent()) {
+            log.warn("User ID: {} is not a student", attendanceRequest.getStudentId());
+            throw new ApplicationException(ErrorCode.USER_NOT_A_STUDENT);
+        }
+
+        // 2: Validate schedule exists
+        if (!scheduleRepository.existsById(attendanceRequest.getScheduleId())) {
+            log.warn("Invalid schedule ID: {} for attendance request", attendanceRequest.getScheduleId());
+            throw new ApplicationException(ErrorCode.SCHEDULE_NOT_FOUND);
+        }
 
         // 3. Check for duplicate attendance (same student, same schedule)
-        // if (!isUpdate) {
-        //     boolean exists = attendanceRepository.existsByStudentIdAndScheduleId(
-        //         attendanceRequest.getStudentId(),
-        //         attendanceRequest.getScheduleId()
-        //     );
-        //     if (exists) {
-        //         throw new ApplicationException(ErrorCode.DUPLICATE_ATTENDANCE_RECORD);
-        //     }
-        // }
+         if (!isUpdate) {
+             boolean exists = attendanceRepository.existsByStudentIdAndScheduleId(
+                 attendanceRequest.getStudentId(),
+                 attendanceRequest.getScheduleId()
+             );
+             if (exists) {
+                 throw new ApplicationException(ErrorCode.DUPLICATE_ATTENDANCE_RECORD);
+             }
+         }
+
+         // 4.
 
         log.info("Validating business rules for attendance - Student: {}, Schedule: {}, Status: {}",
                 attendanceRequest.getStudentId(), attendanceRequest.getScheduleId(), attendanceRequest.getAttendanceStatus());

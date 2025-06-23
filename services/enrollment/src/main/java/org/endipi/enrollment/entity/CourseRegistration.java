@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "course_offering_id"}))
 public class CourseRegistration {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

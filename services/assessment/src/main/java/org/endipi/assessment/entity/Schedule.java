@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.endipi.assessment.enums.schedule.SessionType;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -13,6 +12,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"course_offering_id", "classroom_id"}))
 public class Schedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,9 +23,9 @@ public class Schedule {
 
     private Integer sessionNumber;
 
-    private LocalDateTime startTime;
-
-    private LocalDateTime endTime;
+    @ManyToOne
+    @JoinColumn(name = "class_duration_id")
+    private ClassDuration classDuration;
 
     // This field depends on enrollment-service
     // Logic guard properly on this field

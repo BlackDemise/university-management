@@ -6,6 +6,7 @@ import org.endipi.enrollment.client.userservice.UserServiceClient;
 import org.endipi.enrollment.dto.external.StudentValidationResponse;
 import org.endipi.enrollment.dto.request.CourseRegistrationRequest;
 import org.endipi.enrollment.dto.response.CourseRegistrationResponse;
+import org.endipi.enrollment.entity.CourseOffering;
 import org.endipi.enrollment.entity.CourseRegistration;
 import org.endipi.enrollment.enums.error.ErrorCode;
 import org.endipi.enrollment.exception.ApplicationException;
@@ -65,12 +66,27 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
 
     @Override
     public void deleteById(Long id) {
-        if (!courseRegistrationRepository.existsById(id)) {
-            throw new ApplicationException(ErrorCode.COURSE_REGISTRATION_NOT_FOUND);
+        CourseRegistration courseRegistration = courseRegistrationRepository.findById(id)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.COURSE_REGISTRATION_NOT_FOUND));
+
+        // Remove the corresponding CourseRegistration in CourseOffering
+        CourseOffering courseOffering = courseRegistration.getCourseOffering();
+        if (courseOffering != null) {
+            courseOffering.setCurrentStudents(courseOffering.getCurrentStudents() - 1);
+            courseOfferingRepository.save(courseOffering);
+            log.info("Decremented currentStudents to {} for CourseOffering {}",
+                    courseOffering.getCurrentStudents(), courseOffering.getId());
+        } else {
+            log.warn("CourseOffering not found for CourseRegistration ID: {}", id);
         }
 
         courseRegistrationRepository.deleteById(id);
         log.info("Successfully deleted course registration with ID: {}", id);
+    }
+
+    @Override
+    public boolean validateCourseRegistration(Long courseRegistrationId) {
+        return courseRegistrationRepository.existsById(courseRegistrationId);
     }
 
     private CourseRegistrationResponse save(CourseRegistrationRequest request) {
@@ -103,14 +119,32 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
         if (isUpdate) {
             courseRegistration = courseRegistrationRepository.findById(request.getId())
                     .orElseThrow(() -> new ApplicationException(ErrorCode.COURSE_REGISTRATION_NOT_FOUND));
+
+            // Prevent courseOffering change and offer soft validation (management side and students)
+            if (!courseRegistration.getCourseOffering().getId().equals(request.getCourseOfferingId())) {
+                throw new ApplicationException(ErrorCode.COURSE_OFFERING_TRANSFER_NOT_ALLOWED);
+            }
+
             courseRegistrationMapper.updateFromRequest(request, courseRegistration, courseOfferingRepository);
         } else {
             courseRegistration = courseRegistrationMapper.toEntity(request, courseOfferingRepository);
+
             // Set registration date for new registrations
             if (courseRegistration.getRegistrationDate() == null) {
                 courseRegistration.setRegistrationDate(LocalDateTime.now());
             }
+
+            // Update the currentStudents in CourseOffering (a little bit cross-service logic)
+            CourseOffering courseOffering = courseRegistration.getCourseOffering();
+            courseOffering.setCurrentStudents(courseOffering.getCurrentStudents() + 1);
+            courseOfferingRepository.save(courseOffering);
+
+            log.info("Incremented currentStudents to {} for CourseOffering {}",
+                    courseOffering.getCurrentStudents(), courseOffering.getId());
         }
+
+        validateCourseOfferingExists(courseRegistration.getCourseOffering().getId());
+        validateRegistrationCapacity(courseRegistration.getCourseOffering());
 
         // Business rule validations
         validateBusinessRules(request, isUpdate);
@@ -121,6 +155,22 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
                 isUpdate ? "updated" : "created", courseRegistration.getId());
 
         return courseRegistrationMapper.toResponse(courseRegistration);
+    }
+
+    /// Validate existence of CourseOffering
+    private void validateCourseOfferingExists(Long courseOfferingId) {
+        if (!courseOfferingRepository.existsById(courseOfferingId)) {
+            throw new ApplicationException(ErrorCode.COURSE_OFFERING_NOT_FOUND);
+        }
+        log.info("Course offering with ID {} exists.", courseOfferingId);
+    }
+
+    /// Validate capacity of a CourseOffering
+    private void validateRegistrationCapacity(CourseOffering courseOffering) {
+        if (courseOffering.getCurrentStudents() >= courseOffering.getMaxStudents()) {
+            throw new ApplicationException(ErrorCode.MAXIMUM_CAPACITY_REACHED);
+        }
+        log.info("Course offering with ID {} has capacity for more registrations.", courseOffering.getId());
     }
 
     private void validateBusinessRules(CourseRegistrationRequest request, boolean isUpdate) {

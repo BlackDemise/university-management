@@ -10,6 +10,7 @@ import org.endipi.assessment.enums.attendance.AttendanceStatus;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "schedule_id"}))
 public class Attendance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

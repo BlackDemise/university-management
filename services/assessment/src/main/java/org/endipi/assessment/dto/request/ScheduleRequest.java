@@ -15,4 +15,5 @@ public class ScheduleRequest {
     private String endTime;
     private Long courseOfferingId;
     private Long classroomId;
+    private Long classDurationId;
 }

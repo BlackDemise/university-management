@@ -86,10 +86,19 @@ public class ProgramCurriculumServiceImpl implements ProgramCurriculumService {
             programCurriculum = programCurriculumMapper.toEntity(programCurriculumRequest, majorRepository, courseRepository);
         }
 
+        // Business logic check
+        validateBusinessRules(programCurriculum);
+
         // Save the entity (works for both create and update)
         programCurriculum = programCurriculumRepository.save(programCurriculum);
 
         // Convert to response DTO and return
         return programCurriculumMapper.toResponse(programCurriculum);
+    }
+
+    private void validateBusinessRules(ProgramCurriculum curriculum) {
+        if (curriculum.getSemesterRecommended() != null && curriculum.getSemesterRecommended() < 0) {
+            throw new ApplicationException(ErrorCode.INVALID_SEMESTER_RECOMMENDED);
+        }
     }
 }

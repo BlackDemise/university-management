@@ -10,6 +10,7 @@ import org.endipi.assessment.enums.score.ScoreType;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"course_registration_id", "score_type"}))
 public class Grade {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

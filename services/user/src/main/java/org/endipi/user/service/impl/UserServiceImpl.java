@@ -2,6 +2,7 @@ package org.endipi.user.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.endipi.user.client.departmentservice.MajorServiceClient;
 import org.endipi.user.dto.request.StudentRequest;
 import org.endipi.user.dto.request.TeacherRequest;
 import org.endipi.user.dto.request.UserRequest;
@@ -50,6 +51,7 @@ public class UserServiceImpl implements UserService {
     private final TeacherRepository teacherRepository;
     private final TeacherMapper teacherMapper;
     private final TeacherEventProducer teacherEventProducer;
+    private final MajorServiceClient majorServiceClient;
 
     @Value("${retry.user.attempts}")
     private long retryAttempts;
@@ -268,6 +270,15 @@ public class UserServiceImpl implements UserService {
                 user.setStudent(null);
             }
             return;
+        }
+
+        // Validate the existence of Major
+        if (studentRequest.getMajorId() != null) {
+            boolean departmentExists = majorServiceClient.validateMajor(studentRequest.getMajorId());
+            if (!departmentExists) {
+                log.error("Major with ID {} does not exist for user {}", studentRequest.getMajorId(), user.getId());
+                throw new ApplicationException(ErrorCode.MAJOR_NOT_FOUND);
+            }
         }
 
         if (isUserUpdate && user.getStudent() != null && studentRequest.getId() != null) {

@@ -18,6 +18,7 @@ public enum ErrorCode {
     INVALID_REQUEST(400, "Yêu cầu không hợp lệ!", HttpStatus.BAD_REQUEST),
     INVALID_SCORE_VALUE(400, "Điểm không hợp lệ! Điểm phải nằm trong khoảng từ 0 đến 10.", HttpStatus.BAD_REQUEST),
     INVALID_SCHEDULE_TIME(400, "Thời gian biểu không hợp lệ! Thời gian bắt đầu phải trước thời gian kết thúc.", HttpStatus.BAD_REQUEST),
+    USER_NOT_A_STUDENT(400, "Người dùng không phải là sinh viên!", HttpStatus.BAD_REQUEST),
 
     /**
      * 401 Unauthorized
@@ -46,6 +47,7 @@ public enum ErrorCode {
     GRADE_NOT_FOUND(404, "Không tìm thấy điểm!", HttpStatus.NOT_FOUND),
     ATTENDANCE_NOT_FOUND(404, "Không tìm thấy điểm danh!", HttpStatus.NOT_FOUND),
     SCHEDULE_NOT_FOUND(404, "Không tìm thấy thời gian biểu!", HttpStatus.NOT_FOUND),
+    COURSE_REGISTRATION_NOT_FOUND(404, "Không tìm thấy đăng ký học!", HttpStatus.NOT_FOUND),
 
     /**
      * 409 Conflict
@@ -59,11 +61,16 @@ public enum ErrorCode {
     REGISTER_ERROR(500, "Đã xảy ra lỗi trong quá trình đăng ký!", HttpStatus.INTERNAL_SERVER_ERROR),
     USER_SERVICE_ERROR(500, "Dịch vụ người dùng hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.INTERNAL_SERVER_ERROR),
     SCHEDULE_HAS_ATTENDANCE_RECORDS(500, "Không thể xóa thời gian biểu vì nó có điểm danh liên quan!", HttpStatus.INTERNAL_SERVER_ERROR),
+    ATTENDANCE_TIME_WINDOW_EXPIRED(500, "Thời gian điểm danh đã đóng! Không thể thực hiện điểm danh.", HttpStatus.INTERNAL_SERVER_ERROR),
+    DUPLICATE_ATTENDANCE_RECORD(500, "Đã có điểm danh cho sinh viên này trong thời gian biểu này!", HttpStatus.INTERNAL_SERVER_ERROR),
+    ENROLLMENT_SERVICE_ERROR(500, "Dịch vụ đăng ký hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.INTERNAL_SERVER_ERROR),
+    DUPLICATE_GRADE_ENTRY(500, "Sinh viên này đã có đầu điểm này!", HttpStatus.INTERNAL_SERVER_ERROR),
 
     /**
      * 503 Service Unavailable
      */
-    USER_SERVICE_UNAVAILABLE(503, "Dịch vụ người dùng hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.SERVICE_UNAVAILABLE);
+    USER_SERVICE_UNAVAILABLE(503, "Dịch vụ người dùng hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.SERVICE_UNAVAILABLE),
+    ENROLLMENT_SERVICE_UNAVAILABLE(503, "Dịch vụ đăng ký hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.SERVICE_UNAVAILABLE);
 
     private final int code;
     private final String message;

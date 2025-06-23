@@ -71,4 +71,11 @@ public class MajorResource {
 
         return ResponseEntity.ok(apiResponse);
     }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/validate/{majorId}")
+    public ResponseEntity<Boolean> validateMajor(@PathVariable Long majorId) {
+        boolean isValid = majorService.validateMajor(majorId);
+        return ResponseEntity.ok(isValid);
+    }
 }

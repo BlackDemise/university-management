@@ -17,11 +17,16 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
     private String studentCode;
 
     private LocalDate birthDate;
 
     private Integer courseYear;
+
+    // This field depends on academic-service
+    // Logic guard properly on this field
+    private Long majorId;
 
     @Enumerated(EnumType.STRING)
     private StudentStatus studentStatus;

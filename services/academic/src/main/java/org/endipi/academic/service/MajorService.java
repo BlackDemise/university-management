@@ -13,4 +13,6 @@ public interface MajorService {
     MajorResponse saveWithRetry(MajorRequest majorRequest);
 
     void deleteById(Long id);
+
+    boolean validateMajor(Long majorId);
 }
