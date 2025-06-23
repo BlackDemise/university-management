@@ -48,6 +48,9 @@ public enum ErrorCode {
     ATTENDANCE_NOT_FOUND(404, "Không tìm thấy điểm danh!", HttpStatus.NOT_FOUND),
     SCHEDULE_NOT_FOUND(404, "Không tìm thấy thời gian biểu!", HttpStatus.NOT_FOUND),
     COURSE_REGISTRATION_NOT_FOUND(404, "Không tìm thấy đăng ký học!", HttpStatus.NOT_FOUND),
+    COURSE_OFFERING_NOT_FOUND(404, "Không tìm thấy khóa học!", HttpStatus.NOT_FOUND),
+    FACILITY_NOT_FOUND(404, "Không tìm thấy cơ sở vật chất!", HttpStatus.NOT_FOUND),
+    CLASSROOM_NOT_FOUND(404, "Không tìm thấy phòng học!", HttpStatus.NOT_FOUND),
 
     /**
      * 409 Conflict
@@ -65,12 +68,14 @@ public enum ErrorCode {
     DUPLICATE_ATTENDANCE_RECORD(500, "Đã có điểm danh cho sinh viên này trong thời gian biểu này!", HttpStatus.INTERNAL_SERVER_ERROR),
     ENROLLMENT_SERVICE_ERROR(500, "Dịch vụ đăng ký hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.INTERNAL_SERVER_ERROR),
     DUPLICATE_GRADE_ENTRY(500, "Sinh viên này đã có đầu điểm này!", HttpStatus.INTERNAL_SERVER_ERROR),
+    FACILITY_SERVICE_ERROR(500, "Dịch vụ cơ sở vật chất hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     /**
      * 503 Service Unavailable
      */
     USER_SERVICE_UNAVAILABLE(503, "Dịch vụ người dùng hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.SERVICE_UNAVAILABLE),
-    ENROLLMENT_SERVICE_UNAVAILABLE(503, "Dịch vụ đăng ký hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.SERVICE_UNAVAILABLE);
+    ENROLLMENT_SERVICE_UNAVAILABLE(503, "Dịch vụ đăng ký hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.SERVICE_UNAVAILABLE),
+    FACILITY_SERVICE_UNAVAILABLE(503, "Dịch vụ cơ sở vật chất hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.SERVICE_UNAVAILABLE);
 
     private final int code;
     private final String message;

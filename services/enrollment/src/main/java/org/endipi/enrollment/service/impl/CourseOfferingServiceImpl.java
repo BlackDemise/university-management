@@ -150,6 +150,11 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
         courseOfferingRepository.deleteById(id);
     }
 
+    @Override
+    public boolean validateCourseOffering(Long courseOfferingId) {
+        return courseOfferingRepository.existsById(courseOfferingId);
+    }
+
     /// Capacity management check
     private boolean hasAvailableSlots(CourseOffering courseOffering) {
         return courseOffering.getCurrentStudents() < courseOffering.getMaxStudents();

@@ -12,4 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface EnrollmentServiceClient {
     @GetMapping("/api/v1/course-registration/{courseRegistrationId}/validate")
     boolean validateCourseRegistration(@PathVariable Long courseRegistrationId);
+
+    @GetMapping("/api/v1/course-offering/{courseOfferingId}/validate")
+    boolean validateCourseOffering(@PathVariable Long courseOfferingId);
 }

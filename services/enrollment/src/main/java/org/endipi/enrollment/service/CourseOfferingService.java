@@ -13,4 +13,6 @@ public interface CourseOfferingService {
     CourseOfferingResponse saveWithRetry(CourseOfferingRequest courseOfferingRequest);
 
     void deleteById(Long id);
+
+    boolean validateCourseOffering(Long courseOfferingId);
 }

@@ -2,6 +2,9 @@ package org.endipi.assessment.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.endipi.assessment.client.enrollmentservice.EnrollmentServiceClient;
+import org.endipi.assessment.client.facilityservice.FacilityServiceClient;
+import org.endipi.assessment.dto.external.ClassroomValidationResponse;
 import org.endipi.assessment.dto.request.ScheduleRequest;
 import org.endipi.assessment.dto.response.ScheduleResponse;
 import org.endipi.assessment.entity.Schedule;
@@ -27,6 +30,8 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final ScheduleMapper scheduleMapper;
     private final ClassDurationRepository classDurationRepository;
+    private final EnrollmentServiceClient enrollmentServiceClient;
+    private final FacilityServiceClient facilityServiceClient;
 
     @Value("${retry.schedule.attempts}")
     private long retryAttempts;
@@ -110,11 +115,19 @@ public class ScheduleServiceImpl implements ScheduleService {
             }
         }
 
-        // 2. TODO: Validate course offering exists
-        // CourseOfferingValidationResponse validation = enrollmentServiceClient.validateCourseOffering(schedule.getCourseOfferingId());
+        // 2. Validate course offering exists
+        boolean courseOfferingValidation = enrollmentServiceClient.validateCourseOffering(schedule.getCourseOfferingId());
 
-        // 3. TODO: Validate classroom exists and is available
-        // ClassroomValidationResponse classroomValidation = facilityServiceClient.validateClassroom(schedule.getClassroomId());
+        if (!courseOfferingValidation) {
+            throw new ApplicationException(ErrorCode.COURSE_OFFERING_NOT_FOUND);
+        }
+
+        // 3. Validate classroom exists and is available
+        ClassroomValidationResponse classroomValidation = facilityServiceClient.validateClassroom(schedule.getClassroomId());
+
+        if (!classroomValidation.isExists()) {
+            throw new ApplicationException(ErrorCode.CLASSROOM_NOT_FOUND);
+        }
 
         // 4. Check for schedule conflicts (same classroom, overlapping times)
         // TODO: Add custom repository method for conflict detection
