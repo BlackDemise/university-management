@@ -1,0 +1,51 @@
+.topNavbar {
+    height: 70px;
+    z-index: 1030;
+}
+
+.brandName {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4e73df;
+    letter-spacing: 1px;
+}
+
+.avatarCircle {
+    width: 40px;
+    height: 40px;
+    background-color: #4e73df;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.initials {
+    font-size: 16px;
+}
+
+/* Hide dropdown arrow */
+.dropdownAvatar::after {
+    display: none !important;
+}
+
+/* Additional style to ensure the dropdown arrow is hidden */
+:global(.dropdown-toggle.dropdownAvatar)::after {
+    display: none !important;
+}
+
+.sidebarToggler {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.sidebarToggler:hover {
+    transform: scale(1.05);
+} 

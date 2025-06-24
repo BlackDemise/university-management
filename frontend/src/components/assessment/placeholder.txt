@@ -1,0 +1,2 @@
+Prevent GitHub empty directories rules
+Later on, add actual content to this folder

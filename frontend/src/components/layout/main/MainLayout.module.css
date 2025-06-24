@@ -1,0 +1,29 @@
+/* MainLayout styles */
+.layoutWrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    position: relative;
+}
+
+.mainContent {
+    margin-left: 250px;
+    margin-top: 70px;
+    min-height: calc(100vh - 70px);
+    transition: all 0.3s;
+    width: calc(100% - 250px);
+    overflow-y: auto;
+    padding-bottom: 60px;
+    position: relative;
+}
+
+.mainContentExpanded {
+    margin-left: 0;
+    width: 100%;
+}
+
+.footerContainer {
+    position: relative;
+    width: 100%;
+    margin-top: 30px;
+} 
