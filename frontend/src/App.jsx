@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import AdminDashboard from "./components/dashboard/AdminDashboard.jsx";
 import TeacherDashboard from "./components/dashboard/TeacherDashboard.jsx";
 import StudentDashboard from "./components/dashboard/StudentDashboard.jsx";
+import UsersList from "./components/user/UserList.jsx";
 
 function App() {
   return (
@@ -33,6 +34,13 @@ function App() {
           <Route path="/student-dashboard" element={
             <ProtectedRoute requiredRole="STUDENT">
               <StudentDashboard />
+            </ProtectedRoute>
+          } />
+
+          {/* User Management Routes */}
+          <Route path="/admin/users/all" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <UsersList />
             </ProtectedRoute>
           } />
 

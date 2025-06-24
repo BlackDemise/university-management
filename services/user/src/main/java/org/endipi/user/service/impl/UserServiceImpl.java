@@ -30,6 +30,8 @@ import org.endipi.user.service.UserService;
 import org.endipi.user.util.PasswordUtil;
 import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -65,6 +67,12 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(userMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    public Page<UserResponse> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(userMapper::toResponse);
     }
 
     @Override

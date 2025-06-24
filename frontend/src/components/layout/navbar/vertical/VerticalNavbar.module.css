@@ -1,5 +1,7 @@
+/* frontend/src/components/layout/navbar/vertical/VerticalNavbar.module.css */
+
 .sidebar {
-    width: 250px;
+    width: 290px; /* 🔄 Changed from 250px to 290px */
     transition: all 0.3s;
     height: 100vh;
     position: fixed;
@@ -11,7 +13,7 @@
 }
 
 .sidebarCollapsed {
-    margin-left: -250px;
+    margin-left: -290px; /* 🔄 Changed from -250px to -290px */
 }
 
 .sidebarSticky {
@@ -64,16 +66,16 @@
     border-radius: 2px;
 }
 
-/* Submenu styles */
+/* 🔄 Updated Submenu styles */
 .submenuLink {
-    padding: 8px 20px 8px 50px !important;
+    padding: 10px 20px 10px 35px !important; /* 🔄 Changed from 8px 20px 8px 50px to 10px 20px 10px 35px */
     color: #6c757d !important;
     border: none !important;
     border-radius: 0 !important;
     text-decoration: none !important;
     transition: all 0.2s ease;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.95rem; /* 🔄 Changed from 0.9rem to 0.95rem (bigger text) */
 }
 
 .submenuLink:hover {

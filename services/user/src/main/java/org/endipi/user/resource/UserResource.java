@@ -8,6 +8,10 @@ import org.endipi.user.dto.response.StudentValidationResponse;
 import org.endipi.user.dto.response.TeacherValidationResponse;
 import org.endipi.user.dto.response.UserResponse;
 import org.endipi.user.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +33,22 @@ public class UserResource {
                 .statusCode(HttpStatus.OK.value())
                 .message("OK")
                 .result(userResponses)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/all/page")
+    public ResponseEntity<?> findAll(
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<UserResponse> userResponsePage = userService.findAll(pageable);
+
+        ApiResponse<String, Page<UserResponse>> apiResponse = ApiResponse.<String, Page<UserResponse>>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.OK.value())
+                .message("OK")
+                .result(userResponsePage)
                 .build();
 
         return ResponseEntity.ok(apiResponse);

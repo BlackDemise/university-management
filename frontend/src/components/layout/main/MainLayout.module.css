@@ -1,3 +1,5 @@
+/* frontend/src/components/layout/main/MainLayout.module.css */
+
 /* MainLayout styles */
 .layoutWrapper {
     display: flex;
@@ -7,23 +9,42 @@
 }
 
 .mainContent {
-    margin-left: 250px;
+    margin-left: 290px;
     margin-top: 70px;
     min-height: calc(100vh - 70px);
     transition: all 0.3s;
-    width: calc(100% - 250px);
+    width: calc(100% - 290px);
     overflow-y: auto;
-    padding-bottom: 60px;
     position: relative;
+
+    /* 🆕 Add flexbox for footer positioning */
+    display: flex;
+    flex-direction: column;
+
+    /* 🆕 Add padding-left for content breathing room */
+    padding-left: 25px;
+    padding-right: 25px;
 }
 
 .mainContentExpanded {
     margin-left: 0;
     width: 100%;
+
+    /* 🆕 Maintain padding when sidebar is collapsed */
+    padding-left: 25px;
+    padding-right: 25px;
+}
+
+/* 🆕 New class for the main content area (not including footer) */
+.contentArea {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .footerContainer {
-    position: relative;
+    /* 🆕 Footer will now stick to bottom */
+    margin-top: auto;
     width: 100%;
-    margin-top: 30px;
-} 
+    padding-top: 30px;
+}

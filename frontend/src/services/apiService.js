@@ -6,7 +6,9 @@
  * import { authService, userService } from '../services/apiService';
  */
 import authService from "./authService.js";
+import userService from "./userService.js";
 
 export {
-  authService
+  authService,
+  userService
 }; 
