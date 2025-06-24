@@ -1,5 +1,6 @@
 package org.endipi.user.resource;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.endipi.user.dto.request.UserRequest;
 import org.endipi.user.dto.response.ApiResponse;
@@ -48,7 +49,7 @@ public class UserResource {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody UserRequest userRequest) {
+    public ResponseEntity<?> save(@Valid @RequestBody UserRequest userRequest) {
         UserResponse userResponse = userService.saveWithRetry(userRequest);
 
         ApiResponse<String, UserResponse> apiResponse = ApiResponse.<String, UserResponse>builder()

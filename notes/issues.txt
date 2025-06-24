@@ -3,3 +3,6 @@
 - Currently, this is not prevented; so remember to back here and implement proper strategies after completing the project.
 
 2. Establish link from Student -> Major is enough. Major belongs to a Department, so if we know the major, we know the department.
+
+3. user-service:
+- Email -> format validation is not implemented.

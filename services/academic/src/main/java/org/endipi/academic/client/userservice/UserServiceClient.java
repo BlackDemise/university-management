@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(
         name = "user-service",                           // Service name in Eureka
-        path = "/api/v1/user",                          // Base path
-        configuration = UserServiceClientConfig.class   // Custom configuration
+        path = "/api/v1/user",                           // Base path
+        configuration = UserServiceClientConfig.class    // Custom configuration
 )
 public interface UserServiceClient {
     @GetMapping("/teachers/{teacherId}/validate")

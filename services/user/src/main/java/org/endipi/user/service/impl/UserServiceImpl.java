@@ -13,6 +13,8 @@ import org.endipi.user.entity.Student;
 import org.endipi.user.entity.Teacher;
 import org.endipi.user.entity.User;
 import org.endipi.user.enums.error.ErrorCode;
+import org.endipi.user.enums.role.RoleTitle;
+import org.endipi.user.enums.student.StudentStatus;
 import org.endipi.user.exception.ApplicationException;
 import org.endipi.user.mapper.StudentMapper;
 import org.endipi.user.mapper.TeacherMapper;
@@ -31,6 +33,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -72,6 +75,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponse saveWithRetry(UserRequest userRequest) {
         for (long attempt = 1; attempt <= retryAttempts; attempt++) {
             try {
@@ -155,6 +159,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserResponse save(UserRequest userRequest) {
+        validateUserRequest(userRequest);
+
         User user;
         boolean isUpdated = userRequest.getId() != null;
 
@@ -186,6 +192,89 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponse(user);
     }
 
+    private void validateUserRequest(UserRequest userRequest) {
+        String role = userRequest.getRole();
+
+        String teacherRole = RoleTitle.TEACHER.name();
+        String studentRole = RoleTitle.STUDENT.name();
+
+        if (teacherRole.equals(role)) {
+            TeacherRequest teacherRequest = userRequest.getTeacherRequest();
+            // Must have teacher data when role is TEACHER
+            if (userRequest.getTeacherRequest() == null) {
+                throw new ApplicationException(ErrorCode.TEACHER_INFO_REQUIRED);
+            }
+
+            // Should NOT have student data when role is TEACHER
+            if (userRequest.getStudentRequest() != null) {
+                throw new ApplicationException(ErrorCode.CONFLICTING_ROLE_DATA);
+            }
+
+            // Validate teacherCode
+            String teacherCode = teacherRequest.getTeacherCode();
+            if (teacherCode == null || teacherCode.isBlank()) {
+                throw new ApplicationException(ErrorCode.TEACHER_INFO_REQUIRED);
+            }
+
+            // Validate academicRank
+            String academicRank = teacherRequest.getAcademicRank();
+            if (academicRank == null || academicRank.isBlank()) {
+                throw new ApplicationException(ErrorCode.TEACHER_INFO_REQUIRED);
+            }
+
+            // Validate degree
+            String degree = teacherRequest.getDegree();
+            if (degree == null || degree.isBlank()) {
+                throw new ApplicationException(ErrorCode.TEACHER_INFO_REQUIRED);
+            }
+        } else if (studentRole.equals(role)) {
+            StudentRequest studentRequest = userRequest.getStudentRequest();
+
+            // Must have student data when role is STUDENT
+            if (studentRequest == null) {
+                throw new ApplicationException(ErrorCode.STUDENT_INFO_REQUIRED);
+            }
+
+            // Should NOT have teacher data when role is STUDENT
+            if (userRequest.getTeacherRequest() != null) {
+                throw new ApplicationException(ErrorCode.CONFLICTING_ROLE_DATA);
+            }
+
+            // Validate studentStatus enum
+            String studentStatus = studentRequest.getStudentStatus();
+            if (studentStatus == null || studentStatus.isBlank()) {
+                throw new ApplicationException(ErrorCode.STUDENT_STATUS_REQUIRED);
+            }
+
+            if (!isValidStudentStatus(studentRequest.getStudentStatus())) {
+                throw new ApplicationException(ErrorCode.INVALID_STUDENT_STATUS);
+            }
+
+            // Validate studentCode
+            String studentCode = studentRequest.getStudentCode();
+            if (studentCode == null || studentCode.isBlank()) {
+                throw new ApplicationException(ErrorCode.STUDENT_INFO_REQUIRED);
+            }
+
+            // Validate birthDate
+            String birthDate = studentRequest.getBirthDate();
+            if (birthDate == null || birthDate.isBlank()) {
+                throw new ApplicationException(ErrorCode.STUDENT_INFO_REQUIRED);
+            }
+
+            // Validate courseYear
+            Integer courseYear = studentRequest.getCourseYear();
+            if (courseYear == null || courseYear < 1) {
+                throw new ApplicationException(ErrorCode.STUDENT_INFO_REQUIRED);
+            }
+        } else {
+            // For other roles (ADMIN, etc.), should not have teacher/student data
+            if (userRequest.getTeacherRequest() != null || userRequest.getStudentRequest() != null) {
+                throw new ApplicationException(ErrorCode.UNNECESSARY_ROLE_DATA);
+            }
+        }
+    }
+
     private void handleUserRoleSpecificEntity(User user, UserRequest userRequest, boolean isUserUpdate) {
         String role = userRequest.getRole();
 
@@ -199,8 +288,7 @@ public class UserServiceImpl implements UserService {
                 studentRepository.delete(user.getStudent());
                 user.setStudent(null);
             }
-        }
-        else if ("STUDENT".equals(role)) {
+        } else if ("STUDENT".equals(role)) {
             handleStudentEntity(user, userRequest.getStudentRequest(), isUserUpdate);
             // Ensure teacher is null (business rule: one role per user)
             if (user.getTeacher() != null) {
@@ -208,8 +296,7 @@ public class UserServiceImpl implements UserService {
                 teacherRepository.delete(user.getTeacher());
                 user.setTeacher(null);
             }
-        }
-        else {
+        } else {
             // Role is neither TEACHER nor STUDENT, remove both relations
             log.info("Role is neither TEACHER nor STUDENT, cleaning up all role-specific entities for user {}", user.getId());
             cleanupAllRoleSpecificEntities(user);
@@ -342,7 +429,7 @@ public class UserServiceImpl implements UserService {
     /**
      * Checks if user's teacher status has changed and publishes appropriate events
      *
-     * @param user The updated user entity
+     * @param user       The updated user entity
      * @param wasTeacher Whether the user was a teacher before the update
      */
     private void checkForTeacherStatusChange(User user, boolean wasTeacher) {
@@ -361,6 +448,16 @@ public class UserServiceImpl implements UserService {
         }
 
         // Leave the rest for later logic checking if needed.
+    }
+
+    // Helper for checking studentStatus validity
+    private boolean isValidStudentStatus(String status) {
+        try {
+            StudentStatus.valueOf(status);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }
 

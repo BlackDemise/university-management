@@ -1,7 +1,9 @@
 package org.endipi.user.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.endipi.user.dto.response.ApiResponse;
 import org.endipi.user.enums.error.ErrorCode;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -11,9 +13,11 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(value = ApplicationException.class)
@@ -74,5 +78,43 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(apiResponse);
+    }
+
+    // Add to your GlobalExceptionHandler
+    @ExceptionHandler({
+            SQLIntegrityConstraintViolationException.class,
+            DataIntegrityViolationException.class
+    })
+    public ResponseEntity<?> handleDatabaseConstraintViolation(Exception ex) {
+        log.error("Database constraint violation: {}", ex.getMessage(), ex);
+
+        String message = "Dữ liệu không hợp lệ hoặc đã tồn tại trong hệ thống!";
+
+        // Smart message parsing based on constraint violation
+        String errorDetails = ex.getMessage().toLowerCase();
+
+        if (errorDetails.contains("duplicate") || errorDetails.contains("unique")) {
+            if (errorDetails.contains("email") || errorDetails.contains("uk_email")) {
+                message = "Email này đã được sử dụng! Vui lòng sử dụng email khác.";
+            } else if (errorDetails.contains("teacher_code") || errorDetails.contains("teachercode")) {
+                message = "Mã giảng viên đã được sử dụng! Vui lòng sử dụng mã khác.";
+            } else if (errorDetails.contains("student_code") || errorDetails.contains("studentcode")) {
+                message = "Mã sinh viên đã được sử dụng! Vui lòng sử dụng mã khác.";
+            } else {
+                message = "Thông tin này đã được sử dụng! Vui lòng kiểm tra lại.";
+            }
+        } else if (errorDetails.contains("foreign key") || errorDetails.contains("cannot add or update")) {
+            message = "Dữ liệu tham chiếu không hợp lệ! Vui lòng kiểm tra lại thông tin.";
+        } else if (errorDetails.contains("not null") || errorDetails.contains("cannot be null")) {
+            message = "Thông tin bắt buộc bị thiếu! Vui lòng điền đầy đủ thông tin.";
+        }
+
+        ApiResponse<String, Object> apiResponse = ApiResponse.<String, Object>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .message(message)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
     }
 }

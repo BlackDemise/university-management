@@ -1,5 +1,5 @@
-📁 auth-service (done)
-├── AuthUser (referencing object)
+📁 auth-service
+├── AuthUser
 ├── BlacklistedToken
 
 📁 user-service (done)
@@ -8,7 +8,7 @@
 ├── Student
 ├── Teacher
 
-📁 academic-service (done)
+📁 academic-service
 ├── Course
 ├── Department
 ├── Major
@@ -20,13 +20,11 @@
 ├── CourseOffering
 ├── CourseRegistration
 ├── Semester
-└── Classroom (reference only)
 
 📁 assessment-service
 ├── Grade
 ├── Attendance
 └── Schedule
 
-📁 facility-service (done for now)
+📁 facility-service
 ├── Classroom
-└── Schedule (facility perspective)

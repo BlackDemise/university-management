@@ -9,10 +9,6 @@ public enum ErrorCode {
      * 400 Bad Request
      */
     INVALID_REQUEST(400, "Yêu cầu không hợp lệ!", HttpStatus.BAD_REQUEST),
-    INCORRECT_OLD_PASSWORD(400, "Mật khẩu cũ không chính xác!", HttpStatus.BAD_REQUEST),
-    UNMATCHED_PASSWORD(400, "Mật khẩu mới không khớp!", HttpStatus.BAD_REQUEST),
-    INVALID_LOGIN_REQUEST(400, "Không đủ thông tin đăng nhập!", HttpStatus.BAD_REQUEST),
-    SAME_PASSWORD(400, "Mật khẩu mới không được trùng với mật khẩu cũ!", HttpStatus.BAD_REQUEST),
     INVALID_SEMESTER_DATES(400, "Ngày bắt đầu phải trước ngày kết thúc!", HttpStatus.BAD_REQUEST),
     SEMESTER_HAS_COURSE_OFFERINGS(400, "Học kỳ này đang có lớp học! Không thể xóa!", HttpStatus.BAD_REQUEST),
     USER_NOT_A_TEACHER(400, "Người này không phải giảng viên!", HttpStatus.BAD_REQUEST),
@@ -33,8 +29,6 @@ public enum ErrorCode {
      * 404 Not Found
      */
     USER_NOT_FOUND(404, "Không tìm thấy người dùng!", HttpStatus.NOT_FOUND),
-    DEPARTMENT_NOT_FOUND(404, "Không tìm thấy khoa!", HttpStatus.NOT_FOUND),
-    MAJOR_NOT_FOUND(404, "Không tìm thấy chuyên ngành!", HttpStatus.NOT_FOUND),
     COURSE_NOT_FOUND(404, "Không tìm thấy môn học!", HttpStatus.NOT_FOUND),
     SEMESTER_NOT_FOUND(404, "Không tìm thấy học kỳ!", HttpStatus.NOT_FOUND),
     COURSE_OFFERING_NOT_FOUND(404, "Không tìm thấy lớp học!", HttpStatus.NOT_FOUND),
@@ -43,15 +37,9 @@ public enum ErrorCode {
     CLASSROOM_NOT_FOUND(404, "Không tìm thấy phòng học!", HttpStatus.NOT_FOUND),
 
     /**
-     * 409 Conflict
-     */
-    CONFLICT_OPERATION(409, "Đã xảy ra lỗi trong quá trình thực hiện yêu cầu! Vui lòng thử lại sau.", HttpStatus.CONFLICT),
-
-    /**
      * 500 Internal Server Error
      */
     GENERIC_ERROR(500, "Đã xảy ra lỗi trong quá trình xử lý yêu cầu! Hãy liên hệ với chúng tôi nếu điều này tiếp tục tái diễn.", HttpStatus.INTERNAL_SERVER_ERROR),
-    REGISTER_ERROR(500, "Đã xảy ra lỗi trong quá trình đăng ký!", HttpStatus.INTERNAL_SERVER_ERROR),
     TEACHER_VALIDATION_FAILED(500, "Đã xảy ra lỗi trong quá trình xác thực giảng viên!", HttpStatus.INTERNAL_SERVER_ERROR),
     CLASSROOM_VALIDATION_FAILED(500, "Đã xảy ra lỗi trong quá trình xác thực phòng học!", HttpStatus.INTERNAL_SERVER_ERROR),
     STUDENT_VALIDATION_FAILED(500, "Đã xảy ra lỗi trong quá trình xác thực sinh viên!", HttpStatus.INTERNAL_SERVER_ERROR),

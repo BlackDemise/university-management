@@ -6,24 +6,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
     /**
-     * 400 Bad Request
-     */
-    INVALID_LOGIN_REQUEST(400, "Không đủ thông tin đăng nhập!", HttpStatus.BAD_REQUEST),
-
-    /**
-     * 401 Unauthorized
-     */
-    USER_NOT_AUTHENTICATED(401, "Người dùng chưa đăng nhập! Hãy đăng nhập để tiếp tục!", HttpStatus.UNAUTHORIZED),
-
-    /**
-     * 403 Forbidden
-     */
-    USER_NOT_AUTHORIZED(403, "Người dùng không có quyền thực hiện hành động này!", HttpStatus.FORBIDDEN),
-
-    /**
      * 404 Not Found
      */
-    USER_NOT_FOUND(404, "Không tìm thấy người dùng!", HttpStatus.NOT_FOUND),
     CLASSROOM_NOT_FOUND(404, "Không tìm thấy phòng học!", HttpStatus.NOT_FOUND),
 
     /**
