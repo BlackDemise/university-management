@@ -1,0 +1,329 @@
+### Academic Service API Tests
+### Base URL: {{baseUrl}}/api/v1
+
+# ========================================
+# DEPARTMENT ENDPOINTS
+# ========================================
+
+###
+# Get All Departments
+GET {{baseUrl}}/api/v1/department/all
+Authorization: {{authHeader}}
+
+###
+# Get Department by ID
+GET {{baseUrl}}/api/v1/department/details/{{departmentId}}
+Authorization: {{authHeader}}
+
+###
+# Create Department
+POST {{baseUrl}}/api/v1/department/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "name": "Computer Science"
+}
+
+###
+# Create Another Department
+POST {{baseUrl}}/api/v1/department/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "name": "Mathematics"
+}
+
+###
+# Update Department
+POST {{baseUrl}}/api/v1/department/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "id": {{departmentId}},
+  "name": "Computer Science & Engineering"
+}
+
+###
+# Delete Department
+DELETE {{baseUrl}}/api/v1/department/delete/{{departmentId}}
+Authorization: {{authHeader}}
+
+# ========================================
+# MAJOR ENDPOINTS
+# ========================================
+
+###
+# Get All Majors
+GET {{baseUrl}}/api/v1/major/all
+Authorization: {{authHeader}}
+
+###
+# Get Major by ID
+GET {{baseUrl}}/api/v1/major/details/{{majorId}}
+Authorization: {{authHeader}}
+
+###
+# Create Major
+POST {{baseUrl}}/api/v1/major/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "name": "Software Engineering",
+  "totalCreditsRequired": 120,
+  "departmentId": {{departmentId}}
+}
+
+###
+# Create Another Major
+POST {{baseUrl}}/api/v1/major/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "name": "Data Science",
+  "totalCreditsRequired": 128,
+  "departmentId": {{departmentId}}
+}
+
+###
+# Update Major
+POST {{baseUrl}}/api/v1/major/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "id": {{majorId}},
+  "name": "Software Engineering & AI",
+  "totalCreditsRequired": 125,
+  "departmentId": {{departmentId}}
+}
+
+###
+# Delete Major
+DELETE {{baseUrl}}/api/v1/major/delete/{{majorId}}
+Authorization: {{authHeader}}
+
+###
+# Validate Major (Service-to-Service)
+GET {{baseUrl}}/api/v1/major/validate/{{majorId}}
+Authorization: {{authHeader}}
+
+# ========================================
+# COURSE ENDPOINTS
+# ========================================
+
+###
+# Get All Courses
+GET {{baseUrl}}/api/v1/course/all
+Authorization: {{authHeader}}
+
+###
+# Get Course by ID
+GET {{baseUrl}}/api/v1/course/details/{{courseId}}
+Authorization: {{authHeader}}
+
+###
+# Create Course
+POST {{baseUrl}}/api/v1/course/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "code": "CS101",
+  "name": "Introduction to Programming",
+  "creditsTheory": 3,
+  "creditsPractical": 1,
+  "courseType": "CORE"
+}
+
+###
+# Create Another Course
+POST {{baseUrl}}/api/v1/course/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "code": "CS201",
+  "name": "Data Structures and Algorithms",
+  "creditsTheory": 3,
+  "creditsPractical": 1,
+  "courseType": "CORE"
+}
+
+###
+# Create Elective Course
+POST {{baseUrl}}/api/v1/course/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "code": "CS301",
+  "name": "Machine Learning",
+  "creditsTheory": 2,
+  "creditsPractical": 2,
+  "courseType": "ELECTIVE"
+}
+
+###
+# Update Course
+POST {{baseUrl}}/api/v1/course/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "id": {{courseId}},
+  "code": "CS101",
+  "name": "Introduction to Programming & Logic",
+  "creditsTheory": 3,
+  "creditsPractical": 1,
+  "courseType": "CORE"
+}
+
+###
+# Delete Course
+DELETE {{baseUrl}}/api/v1/course/delete/{{courseId}}
+Authorization: {{authHeader}}
+
+###
+# Validate Course (Service-to-Service)
+GET {{baseUrl}}/api/v1/course/validate/{{courseId}}
+Authorization: {{authHeader}}
+
+# ========================================
+# PROGRAM CURRICULUM ENDPOINTS
+# ========================================
+
+###
+# Get All Program Curriculums
+GET {{baseUrl}}/api/v1/program-curriculum/all
+Authorization: {{authHeader}}
+
+###
+# Get Program Curriculum by ID
+GET {{baseUrl}}/api/v1/program-curriculum/details/1
+Authorization: {{authHeader}}
+
+###
+# Create Program Curriculum
+POST {{baseUrl}}/api/v1/program-curriculum/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "courseId": {{courseId}},
+  "majorId": {{majorId}},
+  "semesterRecommended": 1,
+  "isMandatory": true
+}
+
+###
+# Create Another Program Curriculum
+POST {{baseUrl}}/api/v1/program-curriculum/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "courseId": 2,
+  "majorId": {{majorId}},
+  "semesterRecommended": 2,
+  "isMandatory": true
+}
+
+###
+# Create Elective Program Curriculum
+POST {{baseUrl}}/api/v1/program-curriculum/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "courseId": 3,
+  "majorId": {{majorId}},
+  "semesterRecommended": 6,
+  "isMandatory": false
+}
+
+###
+# Delete Program Curriculum
+DELETE {{baseUrl}}/api/v1/program-curriculum/delete/1
+Authorization: {{authHeader}}
+
+# ========================================
+# PREREQUISITE COURSE ENDPOINTS
+# ========================================
+
+###
+# Get All Prerequisite Courses
+GET {{baseUrl}}/api/v1/prerequisite-course/all
+Authorization: {{authHeader}}
+
+###
+# Get Prerequisite Course by ID
+GET {{baseUrl}}/api/v1/prerequisite-course/details/1
+Authorization: {{authHeader}}
+
+###
+# Create Prerequisite Course
+POST {{baseUrl}}/api/v1/prerequisite-course/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "courseId": 2,
+  "prerequisiteCourseId": 1
+}
+
+###
+# Delete Prerequisite Course
+DELETE {{baseUrl}}/api/v1/prerequisite-course/delete/1
+Authorization: {{authHeader}}
+
+# ========================================
+# DEPARTMENT MEMBER ENDPOINTS
+# ========================================
+
+###
+# Get All Department Members
+GET {{baseUrl}}/api/v1/department-member/all
+Authorization: {{authHeader}}
+
+###
+# Get Department Member by ID
+GET {{baseUrl}}/api/v1/department-member/details/1
+Authorization: {{authHeader}}
+
+###
+# Create Department Member
+POST {{baseUrl}}/api/v1/department-member/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "departmentId": {{departmentId}},
+  "teacherId": {{teacherId}},
+  "departmentMemberType": "FACULTY",
+  "startDate": "2023-01-15T00:00:00",
+  "endDate": null
+}
+
+###
+# Create Department Head
+POST {{baseUrl}}/api/v1/department-member/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "departmentId": {{departmentId}},
+  "teacherId": {{teacherId}},
+  "departmentMemberType": "HEAD",
+  "startDate": "2023-01-15T00:00:00",
+  "endDate": null
+}
+
+###
+# Delete Department Member
+DELETE {{baseUrl}}/api/v1/department-member/delete/1
+Authorization: {{authHeader}} 

@@ -30,7 +30,8 @@ CREATE TABLE IF NOT EXISTS user
     id
     BIGINT
     NOT
-    NULL, -- Same ID as auth-service
+    NULL
+    AUTO_INCREMENT, -- Same ID as auth-service
     full_name
     VARCHAR
 (

@@ -1,0 +1,47 @@
+### Auth Service API Tests
+### Base URL: {{baseUrl}}/api/v1/auth
+
+###
+# Login
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+
+###
+# Login - Student Example
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "john.doe@university.edu",
+  "password": "student123"
+}
+
+###
+# Login - Teacher Example
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "jane.smith@university.edu",
+  "password": "teacher123"
+}
+
+###
+# Logout
+POST {{baseUrl}}/api/v1/auth/logout
+Authorization: {{authHeader}}
+
+###
+# Introspect Token
+POST {{baseUrl}}/api/v1/auth/introspect
+Authorization: {{authHeader}}
+
+###
+# Refresh Token
+POST {{baseUrl}}/api/v1/auth/refresh
+Cookie: refreshToken={{refreshToken}} 

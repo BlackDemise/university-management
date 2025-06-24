@@ -1,0 +1,110 @@
+### User Service API Tests
+### Base URL: {{baseUrl}}/api/v1/user
+
+###
+# Get All Users
+GET {{baseUrl}}/api/v1/user/all
+Authorization: {{authHeader}}
+
+###
+# Get User by ID
+GET {{baseUrl}}/api/v1/user/details/{{studentId}}
+Authorization: {{authHeader}}
+
+###
+# Create Student User
+POST {{baseUrl}}/api/v1/user/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "fullName": "John Doe",
+  "email": "john.doe61@university.edu",
+  "role": "STUDENT",
+  "phone": "+1234567890",
+  "identityNumber": "123456789",
+  "permanentAddress": "123 Main St, City, Country",
+  "currentAddress": "456 University Ave, Campus City",
+  "studentRequest": {
+    "majorId": {{majorId}},
+    "studentCode": "ST061",
+    "admissionYear": 2023,
+    "studentStatus": "ACTIVE"
+  }
+}
+
+###
+# Create Teacher User
+POST {{baseUrl}}/api/v1/user/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "fullName": "Dr. Jane Smith",
+  "email": "jane.smith21@university.edu",
+  "role": "TEACHER",
+  "phone": "+1234567891",
+  "identityNumber": "987654321",
+  "permanentAddress": "789 Faculty Lane, City, Country",
+  "currentAddress": "789 Faculty Lane, City, Country",
+  "teacherRequest": {
+    "title": "Professor",
+    "teacherCode": "TC011",
+    "officeLocation": "Building A, Room 301"
+  }
+}
+
+###
+# Create Admin User
+POST {{baseUrl}}/api/v1/user/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "fullName": "Admin User",
+  "email": "admin5@university.edu",
+  "role": "ADMIN",
+  "phone": "+1234567892",
+  "identityNumber": "555666777",
+  "permanentAddress": "100 Admin Building, City, Country",
+  "currentAddress": "100 Admin Building, City, Country"
+}
+
+###
+# Update User (use existing ID)
+POST {{baseUrl}}/api/v1/user/save
+Content-Type: {{contentType}}
+Authorization: {{authHeader}}
+
+{
+  "id": {{studentId}},
+  "fullName": "John Doe Updated",
+  "email": "john.doe.updated@university.edu",
+  "role": "STUDENT",
+  "phone": "+1234567890",
+  "identityNumber": "123456789",
+  "permanentAddress": "123 Main St, City, Country",
+  "currentAddress": "456 University Ave, Campus City",
+  "studentRequest": {
+    "id": "62",
+    "majorId": {{majorId}},
+    "studentStatus": "ACTIVE",
+    "studentCode": "ST061-UPDATED-2",
+    "admissionYear": 2023
+  }
+}
+
+###
+# Delete User by ID
+DELETE {{baseUrl}}/api/v1/user/delete/{{studentId}}
+Authorization: {{authHeader}}
+
+###
+# Validate Teacher (Service-to-Service)
+GET {{baseUrl}}/api/v1/user/teachers/{{teacherId}}/validate
+Authorization: {{authHeader}}
+
+###
+# Validate Student (Service-to-Service)
+GET {{baseUrl}}/api/v1/user/students/{{studentId}}/validate
+Authorization: {{authHeader}} 
