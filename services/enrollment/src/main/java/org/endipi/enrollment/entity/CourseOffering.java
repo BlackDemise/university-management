@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"course_id", "semester_id", "teacher_id", "classroom_id"}))
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"course_id", "semester_id", "teacher_id"}))
 public class CourseOffering {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,10 +38,6 @@ public class CourseOffering {
     // This field depends on user-service
     // Logic guard properly on this field
     private Long teacherId;
-
-    // This field depends on facility-service
-    // Logic guard properly on this field
-    private Long classroomId;
 
     @OneToMany(mappedBy = "courseOffering")
     private List<CourseRegistration> courseRegistrations;

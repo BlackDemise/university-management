@@ -10,7 +10,7 @@ import org.endipi.assessment.enums.attendance.AttendanceStatus;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "schedule_id"}))
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "session_id"}))
 public class Attendance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +24,6 @@ public class Attendance {
     private Long studentId;
 
     @ManyToOne
-    @JoinColumn(name = "schedule_id")
-    private Schedule schedule;
+    @JoinColumn(name = "session_id")
+    private Session session;
 }

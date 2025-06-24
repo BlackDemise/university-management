@@ -28,5 +28,5 @@ retry:
     attempts: 3
   attendance:
     attempts: 3
-  schedule:
+  session:
     attempts: 3

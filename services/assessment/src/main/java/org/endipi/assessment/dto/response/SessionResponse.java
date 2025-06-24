@@ -1,4 +1,4 @@
-package org.endipi.assessment.dto.request;
+package org.endipi.assessment.dto.response;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScheduleRequest {
+public class SessionResponse {
     private Long id;
     private String sessionType;
     private Integer sessionNumber;
@@ -15,5 +15,4 @@ public class ScheduleRequest {
     private String endTime;
     private Long courseOfferingId;
     private Long classroomId;
-    private Long classDurationId;
 }

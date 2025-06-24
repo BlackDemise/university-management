@@ -5,61 +5,58 @@ import lombok.extern.slf4j.Slf4j;
 import org.endipi.assessment.client.enrollmentservice.EnrollmentServiceClient;
 import org.endipi.assessment.client.facilityservice.FacilityServiceClient;
 import org.endipi.assessment.dto.external.ClassroomValidationResponse;
-import org.endipi.assessment.dto.request.ScheduleRequest;
-import org.endipi.assessment.dto.response.ScheduleResponse;
-import org.endipi.assessment.entity.Schedule;
+import org.endipi.assessment.dto.request.SessionRequest;
+import org.endipi.assessment.dto.response.SessionResponse;
+import org.endipi.assessment.entity.Session;
 import org.endipi.assessment.enums.error.ErrorCode;
 import org.endipi.assessment.exception.ApplicationException;
-import org.endipi.assessment.mapper.ScheduleMapper;
-import org.endipi.assessment.repository.ClassDurationRepository;
-import org.endipi.assessment.repository.ScheduleRepository;
-import org.endipi.assessment.service.ScheduleService;
+import org.endipi.assessment.mapper.SessionMapper;
+import org.endipi.assessment.repository.SessionRepository;
+import org.endipi.assessment.service.SessionService;
 import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ScheduleServiceImpl implements ScheduleService {
-    private final ScheduleRepository scheduleRepository;
-    private final ScheduleMapper scheduleMapper;
-    private final ClassDurationRepository classDurationRepository;
+public class SessionServiceImpl implements SessionService {
+    private final SessionRepository sessionRepository;
+    private final SessionMapper sessionMapper;
     private final EnrollmentServiceClient enrollmentServiceClient;
     private final FacilityServiceClient facilityServiceClient;
 
-    @Value("${retry.schedule.attempts}")
+    @Value("${retry.session.attempts}")
     private long retryAttempts;
 
     @Override
-    public List<ScheduleResponse> findAll() {
-        return scheduleRepository.findAll()
+    public List<SessionResponse> findAll() {
+        return sessionRepository.findAll()
                 .stream()
-                .map(scheduleMapper::toResponse)
+                .map(sessionMapper::toResponse)
                 .toList();
     }
 
     @Override
-    public ScheduleResponse findById(Long id) {
-        return scheduleRepository.findById(id)
-                .map(scheduleMapper::toResponse)
+    public SessionResponse findById(Long id) {
+        return sessionRepository.findById(id)
+                .map(sessionMapper::toResponse)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.SCHEDULE_NOT_FOUND));
     }
 
     @Override
-    public ScheduleResponse saveWithRetry(ScheduleRequest scheduleRequest) {
+    public SessionResponse saveWithRetry(SessionRequest sessionRequest) {
         for (long attempt = 1; attempt <= retryAttempts; attempt++) {
             try {
-                log.info("Attempt {} to save schedule with ID: {}", attempt, scheduleRequest.getId());
-                return save(scheduleRequest);
+                log.info("Attempt {} to save schedule with ID: {}", attempt, sessionRequest.getId());
+                return save(sessionRequest);
             } catch (ObjectOptimisticLockingFailureException | StaleObjectStateException e) {
                 log.warn("Optimistic lock failure on attempt {} for scheduleId {}: {}",
-                        attempt, scheduleRequest.getId(), e.getMessage());
+                        attempt, sessionRequest.getId(), e.getMessage());
                 if (attempt == retryAttempts) throw e;
             }
         }
@@ -68,46 +65,46 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     public void deleteById(Long id) {
-        Schedule schedule = scheduleRepository.findById(id)
+        Session session = sessionRepository.findById(id)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.SCHEDULE_NOT_FOUND));
 
-        // Check if schedule has associated attendance records
-        if (schedule.getAttendances() != null && !schedule.getAttendances().isEmpty()) {
+        // Check if session has associated attendance records
+        if (session.getAttendances() != null && !session.getAttendances().isEmpty()) {
             throw new ApplicationException(ErrorCode.SCHEDULE_HAS_ATTENDANCE_RECORDS);
         }
 
-        scheduleRepository.deleteById(id);
-        log.info("Successfully deleted schedule with ID: {}", id);
+        sessionRepository.deleteById(id);
+        log.info("Successfully deleted session with ID: {}", id);
     }
 
-    private ScheduleResponse save(ScheduleRequest scheduleRequest) {
-        Schedule schedule;
-        boolean isUpdate = scheduleRequest.getId() != null;
+    private SessionResponse save(SessionRequest sessionRequest) {
+        Session session;
+        boolean isUpdate = sessionRequest.getId() != null;
 
         if (isUpdate) {
-            schedule = scheduleRepository.findById(scheduleRequest.getId())
+            session = sessionRepository.findById(sessionRequest.getId())
                     .orElseThrow(() -> new ApplicationException(ErrorCode.SCHEDULE_NOT_FOUND));
-            scheduleMapper.updateFromRequest(scheduleRequest, schedule, classDurationRepository);
+            sessionMapper.updateFromRequest(sessionRequest, session);
         } else {
-            schedule = scheduleMapper.toEntity(scheduleRequest, classDurationRepository);
+            session = sessionMapper.toEntity(sessionRequest);
         }
 
         // Business rule validations
-        validateBusinessRules(schedule, isUpdate);
+        validateBusinessRules(session, isUpdate);
 
-        schedule = scheduleRepository.save(schedule);
+        session = sessionRepository.save(session);
 
         log.info("Successfully {} schedule with ID: {} for session {} of course offering {}",
-                isUpdate ? "updated" : "created", schedule.getId(),
-                schedule.getSessionNumber(), schedule.getCourseOfferingId());
+                isUpdate ? "updated" : "created", session.getId(),
+                session.getSessionNumber(), session.getCourseOfferingId());
 
-        return scheduleMapper.toResponse(schedule);
+        return sessionMapper.toResponse(session);
     }
 
-    private void validateBusinessRules(Schedule schedule, boolean isUpdate) {
+    private void validateBusinessRules(Session session, boolean isUpdate) {
         // 1. Validate time logic: startTime should be before endTime
-        LocalDate startTime = schedule.getClassDuration().getStartTime();
-        LocalDate endTime = schedule.getClassDuration().getEndTime();
+        LocalDateTime startTime = session.getStartTime();
+        LocalDateTime endTime = session.getEndTime();
 
         if (startTime != null && endTime != null) {
             if (startTime.isAfter(endTime)) {
@@ -116,14 +113,14 @@ public class ScheduleServiceImpl implements ScheduleService {
         }
 
         // 2. Validate course offering exists
-        boolean courseOfferingValidation = enrollmentServiceClient.validateCourseOffering(schedule.getCourseOfferingId());
+        boolean courseOfferingValidation = enrollmentServiceClient.validateCourseOffering(session.getCourseOfferingId());
 
         if (!courseOfferingValidation) {
             throw new ApplicationException(ErrorCode.COURSE_OFFERING_NOT_FOUND);
         }
 
         // 3. Validate classroom exists and is available
-        ClassroomValidationResponse classroomValidation = facilityServiceClient.validateClassroom(schedule.getClassroomId());
+        ClassroomValidationResponse classroomValidation = facilityServiceClient.validateClassroom(session.getClassroomId());
 
         if (!classroomValidation.isExists()) {
             throw new ApplicationException(ErrorCode.CLASSROOM_NOT_FOUND);
@@ -133,6 +130,6 @@ public class ScheduleServiceImpl implements ScheduleService {
         // TODO: Add custom repository method for conflict detection
 
         log.info("Validating business rules for schedule - Session: {}, CourseOffering: {}, Classroom: {}",
-                schedule.getSessionNumber(), schedule.getCourseOfferingId(), schedule.getClassroomId());
+                session.getSessionNumber(), session.getCourseOfferingId(), session.getClassroomId());
     }
 }

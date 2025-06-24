@@ -11,5 +11,5 @@ public class AttendanceRequest {
     private Long id;
     private String attendanceStatus;
     private Long studentId;
-    private Long scheduleId;
+    private Long sessionId;
 }

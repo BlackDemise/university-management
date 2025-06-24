@@ -11,7 +11,7 @@ import org.endipi.assessment.enums.error.ErrorCode;
 import org.endipi.assessment.exception.ApplicationException;
 import org.endipi.assessment.mapper.AttendanceMapper;
 import org.endipi.assessment.repository.AttendanceRepository;
-import org.endipi.assessment.repository.ScheduleRepository;
+import org.endipi.assessment.repository.SessionRepository;
 import org.endipi.assessment.service.AttendanceService;
 import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +28,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final UserServiceClient userServiceClient;
     private final AttendanceRepository attendanceRepository;
     private final AttendanceMapper attendanceMapper;
-    private final ScheduleRepository scheduleRepository;
+    private final SessionRepository sessionRepository;
 
     @Value("${retry.attendance.attempts}")
     private long retryAttempts;
@@ -81,9 +81,9 @@ public class AttendanceServiceImpl implements AttendanceService {
         if (isUpdate) {
             attendance = attendanceRepository.findById(attendanceRequest.getId())
                     .orElseThrow(() -> new ApplicationException(ErrorCode.ATTENDANCE_NOT_FOUND));
-            attendanceMapper.updateFromRequest(attendanceRequest, attendance, scheduleRepository);
+            attendanceMapper.updateFromRequest(attendanceRequest, attendance, sessionRepository);
         } else {
-            attendance = attendanceMapper.toEntity(attendanceRequest, scheduleRepository);
+            attendance = attendanceMapper.toEntity(attendanceRequest, sessionRepository);
         }
 
         // ==== Business rule validations ==== //
@@ -96,9 +96,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         attendance = attendanceRepository.save(attendance);
 
-        log.info("Successfully {} attendance with ID: {} for student: {} in schedule: {}",
+        log.info("Successfully {} attendance with ID: {} for student: {} in session: {}",
                 isUpdate ? "updated" : "created", attendance.getId(),
-                attendance.getStudentId(), attendance.getSchedule().getId());
+                attendance.getStudentId(), attendance.getSession().getId());
 
         return attendanceMapper.toResponse(attendance);
     }
@@ -107,7 +107,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     private boolean validateAttendanceTimeWindow(Attendance attendance) {
         LocalDateTime now = LocalDateTime.now();
 
-        LocalDateTime endTime = attendance.getSchedule().getClassDuration().getEndTime().atStartOfDay();
+        LocalDateTime endTime = attendance.getSession().getEndTime();
 
         if (now.isAfter(endTime)) {
             log.warn("Attendance time window has expired for attendance ID: {}", attendance.getId());
@@ -131,16 +131,16 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         // 2: Validate schedule exists
-        if (!scheduleRepository.existsById(attendanceRequest.getScheduleId())) {
-            log.warn("Invalid schedule ID: {} for attendance request", attendanceRequest.getScheduleId());
+        if (!sessionRepository.existsById(attendanceRequest.getSessionId())) {
+            log.warn("Invalid schedule ID: {} for attendance request", attendanceRequest.getSessionId());
             throw new ApplicationException(ErrorCode.SCHEDULE_NOT_FOUND);
         }
 
         // 3. Check for duplicate attendance (same student, same schedule)
          if (!isUpdate) {
-             boolean exists = attendanceRepository.existsByStudentIdAndScheduleId(
+             boolean exists = attendanceRepository.existsByStudentIdAndSessionId(
                  attendanceRequest.getStudentId(),
-                 attendanceRequest.getScheduleId()
+                 attendanceRequest.getSessionId()
              );
              if (exists) {
                  throw new ApplicationException(ErrorCode.DUPLICATE_ATTENDANCE_RECORD);
@@ -149,7 +149,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
          // 4.
 
-        log.info("Validating business rules for attendance - Student: {}, Schedule: {}, Status: {}",
-                attendanceRequest.getStudentId(), attendanceRequest.getScheduleId(), attendanceRequest.getAttendanceStatus());
+        log.info("Validating business rules for attendance - Student: {}, Session: {}, Status: {}",
+                attendanceRequest.getStudentId(), attendanceRequest.getSessionId(), attendanceRequest.getAttendanceStatus());
     }
 }

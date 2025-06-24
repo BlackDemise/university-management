@@ -2,8 +2,9 @@ package org.endipi.assessment.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.endipi.assessment.enums.schedule.SessionType;
+import org.endipi.assessment.enums.session.SessionType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -12,8 +13,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"course_offering_id", "classroom_id"}))
-public class Schedule {
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"classroom_id", "start_time", "end_time"}))
+public class Session {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,9 +24,11 @@ public class Schedule {
 
     private Integer sessionNumber;
 
-    @ManyToOne
-    @JoinColumn(name = "class_duration_id")
-    private ClassDuration classDuration;
+    // Start time of a session
+    private LocalDateTime startTime;
+
+    // End time of a session
+    private LocalDateTime endTime;
 
     // This field depends on enrollment-service
     // Logic guard properly on this field
@@ -35,6 +38,6 @@ public class Schedule {
     // Logic guard properly on this field
     private Long classroomId;
 
-    @OneToMany(mappedBy = "schedule")
+    @OneToMany(mappedBy = "session")
     private List<Attendance> attendances;
 }

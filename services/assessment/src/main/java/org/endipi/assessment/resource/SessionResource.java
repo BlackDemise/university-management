@@ -1,10 +1,10 @@
 package org.endipi.assessment.resource;
 
 import lombok.RequiredArgsConstructor;
-import org.endipi.assessment.dto.request.ScheduleRequest;
+import org.endipi.assessment.dto.request.SessionRequest;
 import org.endipi.assessment.dto.response.ApiResponse;
-import org.endipi.assessment.dto.response.ScheduleResponse;
-import org.endipi.assessment.service.ScheduleService;
+import org.endipi.assessment.dto.response.SessionResponse;
+import org.endipi.assessment.service.SessionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,16 +13,16 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/schedule")
-public class ScheduleResource {
-    private final ScheduleService scheduleService;
+@RequestMapping("/api/v1/session")
+public class SessionResource {
+    private final SessionService sessionService;
 
     @GetMapping("/all")
     public ResponseEntity<?> findAll() {
-        List<ScheduleResponse> responses = scheduleService.findAll();
+        List<SessionResponse> responses = sessionService.findAll();
 
-        ApiResponse<String, List<ScheduleResponse>> apiResponse =
-                ApiResponse.<String, List<ScheduleResponse>>builder()
+        ApiResponse<String, List<SessionResponse>> apiResponse =
+                ApiResponse.<String, List<SessionResponse>>builder()
                         .timestamp(System.currentTimeMillis())
                         .statusCode(HttpStatus.OK.value())
                         .message("OK")
@@ -34,10 +34,10 @@ public class ScheduleResource {
 
     @GetMapping("/details/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
-        ScheduleResponse response = scheduleService.findById(id);
+        SessionResponse response = sessionService.findById(id);
 
-        ApiResponse<String, ScheduleResponse> apiResponse =
-                ApiResponse.<String, ScheduleResponse>builder()
+        ApiResponse<String, SessionResponse> apiResponse =
+                ApiResponse.<String, SessionResponse>builder()
                         .timestamp(System.currentTimeMillis())
                         .statusCode(HttpStatus.OK.value())
                         .message("OK")
@@ -48,11 +48,11 @@ public class ScheduleResource {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody ScheduleRequest request) {
-        ScheduleResponse response = scheduleService.saveWithRetry(request);
+    public ResponseEntity<?> save(@RequestBody SessionRequest request) {
+        SessionResponse response = sessionService.saveWithRetry(request);
 
-        ApiResponse<String, ScheduleResponse> apiResponse =
-                ApiResponse.<String, ScheduleResponse>builder()
+        ApiResponse<String, SessionResponse> apiResponse =
+                ApiResponse.<String, SessionResponse>builder()
                         .timestamp(System.currentTimeMillis())
                         .statusCode(HttpStatus.OK.value())
                         .message("OK")
@@ -64,7 +64,7 @@ public class ScheduleResource {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteById(@PathVariable Long id) {
-        scheduleService.deleteById(id);
+        sessionService.deleteById(id);
 
         ApiResponse<String, Void> apiResponse = ApiResponse.<String, Void>builder()
                 .timestamp(System.currentTimeMillis())

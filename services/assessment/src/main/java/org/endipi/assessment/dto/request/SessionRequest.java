@@ -1,4 +1,4 @@
-package org.endipi.assessment.dto.response;
+package org.endipi.assessment.dto.request;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScheduleResponse {
+public class SessionRequest {
     private Long id;
     private String sessionType;
     private Integer sessionNumber;
