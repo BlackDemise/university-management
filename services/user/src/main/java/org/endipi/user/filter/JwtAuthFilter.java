@@ -27,36 +27,56 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-
+        // Extract the Authorization header
         final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String userEmail;
-        final String role;
 
+        // No token provided
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"No token provided\"}");
             return;
         }
 
-        jwt = authHeader.substring(7);
+        // Extract JWT from the header
+        final String jwt = authHeader.substring(7);
 
-        if (!jwtUtil.isTokenValid(jwt)) {
-            filterChain.doFilter(request, response);
+        // Validate the JWT
+        try {
+            // Try to validate token
+            if (jwtUtil.isTokenValid(jwt)) {
+                // Valid token - set authentication
+                String userEmail = jwtUtil.extractUsername(jwt);
+                String role = jwtUtil.extractRole(jwt);
+
+                if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userEmail, jwt, List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } else {
+                // Token is invalid/expired - check why
+                if (jwtUtil.isTokenExpired(jwt)) {
+                    // Token expired - return 401 for refresh
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"Token expired\"}");
+                    return;
+                } else {
+                    // Token malformed - return 403
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"Malformed token\"}");
+                    return;
+                }
+            }
+        } catch (RuntimeException e) {
+            // Any JWT parsing error - return 403
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"error\":\"Malformed token\"}");
             return;
-        }
-
-        userEmail = jwtUtil.extractUsername(jwt);
-        role = jwtUtil.extractRole(jwt);
-
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            // Create authentication token with role
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userEmail,
-                    jwt,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + role))
-            );
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authToken);
         }
 
         filterChain.doFilter(request, response);

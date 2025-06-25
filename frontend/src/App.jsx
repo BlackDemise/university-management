@@ -1,6 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext.jsx';
+import NavigationInitializer from './components/NavigationInitializer.jsx';
 import Unauthorized from "./components/error/Unauthorized.jsx";
+import Unauthenticated from "./components/error/Unauthenticated.jsx";
 import Login from "./components/auth/Login.jsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import AdminDashboard from "./components/dashboard/AdminDashboard.jsx";
@@ -12,9 +15,11 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Routes>
+        <NavigationInitializer>
+          <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/unauthenticated" element={<Unauthenticated />} />
 
           {/* Admin Routes */}
           <Route path="/admin-dashboard" element={
@@ -46,8 +51,10 @@ function App() {
 
           {/* Default redirect to login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
-        </Routes>
+          </Routes>
+        </NavigationInitializer>
       </Router>
+      <Toaster position="top-right" />
     </AuthProvider>
   );
 }

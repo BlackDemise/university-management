@@ -12,10 +12,19 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const token = getToken();
-        if (token && isTokenValid()) {
-            setIsAuthenticated(true);
-            setUserRole(getUserRole());
-            setUser(getUserInfo());
+        if (token) {
+            if (isTokenValid()) {
+                setIsAuthenticated(true);
+                setUserRole(getUserRole());
+                setUser(getUserInfo());
+            } else {
+                // Token exists but is invalid - clear it
+                console.log('🧹 AUTH CONTEXT: Clearing invalid token');
+                localStorage.removeItem('accessToken');
+                setIsAuthenticated(false);
+                setUserRole(null);
+                setUser(null);
+            }
         }
         setLoading(false);
     }, []);

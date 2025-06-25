@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", user.getRole());
 
-        String accessToken = jwtUtil.generateToken(extraClaims, user, 900000L);
+        String accessToken = jwtUtil.generateToken(extraClaims, user, 30000L);
         String refreshToken = jwtUtil.generateToken(user, 604800000L);
 
         setRefreshTokenCookie(response, refreshToken);
@@ -108,7 +108,7 @@ public class AuthServiceImpl implements AuthService {
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", user.getRole());
 
-        String newAccessToken = jwtUtil.generateToken(extraClaims, user, 900000L);
+        String newAccessToken = jwtUtil.generateToken(extraClaims, user, 30000L);
         String newRefreshToken = jwtUtil.generateToken(user, 604800000L);
 
         // Blacklist old refresh token

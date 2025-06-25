@@ -37,7 +37,7 @@ const authService = {
      * Refresh the access token using refresh token
      * @returns {Promise} - Promise with new access token
      */
-    refreshToken: async () => {
+    refresh: async () => {
         try {
             const response = await API.post('/v1/auth/refresh');
             return response.data;

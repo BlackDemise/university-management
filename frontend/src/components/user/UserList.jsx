@@ -119,13 +119,13 @@ const UsersList = () => {
     // Smart pagination helper
     const getVisiblePageNumbers = () => {
         const maxPages = Math.max(1, totalPages || 1); // 🔧 Use different variable name
-        const current = currentPage;
 
         // If total pages <= 7, show all pages
         if (maxPages <= 7) {
             return Array.from({ length: maxPages }, (_, i) => i);
         }
 
+        const current = currentPage;
         // Always show first 2, last 2, and current with neighbors
         const pages = new Set();
 

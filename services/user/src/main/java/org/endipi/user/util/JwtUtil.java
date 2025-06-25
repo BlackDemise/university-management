@@ -45,6 +45,10 @@ public class JwtUtil {
                     .build()
                     .parseClaimsJws(jwt)
                     .getBody();
+        } catch (ExpiredJwtException e) {
+            // Re-throw ExpiredJwtException so isTokenExpired can catch it
+            // If not, isTokenExpired will always throw RuntimeException -> causes issues in the filter
+            throw e;
         } catch (Exception e) {
             return null;
         }
@@ -53,5 +57,16 @@ public class JwtUtil {
     private Key getSigninKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public boolean isTokenExpired(String jwt) {
+        try {
+            Claims claims = extractAllClaims(jwt);
+            return claims != null && claims.getExpiration().before(new Date());
+        } catch (ExpiredJwtException e) {
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException("Token is malformed", e); // Let caller handle malformed tokens
+        }
     }
 }
