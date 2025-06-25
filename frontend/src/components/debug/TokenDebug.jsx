@@ -1,13 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Card, Alert } from 'react-bootstrap';
 import { userService } from '../../services/apiService';
+import { authManager } from '../../services/AuthManager.js';
 
 const TokenDebug = () => {
     const [testResult, setTestResult] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [authState, setAuthState] = useState(authManager.getAuthState());
+
+    useEffect(() => {
+        // Subscribe to AuthManager events for real-time updates
+        const unsubscribe = authManager.subscribe((event, data) => {
+            console.log(`🧪 TOKEN DEBUG: AuthManager event: ${event}`);
+            setAuthState(authManager.getAuthState());
+        });
+
+        return unsubscribe;
+    }, []);
 
     const getCurrentToken = () => {
-        const token = localStorage.getItem('accessToken');
+        const token = authManager.getToken();
         return token ? `${token.substring(0, 30)}...` : 'No token found';
     };
 
@@ -40,15 +52,15 @@ const TokenDebug = () => {
     const expireToken = () => {
         // Set an obviously expired token for testing
         const expiredToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.expired';
-        localStorage.setItem('accessToken', expiredToken);
+        authManager.setToken(expiredToken);
         setTestResult({ success: true, message: 'Token set to expired for testing' });
-        console.log('🧪 TOKEN SET TO EXPIRED FOR TESTING');
+        console.log('🧪 TOKEN DEBUG: Token set to expired for testing');
     };
 
     const clearToken = () => {
-        localStorage.removeItem('accessToken');
+        authManager.removeToken();
         setTestResult({ success: true, message: 'Token cleared' });
-        console.log('🧪 TOKEN CLEARED');
+        console.log('🧪 TOKEN DEBUG: Token cleared');
     };
 
     return (
@@ -60,6 +72,19 @@ const TokenDebug = () => {
                 <div className="mb-3">
                     <strong>Current Token:</strong><br />
                     <code>{getCurrentToken()}</code>
+                </div>
+
+                <div className="mb-3">
+                    <strong>AuthManager State:</strong>
+                    <div className="bg-light p-2 rounded mt-1">
+                        <small>
+                            <div>Authenticated: <span className={authState.isAuthenticated ? 'text-success' : 'text-danger'}>{authState.isAuthenticated ? 'Yes' : 'No'}</span></div>
+                            <div>Role: <span className="text-primary">{authState.userRole || 'None'}</span></div>
+                            <div>User: <span className="text-info">{authState.user?.username || 'None'}</span></div>
+                            <div>Refreshing: <span className={authState.isRefreshing ? 'text-warning' : 'text-muted'}>{authState.isRefreshing ? 'Yes' : 'No'}</span></div>
+                            <div>Initialized: <span className={authState.isInitialized ? 'text-success' : 'text-warning'}>{authState.isInitialized ? 'Yes' : 'No'}</span></div>
+                        </small>
+                    </div>
                 </div>
 
                 <div className="d-flex gap-2 mb-3 flex-wrap">

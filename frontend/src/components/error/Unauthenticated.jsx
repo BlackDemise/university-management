@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Card, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignInAlt, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import { authManager } from '../../services/AuthManager.js';
 
 const Unauthenticated = () => {
     const navigate = useNavigate();
 
     const handleLogin = () => {
         // Clear any remaining token data to ensure clean state
-        localStorage.removeItem('accessToken');
+        console.log('🚪 UNAUTHENTICATED: Clearing token and navigating to login');
+        authManager.removeToken();
         navigate('/login', { replace: true });
     };
 

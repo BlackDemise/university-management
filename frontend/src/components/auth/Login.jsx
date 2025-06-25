@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
-import { getUserRole } from "../../utils/jwtUtil.js";
 import { authService } from '../../services/apiService';
 
 const Login = () => {
@@ -30,18 +29,24 @@ const Login = () => {
         setLoading(true);
 
         try {
+            console.log('🔐 LOGIN: Attempting login for email:', email);
+            
+            // Call backend login API
             const data = await authService.login({ email, password });
-            login(data.accessToken);
-
-            const role = getUserRole();
-            if (role === 'ADMIN') {
-                navigate('/admin-dashboard');
-            } else if (role === 'TEACHER') {
-                navigate('/teacher-dashboard');
-            } else if (role === 'STUDENT') {
-                navigate('/student-dashboard');
+            console.log('✅ LOGIN: Backend login successful');
+            
+            // Use new async login function from AuthContext
+            const loginSuccess = await login(data.accessToken);
+            
+            if (loginSuccess) {
+                console.log('✅ LOGIN: AuthManager login successful');
+                // Navigation will be handled by the useEffect hook when userRole updates
+            } else {
+                console.log('❌ LOGIN: AuthManager login failed');
+                setError('Đăng nhập thất bại. Token không hợp lệ.');
             }
         } catch (err) {
+            console.error('❌ LOGIN: Login error:', err);
             setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
         } finally {
             setLoading(false);

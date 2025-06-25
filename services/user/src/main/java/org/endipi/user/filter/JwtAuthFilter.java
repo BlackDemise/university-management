@@ -65,7 +65,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     response.getWriter().write("{\"error\":\"Token expired\"}");
                     return;
                 } else {
-                    // Token malformed - return 403
+                    // Token malformed - return 401 (serve as a "punishment" for malformed tokens)
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
                     response.getWriter().write("{\"error\":\"Malformed token\"}");
@@ -73,7 +73,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
             }
         } catch (RuntimeException e) {
-            // Any JWT parsing error - return 403
+            // Any JWT parsing error - return 401 (malformed token) -> "punishment" for malformed tokens
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.getWriter().write("{\"error\":\"Malformed token\"}");
             return;

@@ -3,6 +3,11 @@ import { Toaster } from 'react-hot-toast'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import App from './App.jsx'
 
+// Import auth manager test utilities in development
+if (import.meta.env.DEV) {
+    import('./utils/authManagerTestUtil.js');
+}
+
 createRoot(document.getElementById('root')).render(
     <>
         <App />

@@ -1,54 +1,47 @@
 import {useNavigate} from 'react-router-dom';
 import {useAuth} from '../../contexts/AuthContext.jsx';
-import {isTokenValid} from "../../utils/jwtUtil.js";
 
 const Unauthorized = () => {
     const navigate = useNavigate();
     const {userRole, isAuthenticated, logout} = useAuth();
+    
     const handleLogout = async () => {
+        console.log('🚪 UNAUTHORIZED: Logout requested');
         await logout();
         navigate('/login');
     };
 
     const handleReturnToDashboard = () => {
-        console.log('🔍 Return to dashboard clicked');
-
-        const token = localStorage.getItem('accessToken');
-        const tokenValid = token ? isTokenValid() : false;
-
-        console.log('🔍 Auth state:', {
+        console.log('🏠 UNAUTHORIZED: Return to dashboard clicked');
+        console.log('🔍 UNAUTHORIZED: Current auth state:', {
             isAuthenticated,
-            userRole,
-            tokenExists: !!token,
-            tokenValid
+            userRole
         });
 
-        // If token is missing or invalid, but AuthContext thinks we're authenticated
-        if ((!token || !tokenValid) && isAuthenticated) {
-            console.log('🔄 STATE MISMATCH: Clearing AuthContext state');
-            logout();
-            navigate('/login', { replace: true });
-            return;
-        }
-
+        // AuthManager is now the single source of truth, no need to check tokens manually
         if (!isAuthenticated) {
-            console.log('❌ Not authenticated - going to login');
+            console.log('❌ UNAUTHORIZED: Not authenticated - redirecting to login');
             navigate('/login', { replace: true });
             return;
         }
 
-        // Navigate to appropriate dashboard based on user's ACTUAL role
-        console.log(`✅ Authenticated as ${userRole} - navigating to appropriate dashboard`);
+        // Navigate to appropriate dashboard based on user's role
+        console.log(`✅ UNAUTHORIZED: Authenticated as ${userRole} - navigating to dashboard`);
 
-        if (userRole === 'ADMIN') {
-            navigate('/admin-dashboard');
-        } else if (userRole === 'TEACHER') {
-            navigate('/teacher-dashboard');
-        } else if (userRole === 'STUDENT') {
-            navigate('/student-dashboard');
-        } else {
-            console.log('❌ Unknown role - redirecting to login');
-            navigate('/login', { replace: true });
+        switch (userRole) {
+            case 'ADMIN':
+                navigate('/admin-dashboard');
+                break;
+            case 'TEACHER':
+                navigate('/teacher-dashboard');
+                break;
+            case 'STUDENT':
+                navigate('/student-dashboard');
+                break;
+            default:
+                console.log('❌ UNAUTHORIZED: Unknown role - redirecting to login');
+                navigate('/login', { replace: true });
+                break;
         }
     };
 
