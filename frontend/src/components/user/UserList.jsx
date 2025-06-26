@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Badge, Dropdown, Alert, Spinner, Pagination } from 'react-bootstrap';
+import { Table, Button, Badge, Dropdown, Alert, Spinner, Pagination, Form } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faPlus, faEye, faEdit, faUserSlash,
-    faEllipsisVertical, faRefresh
+    faEllipsisVertical, faRefresh, faSearch, faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -21,40 +21,52 @@ const UsersList = () => {
     const [pageSize, setPageSize] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
+    
+    // Search state
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchType, setSearchType] = useState('fullName');
+    const [isSearching, setIsSearching] = useState(false);
 
     // Load users data
-    const loadUsers = async (page = 0, size = pageSize) => {
+    const loadUsers = async (page = 0, size = pageSize, search = '', searchBy = 'fullName') => {
         try {
             setLoading(true);
             setError(null);
 
-            const response = await userService.getAllUsers({
+            const params = {
                 page,
                 size,
-                sort: 'id,desc' // Most recent first
-            });
+                sort: 'id,desc'
+            };
 
-            // Handle response structure based on your backend
+            // Add search parameters if search term exists
+            if (search.trim()) {
+                params.search = search.trim();
+                params.searchBy = searchBy;
+            }
+
+            const response = await userService.getAllUsers(params);
+
+            // Handle response structure
             if (response.result) {
-                // If wrapped in ApiResponse
-                setUsers(response.result.content || []); // Page.content
+                setUsers(response.result.content || []);
                 setTotalPages(response.result.totalPages || 1);
                 setTotalElements(response.result.totalElements || 0);
-                setCurrentPage(response.result.number || page); // Page.number (0-based)
+                setCurrentPage(response.result.number || page);
             } else {
-                // Direct array response
+                // Direct array response (fallback)
                 setUsers(response);
                 setTotalPages(1);
                 setTotalElements(response.length);
+                setCurrentPage(page);
             }
-
-            setCurrentPage(page);
         } catch (err) {
             setError('Không thể tải danh sách người dùng. Vui lòng thử lại.');
             console.error('Error loading users:', err);
             toast.error('Lỗi khi tải danh sách người dùng');
         } finally {
             setLoading(false);
+            setIsSearching(false);
         }
     };
 
@@ -65,13 +77,46 @@ const UsersList = () => {
 
     // Handle page change
     const handlePageChange = (page) => {
-        loadUsers(page, pageSize);
+        loadUsers(page, pageSize, searchTerm, searchType);
     };
 
     // Handle page size change
     const handlePageSizeChange = (newSize) => {
         setPageSize(newSize);
-        loadUsers(0, newSize); // Reset to first page
+        loadUsers(0, newSize, searchTerm, searchType); // Reset to first page
+    };
+
+    // Search handler functions
+    const handleSearchTypeChange = (type) => {
+        setSearchType(type);
+        if (searchTerm.trim()) {
+            // If there's an existing search term, re-search with new type
+            setCurrentPage(0);
+            loadUsers(0, pageSize, searchTerm, type);
+        }
+    };
+
+    const handleSearch = () => {
+        setIsSearching(true);
+        setCurrentPage(0);
+        loadUsers(0, pageSize, searchTerm, searchType);
+    };
+
+    const handleSearchInputChange = (e) => {
+        setSearchTerm(e.target.value);
+    };
+
+    const handleSearchKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
+    const handleClearSearch = () => {
+        setSearchTerm('');
+        setSearchType('fullName');
+        setCurrentPage(0);
+        loadUsers(0, pageSize, '', 'fullName');
     };
 
     // Handle user actions
@@ -88,7 +133,7 @@ const UsersList = () => {
             try {
                 await userService.deleteUser(user.id);
                 toast.success('Vô hiệu hóa người dùng thành công');
-                loadUsers(currentPage, pageSize); // Reload current page
+                loadUsers(currentPage, pageSize, searchTerm, searchType); // Reload current page
             } catch (err) {
                 toast.error('Lỗi khi vô hiệu hóa người dùng');
                 console.error('Error deactivating user:', err);
@@ -113,6 +158,15 @@ const UsersList = () => {
             case 'TEACHER': return 'Giảng Viên';
             case 'STUDENT': return 'Sinh Viên';
             default: return role;
+        }
+    };
+
+    // Get search type display text
+    const getSearchTypeDisplayText = (type) => {
+        switch (type) {
+            case 'fullName': return 'Họ và Tên';
+            case 'email': return 'Email';
+            default: return type;
         }
     };
 
@@ -166,12 +220,17 @@ const UsersList = () => {
                         <h2 className="h4 fw-bold text-dark">Quản Lý Người Dùng</h2>
                         <p className="text-muted mb-0">
                             Tổng cộng: {totalElements} người dùng
+                            {searchTerm && (
+                                <span className="text-primary ms-2">
+                                    (Tìm kiếm: "{searchTerm}")
+                                </span>
+                            )}
                         </p>
                     </div>
                     <div className="d-flex gap-2">
                         <Button
                             variant="outline-secondary"
-                            onClick={() => loadUsers(currentPage, pageSize)}
+                            onClick={() => loadUsers(currentPage, pageSize, searchTerm, searchType)}
                             disabled={loading}
                         >
                             <FontAwesomeIcon icon={faRefresh} className="me-1" />
@@ -197,8 +256,85 @@ const UsersList = () => {
                 {/* Users Table */}
                 <div className="card border-0 shadow-sm">
                     <div className="card-body p-0">
-                        {/* Page Size Selector */}
-                        <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
+                        {/* Search and Page Size Controls */}
+                        <div className="d-flex justify-content-between align-items-center p-3 border-bottom flex-wrap gap-3">
+                            {/* Search Section - Left Side */}
+                            <div className="d-flex align-items-center gap-3">
+                                {/* Search Type Dropdown */}
+                                <div className="d-flex align-items-center">
+                                    <span className="text-muted me-2">Tìm kiếm:</span>
+                                    <Dropdown>
+                                        <Dropdown.Toggle variant="outline-secondary" size="sm">
+                                            {getSearchTypeDisplayText(searchType)}
+                                        </Dropdown.Toggle>
+                                        <Dropdown.Menu>
+                                            <Dropdown.Item
+                                                onClick={() => handleSearchTypeChange('fullName')}
+                                                active={searchType === 'fullName'}
+                                            >
+                                                Họ và Tên
+                                            </Dropdown.Item>
+                                            <Dropdown.Item
+                                                onClick={() => handleSearchTypeChange('email')}
+                                                active={searchType === 'email'}
+                                            >
+                                                Email
+                                            </Dropdown.Item>
+                                        </Dropdown.Menu>
+                                    </Dropdown>
+                                </div>
+
+                                {/* Search Input */}
+                                <div className="d-flex align-items-center">
+                                    <Form.Control
+                                        type="text"
+                                        placeholder={`Nhập ${getSearchTypeDisplayText(searchType).toLowerCase()}...`}
+                                        value={searchTerm}
+                                        onChange={handleSearchInputChange}
+                                        onKeyPress={handleSearchKeyPress}
+                                        size="sm"
+                                        style={{ width: '250px' }}
+                                        disabled={loading || isSearching}
+                                    />
+                                </div>
+
+                                {/* Search Actions */}
+                                <div className="d-flex gap-2">
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        onClick={handleSearch}
+                                        disabled={loading || isSearching || !searchTerm.trim()}
+                                    >
+                                        {isSearching ? (
+                                            <Spinner
+                                                as="span"
+                                                animation="border"
+                                                size="sm"
+                                                role="status"
+                                                className="me-1"
+                                            />
+                                        ) : (
+                                            <FontAwesomeIcon icon={faSearch} className="me-1" />
+                                        )}
+                                        Tìm
+                                    </Button>
+                                    
+                                    {searchTerm && (
+                                        <Button
+                                            variant="outline-secondary"
+                                            size="sm"
+                                            onClick={handleClearSearch}
+                                            disabled={loading || isSearching}
+                                        >
+                                            <FontAwesomeIcon icon={faTimes} className="me-1" />
+                                            Xóa
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Page Size Selector - Right Side */}
                             <div className="d-flex align-items-center">
                                 <span className="text-muted me-2">Hiển thị:</span>
                                 <Dropdown>
@@ -295,7 +431,10 @@ const UsersList = () => {
                                         <tr>
                                             <td colSpan="5" className="text-center py-4">
                                                 <div className="text-muted">
-                                                    Không có dữ liệu người dùng
+                                                    {searchTerm ? 
+                                                        `Không tìm thấy kết quả cho "${searchTerm}"` : 
+                                                        'Không có dữ liệu người dùng'
+                                                    }
                                                 </div>
                                             </td>
                                         </tr>
@@ -308,6 +447,11 @@ const UsersList = () => {
                                     <div className="d-flex justify-content-between align-items-center p-3 border-top">
                                         <div className="text-muted">
                                             Hiển thị {currentPage * pageSize + 1} - {Math.min((currentPage + 1) * pageSize, totalElements)} trong tổng số {totalElements}
+                                            {searchTerm && (
+                                                <span className="text-primary ms-2">
+                                                    kết quả tìm kiếm
+                                                </span>
+                                            )}
                                         </div>
                                         <Pagination className="mb-0">
                                             {/* First and Previous buttons */}

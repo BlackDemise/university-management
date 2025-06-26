@@ -31,7 +31,9 @@ import org.endipi.user.util.PasswordUtil;
 import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -73,6 +75,30 @@ public class UserServiceImpl implements UserService {
     public Page<UserResponse> findAll(Pageable pageable) {
         return userRepository.findAll(pageable)
                 .map(userMapper::toResponse);
+    }
+
+    @Override
+    public Page<UserResponse> findBySearchingCriterion(int page, int size, String sort, String searchValue, String searchCriterion) {
+        // Make sure 'sort' value is something like <criterion>,<direction>
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort.split(",")[0]).descending());
+
+        // If no search term, return all users
+        if (searchValue == null || searchValue.trim().isEmpty()) {
+            return userRepository.findAll(pageable)
+                    .map(userMapper::toResponse);
+        }
+
+        // Apply search based on search type
+        return switch (searchCriterion) {
+            case "fullName" -> userRepository.findByFullNameContainingIgnoreCase(searchValue.trim(), pageable)
+                    .map(userMapper::toResponse);
+            case "email" -> userRepository.findByEmailContainingIgnoreCase(searchValue.trim(), pageable)
+                    .map(userMapper::toResponse);
+            default ->
+                // Fallback to no search
+                    userRepository.findAll(pageable)
+                            .map(userMapper::toResponse);
+        };
     }
 
     @Override

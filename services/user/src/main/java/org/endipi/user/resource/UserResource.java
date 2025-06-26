@@ -9,9 +9,6 @@ import org.endipi.user.dto.response.TeacherValidationResponse;
 import org.endipi.user.dto.response.UserResponse;
 import org.endipi.user.service.UserService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,16 +36,20 @@ public class UserResource {
     }
 
     @GetMapping("/all/page")
-    public ResponseEntity<?> findAll(
-            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    public ResponseEntity<?> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,desc") String sort,
+            @RequestParam(required = false) String searchValue,
+            @RequestParam(defaultValue = "fullName") String searchCriterion
     ) {
-        Page<UserResponse> userResponsePage = userService.findAll(pageable);
+        Page<UserResponse> response = userService.findBySearchingCriterion(page, size, sort, searchValue, searchCriterion);
 
         ApiResponse<String, Page<UserResponse>> apiResponse = ApiResponse.<String, Page<UserResponse>>builder()
                 .timestamp(System.currentTimeMillis())
                 .statusCode(HttpStatus.OK.value())
                 .message("OK")
-                .result(userResponsePage)
+                .result(response)
                 .build();
 
         return ResponseEntity.ok(apiResponse);

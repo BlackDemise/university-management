@@ -14,6 +14,8 @@ public interface UserService {
 
     Page<UserResponse> findAll(Pageable pageable);
 
+    Page<UserResponse> findBySearchingCriterion(int page, int size, String sort, String searchValue, String searchCriterion);
+
     UserResponse findById(Long id);
 
     UserResponse saveWithRetry(UserRequest userRequest);

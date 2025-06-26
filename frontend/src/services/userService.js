@@ -7,13 +7,24 @@ const userService = {
      * @param {number} params.page - Page number (0-based)
      * @param {number} params.size - Page size
      * @param {string} params.sort - Sort field and direction
+     * @param {string} params.search - Search term (optional)
+     * @param {string} params.searchBy - Search field: 'fullName' or 'email' (optional)
      * @returns {Promise} - Promise with paginated user response
      */
     getAllUsers: async (params = {}) => {
         try {
-            const { page = 0, size = 10, sort = 'id,asc' } = params;
+            const { page = 0, size = 10, sort = 'id,asc', search, searchBy } = params;
+            
+            const queryParams = { page, size, sort };
+            
+            // Add search parameters if they exist (map to backend parameter names)
+            if (search && search.trim()) {
+                queryParams.searchValue = search.trim();
+                queryParams.searchCriterion = searchBy || 'fullName';
+            }
+            
             const response = await API.get(`/v1/user/all/page`, {
-                params: { page, size, sort }
+                params: queryParams
             });
             return response.data;
         } catch (error) {
