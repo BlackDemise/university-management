@@ -212,25 +212,51 @@ class AuthManager {
      */
     async initializeAuth() {
         console.log('🚀 AUTH MANAGER: Initializing authentication state...');
-        
+
         try {
             const token = this.getToken();
-            
+
             if (!token) {
                 console.log('📭 AUTH MANAGER: No stored token found');
                 this.setUnauthenticatedState();
                 return;
             }
 
-            if (this.isTokenValid(token)) {
-                console.log('✅ AUTH MANAGER: Valid token found, setting authenticated state');
-                const user = this.getUserFromToken(token);
-                this.setAuthenticatedState(user);
-            } else {
-                console.log('❌ AUTH MANAGER: Invalid token found, clearing state');
+            if (!this.isTokenFormatValid(token)) {
+                console.log('❌ AUTH MANAGER: Invalid token format, clearing state');
                 this.removeToken();
                 this.setUnauthenticatedState();
+                return;
             }
+
+            // 🔧 ADD SERVER VALIDATION HERE
+            try {
+                // Make a lightweight API call to verify token
+                const API = (await import('./api.js')).default;
+                const response = await API.post('/v1/auth/introspect'); // Add this endpoint
+
+                // If successful, token is valid
+                const user = this.getUserFromToken(token);
+                this.setAuthenticatedState(user);
+            } catch (verifyError) {
+                if (verifyError.response?.status === 401) {
+                    // Try to refresh token
+                    try {
+                        await this.refreshToken();
+                        const user = this.getUserFromToken(this.getToken());
+                        this.setAuthenticatedState(user);
+                    } catch (refreshError) {
+                        // Both verify and refresh failed - logout
+                        this.removeToken();
+                        this.setUnauthenticatedState();
+                    }
+                } else {
+                    // Network error - assume token is valid for now
+                    const user = this.getUserFromToken(token);
+                    this.setAuthenticatedState(user);
+                }
+            }
+
         } catch (error) {
             console.error('❌ AUTH MANAGER: Error during initialization:', error);
             this.setUnauthenticatedState();
