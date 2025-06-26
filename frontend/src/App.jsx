@@ -10,6 +10,7 @@ import AdminDashboard from "./components/dashboard/AdminDashboard.jsx";
 import TeacherDashboard from "./components/dashboard/TeacherDashboard.jsx";
 import StudentDashboard from "./components/dashboard/StudentDashboard.jsx";
 import UsersList from "./components/user/UserList.jsx";
+import UserDetails from "./components/user/UserDetails.jsx";
 
 function App() {
   return (
@@ -43,9 +44,21 @@ function App() {
           } />
 
           {/* User Management Routes */}
+          <Route path="/admin/users" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <UsersList />
+            </ProtectedRoute>
+          } />
+          
           <Route path="/admin/users/all" element={
             <ProtectedRoute requiredRole="ADMIN">
               <UsersList />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/users/details/:id" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <UserDetails />
             </ProtectedRoute>
           } />
 
