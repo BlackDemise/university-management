@@ -151,16 +151,6 @@ const UsersList = () => {
         }
     };
 
-    // Get role display text
-    const getRoleDisplayText = (role) => {
-        switch (role) {
-            case 'ADMIN': return 'Quản Trị Viên';
-            case 'TEACHER': return 'Giảng Viên';
-            case 'STUDENT': return 'Sinh Viên';
-            default: return role;
-        }
-    };
-
     // Get search type display text
     const getSearchTypeDisplayText = (type) => {
         switch (type) {
@@ -212,7 +202,7 @@ const UsersList = () => {
     };
 
     return (
-        <MainLayout activeMenu="all-users">
+        <MainLayout activeMenu="users">
             <div className="container-fluid pt-3 pb-5">
                 {/* Page Header */}
                 <div className="d-flex justify-content-between align-items-center mb-4">
@@ -393,7 +383,7 @@ const UsersList = () => {
                                                 </td>
                                                 <td>
                                                     <Badge bg={getRoleBadgeVariant(user.role)} className="px-2 py-1">
-                                                        {getRoleDisplayText(user.role)}
+                                                        {user.displayedRole}
                                                     </Badge>
                                                 </td>
                                                 <td className="text-center">

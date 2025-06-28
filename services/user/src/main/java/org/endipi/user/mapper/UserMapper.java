@@ -21,10 +21,12 @@ public interface UserMapper {
     User toEntity(UserRequest userRequest,
                   @Context RoleRepository roleRepository);
 
+    @Mapping(target = "displayedRole",
+            expression = "java(user.getRole().getRoleTitle().getRoleTitle())")
     @Mapping(target = "teacherResponse", source = "teacher")
     @Mapping(target = "studentResponse", source = "student")
     @Mapping(target = "role",
-            expression = "java(user.getRole().getRoleTitle().getRoleTitle())")
+            expression = "java(user.getRole().getRoleTitle().name())")
     UserResponse toResponse(User user);
 
     @Mapping(target = "teacher", ignore = true)

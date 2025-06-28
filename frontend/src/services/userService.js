@@ -72,7 +72,7 @@ const userService = {
         } catch (error) {
             throw error;
         }
-    }
+    },
 };
 
 export default userService;

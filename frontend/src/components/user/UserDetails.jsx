@@ -70,16 +70,6 @@ const UserDetails = () => {
         }
     };
 
-    // Get role display text
-    const getRoleDisplayText = (role) => {
-        switch (role) {
-            case 'ADMIN': return 'Quản Trị Viên';
-            case 'TEACHER': return 'Giảng Viên';
-            case 'STUDENT': return 'Sinh Viên';
-            default: return role;
-        }
-    };
-
     // Get role icon
     const getRoleIcon = (role) => {
         switch (role) {
@@ -228,7 +218,7 @@ const UserDetails = () => {
                                                     <div>
                                                         <Badge bg={getRoleBadgeVariant(user.role)} className="px-3 py-2">
                                                             <FontAwesomeIcon icon={getRoleIcon(user.role)} className="me-2" />
-                                                            {getRoleDisplayText(user.role)}
+                                                            {user.displayedRole}
                                                         </Badge>
                                                     </div>
                                                 </div>

@@ -36,13 +36,7 @@ function VerticalNavbar({ sidebarCollapsed, toggleSidebar, activeMenu, setActive
                         id: 'users',
                         icon: faUsers,
                         title: 'Quản Lý Người Dùng',
-                        path: '/admin/users',
-                        submenu: [
-                            { id: 'all-users', title: 'Tất Cả Người Dùng', path: '/admin/users/all' },
-                            { id: 'students', title: 'Sinh Viên', path: '/admin/users/students' },
-                            { id: 'teachers', title: 'Giảng Viên', path: '/admin/users/teachers' },
-                            { id: 'admins', title: 'Quản Trị Viên', path: '/admin/users/admins' }
-                        ]
+                        path: '/admin/users/all'
                     },
                     {
                         id: 'academic',
