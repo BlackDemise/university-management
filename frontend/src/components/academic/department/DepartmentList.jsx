@@ -7,8 +7,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import departmentService from "../../services/departmentService.js";
-import MainLayout from "../layout/main/MainLayout.jsx";
+import departmentService from "../../../services/departmentService.js";
+import MainLayout from "../../layout/main/MainLayout.jsx";
 
 const DepartmentList = () => {
     const navigate = useNavigate();

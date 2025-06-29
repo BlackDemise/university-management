@@ -12,9 +12,9 @@ import StudentDashboard from "./components/dashboard/StudentDashboard.jsx";
 import UsersList from "./components/user/UserList.jsx";
 import UserDetails from "./components/user/UserDetails.jsx";
 import UserUpdate from "./components/user/UserUpdate.jsx";
-import DepartmentList from "./components/academic/DepartmentList.jsx";
-import DepartmentDetails from "./components/academic/DepartmentDetails.jsx";
-import DepartmentUpdate from "./components/academic/DepartmentUpdate.jsx";
+import DepartmentList from "./components/academic/department/DepartmentList.jsx";
+import DepartmentDetails from "./components/academic/department/DepartmentDetails.jsx";
+import DepartmentUpdate from "./components/academic/department/DepartmentUpdate.jsx";
 
 function App() {
   return (
