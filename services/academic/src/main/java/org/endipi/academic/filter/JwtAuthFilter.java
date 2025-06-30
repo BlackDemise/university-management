@@ -27,6 +27,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
+        // Allow access to health and info endpoints without authentication
+        String path = request.getServletPath();
+        if (path.equals("/actuator/health") || path.equals("/actuator/info")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // Extract the Authorization header
         final String authHeader = request.getHeader("Authorization");
 

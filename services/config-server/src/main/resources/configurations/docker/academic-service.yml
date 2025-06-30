@@ -1,0 +1,53 @@
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+  datasource:
+    url: jdbc:mysql://mysql-db:3306/academic_service?createDatabaseIfNotExist=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  kafka:
+    consumer:
+      bootstrap-servers: kafka:9092
+      group-id: academic-service-group
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: org.endipi.academic.consumer.data.TeacherEvent
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    out-of-order: true
+server:
+  port: 8002
+
+retry:
+  course:
+    attempts: 3
+  department:
+    attempts: 3
+  major:
+    attempts: 3
+  program-curriculum:
+    attempts: 3
+  prerequisite-course:
+    attempts: 3
+  department-member:
+    attempts: 3
+
+kafka:
+  topic:
+    teacher-events: teacher-events

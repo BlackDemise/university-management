@@ -1,8 +1,19 @@
 services:
   # =============================================================================
+  # MAVEN BASE
+  # =============================================================================
+  maven-deps:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # This tag is used to share dependencies between services
+    # Otherwise, each service would have to download the same dependencies due to the auto-shutdown after it is built
+    image: shared-deps:latest
+
+  # =============================================================================
   # INFRASTRUCTURE SERVICES
   # =============================================================================
-  
+
   # Zookeeper for Kafka
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -69,8 +80,9 @@ services:
   config-server:
     build: ./services/config-server
     container_name: config-server
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      maven-deps:
+        condition: service_completed_successfully
     ports:
       - "8888:8888"
     networks:
@@ -88,11 +100,12 @@ services:
     build: ./services/discovery
     container_name: discovery-service
     depends_on:
+      maven-deps:
+        condition: service_completed_successfully
       config-server:
         condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
     ports:
       - "8761:8761"
     networks:
@@ -110,6 +123,8 @@ services:
     build: ./services/auth
     container_name: auth-service
     depends_on:
+      maven-deps:
+        condition: service_completed_successfully
       config-server:
         condition: service_healthy
       discovery-service:
@@ -120,10 +135,6 @@ services:
         condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/auth_service?createDatabaseIfNotExist=true
-      - SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS=kafka:9092
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
     ports:
       - "8000:8000"
     networks:
@@ -141,6 +152,8 @@ services:
     build: ./services/user
     container_name: user-service
     depends_on:
+      maven-deps:
+        condition: service_completed_successfully
       config-server:
         condition: service_healthy
       discovery-service:
@@ -151,10 +164,6 @@ services:
         condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/user_service?createDatabaseIfNotExist=true
-      - SPRING_KAFKA_PRODUCER_BOOTSTRAP_SERVERS=kafka:9092
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
     ports:
       - "8001:8001"
     networks:
@@ -166,6 +175,172 @@ services:
       timeout: 10s
       retries: 3
       start_period: 120s
+
+  # Academic Service
+  academic-service:
+    build: ./services/academic
+    container_name: academic-service
+    depends_on:
+      maven-deps:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+      mysql-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8002:8002"
+    networks:
+      - university-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8002/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  # Facility Service
+  facility-service:
+    build: ./services/facility
+    container_name: facility-service
+    depends_on:
+      maven-deps:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+      mysql-db:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8003:8003"
+    networks:
+      - university-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8003/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  # Enrollment Service
+  enrollment-service:
+    build: ./services/enrollment
+    container_name: enrollment-service
+    depends_on:
+      maven-deps:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+      mysql-db:
+        condition: service_healthy
+      academic-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      facility-service:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8004:8004"
+    networks:
+      - university-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8004/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  # Assessment Service
+  assessment-service:
+    build: ./services/assessment
+    container_name: assessment-service
+    depends_on:
+      maven-deps:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+      mysql-db:
+        condition: service_healthy
+      enrollment-service:
+        condition: service_healthy
+      facility-service:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8005:8005"
+    networks:
+      - university-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8005/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  # Gateway Service
+  gateway-service:
+    build: ./services/gateway
+    container_name: gateway-service
+    depends_on:
+      maven-deps:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      academic-service:
+        condition: service_healthy
+      facility-service:
+        condition: service_healthy
+      enrollment-service:
+        condition: service_healthy
+      assessment-service:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8222:8222"
+    networks:
+      - university-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8222/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:5173"
+    command: [ "npm", "run", "dev", "--", "--host" ]
+    networks:
+      - university-network
 
 # =============================================================================
 # NETWORKS & VOLUMES

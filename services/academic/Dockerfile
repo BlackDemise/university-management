@@ -1,39 +1,20 @@
-FROM eclipse-temurin:17-jdk
-
-# Set working directory
+# Use the shared dependency image as base
+FROM shared-deps:latest AS builder
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml first (for dependency caching)
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
+# Copy pom.xml with exact name
+# Optimization strategy: copy things that are changed less frequently first...
+COPY pom.xml ./pom.xml
 
-# Make mvnw executable
-RUN chmod +x mvnw
-
-# Download dependencies (cached layer if pom.xml doesn't change)
-RUN ./mvnw dependency:go-offline -B
-
-# Copy source code
+# Copy source and build using offline mode (dependencies already in the image)
+# ...then copy things that change more frequently later.
 COPY src ./src
+RUN ./mvnw clean package -DskipTests -B -o
 
-# Build the application
-RUN ./mvnw clean package -DskipTests -B
-
-# Create final runtime stage
-FROM eclipse-temurin:17-jdk
-
+# Runtime stage
+# Use a lightweight JRE image for the final application
+FROM eclipse-temurin:17-jre
 WORKDIR /app
-
-# Copy the built jar from previous stage
-COPY --from=0 /app/target/*.jar app.jar
-
-# Expose port
-EXPOSE 8002
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:8002/actuator/health || exit 1
-
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"] 
+COPY --from=builder /app/target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

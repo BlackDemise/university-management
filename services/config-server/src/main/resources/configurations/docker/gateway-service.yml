@@ -1,0 +1,51 @@
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins:
+                  - "http://localhost:5173"  # Vite dev server
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders:
+                  - "*"
+                allowCredentials: true
+                maxAge: 3600
+          discovery:
+            locator:
+              enabled: true
+          routes:
+            - id: auth-service
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/api/v1/auth/**
+            - id: user-service
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/user/**,/api/v1/role/**
+            - id: academic-service
+              uri: lb://ACADEMIC-SERVICE
+              predicates:
+                - Path=/api/v1/major/**,/api/v1/department/**,/api/v1/course/**,/api/v1/program-curriculum/**,/api/v1/prerequisite-course/**,/api/v1/department-member/**
+            - id: facility-service
+              uri: lb://FACILITY-SERVICE
+              predicates:
+                - Path=/api/v1/classroom/**
+            - id: assessment-service
+              uri: lb://ASSESSMENT-SERVICE
+              predicates:
+                - Path=/api/v1/grade/**,/api/v1/attendance/**,/api/v1/session/**
+            - id: enrollment-service
+              uri: lb://ENROLLMENT-SERVICE
+              predicates:
+                - Path=/api/v1/course-offering/**,/api/v1/course-registration/**,/api/v1/semester/**
+
+server:
+  port: 8222
