@@ -3,13 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Row, Col, Form, Button, Spinner, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-    faBuilding, faArrowLeft, faSave, faEdit, faPlus
+    faGraduationCap, faArrowLeft, faSave, faEdit, faPlus
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-hot-toast';
+import { majorService } from "../../../services/apiService.js";
 import departmentService from "../../../services/departmentService.js";
 import MainLayout from "../../layout/main/MainLayout.jsx";
 
-const DepartmentUpdate = () => {
+const MajorUpdate = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const isEditMode = !!id;
@@ -18,37 +19,63 @@ const DepartmentUpdate = () => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
+    const [departments, setDepartments] = useState([]);
+    const [loadingDepartments, setLoadingDepartments] = useState(true);
 
     // Form data state
     const [formData, setFormData] = useState({
         id: null,
-        name: ''
+        name: '',
+        totalCreditsRequired: '',
+        departmentId: ''
     });
 
     // Form validation state
     const [formErrors, setFormErrors] = useState({});
 
-    // Load department data for edit mode
-    const loadDepartmentData = async () => {
+    // Load departments for dropdown
+    const loadDepartments = async () => {
+        try {
+            setLoadingDepartments(true);
+            const response = await departmentService.getAllDepartments();
+            
+            if (response.result) {
+                setDepartments(response.result || []);
+            } else {
+                setDepartments(response || []);
+            }
+        } catch (err) {
+            console.error('Error loading departments:', err);
+            toast.error('Lỗi khi tải danh sách khoa');
+            setDepartments([]);
+        } finally {
+            setLoadingDepartments(false);
+        }
+    };
+
+    // Load major data for edit mode
+    const loadMajorData = async () => {
         if (!isEditMode) return;
 
         try {
             setLoading(true);
             setError(null);
 
-            const response = await departmentService.getDepartmentById(id);
-            const department = response.result || response;
+            const response = await majorService.getMajorById(id);
+            const major = response.result || response;
 
-            // Map department data to form
+            // Map major data to form
             setFormData({
-                id: department.id,
-                name: department.name || ''
+                id: major.id,
+                name: major.name || '',
+                totalCreditsRequired: major.totalCreditsRequired || '',
+                departmentId: major.departmentResponse?.id || ''
             });
 
         } catch (err) {
-            setError('Không thể tải thông tin khoa/phòng ban. Vui lòng thử lại.');
-            console.error('Error loading department data:', err);
-            toast.error('Lỗi khi tải thông tin khoa/phòng ban');
+            setError('Không thể tải thông tin ngành học. Vui lòng thử lại.');
+            console.error('Error loading major data:', err);
+            toast.error('Lỗi khi tải thông tin ngành học');
         } finally {
             setLoading(false);
         }
@@ -56,9 +83,14 @@ const DepartmentUpdate = () => {
 
     // Initialize component
     useEffect(() => {
-        if (isEditMode) {
-            loadDepartmentData();
-        }
+        const initializeComponent = async () => {
+            await loadDepartments();
+            if (isEditMode) {
+                await loadMajorData();
+            }
+        };
+        
+        initializeComponent();
     }, [id]);
 
     // Handle input changes
@@ -83,11 +115,24 @@ const DepartmentUpdate = () => {
 
         // Required fields
         if (!formData.name.trim()) {
-            errors.name = 'Tên khoa/phòng ban là bắt buộc';
+            errors.name = 'Tên ngành học là bắt buộc';
         } else if (formData.name.trim().length < 2) {
-            errors.name = 'Tên khoa/phòng ban phải có ít nhất 2 ký tự';
+            errors.name = 'Tên ngành học phải có ít nhất 2 ký tự';
         } else if (formData.name.trim().length > 255) {
-            errors.name = 'Tên khoa/phòng ban không được vượt quá 255 ký tự';
+            errors.name = 'Tên ngành học không được vượt quá 255 ký tự';
+        }
+
+        if (!formData.departmentId) {
+            errors.departmentId = 'Khoa là bắt buộc';
+        }
+
+        if (formData.totalCreditsRequired) {
+            const credits = parseInt(formData.totalCreditsRequired);
+            if (isNaN(credits) || credits < 0) {
+                errors.totalCreditsRequired = 'Số tín chỉ phải là số nguyên dương';
+            } else if (credits > 300) {
+                errors.totalCreditsRequired = 'Số tín chỉ không được vượt quá 300';
+            }
         }
 
         setFormErrors(errors);
@@ -109,31 +154,37 @@ const DepartmentUpdate = () => {
             // Prepare request data
             const requestData = {
                 id: isEditMode ? formData.id : null,
-                name: formData.name.trim()
+                name: formData.name.trim(),
+                departmentId: parseInt(formData.departmentId)
             };
 
-            const response = await departmentService.saveDepartment(requestData);
+            // Add totalCreditsRequired if provided
+            if (formData.totalCreditsRequired) {
+                requestData.totalCreditsRequired = parseInt(formData.totalCreditsRequired);
+            }
+
+            const response = await majorService.saveMajor(requestData);
 
             const successMessage = isEditMode
-                ? 'Cập nhật thông tin khoa/phòng ban thành công'
-                : 'Tạo khoa/phòng ban mới thành công';
+                ? 'Cập nhật thông tin ngành học thành công'
+                : 'Tạo ngành học mới thành công';
 
             toast.success(successMessage);
-            navigate('/admin/academic/departments');
+            navigate('/admin/academic/majors');
 
         } catch (err) {
             const errorMessage = isEditMode
-                ? 'Lỗi khi cập nhật khoa/phòng ban'
-                : 'Lỗi khi tạo khoa/phòng ban';
+                ? 'Lỗi khi cập nhật ngành học'
+                : 'Lỗi khi tạo ngành học';
 
             toast.error(errorMessage);
-            console.error('Error saving department:', err);
+            console.error('Error saving major:', err);
         } finally {
             setSaving(false);
         }
     };
 
-    if (loading) {
+    if (loading || loadingDepartments) {
         return (
             <MainLayout activeMenu="academic">
                 <div className="container-fluid pt-3 pb-5">
@@ -153,19 +204,19 @@ const DepartmentUpdate = () => {
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <h2 className="h4 fw-bold text-dark">
-                            {isEditMode ? 'Chỉnh Sửa Khoa/Phòng Ban' : 'Thêm Khoa/Phòng Ban Mới'}
+                            {isEditMode ? 'Chỉnh Sửa Ngành Học' : 'Thêm Ngành Học Mới'}
                         </h2>
                         <p className="text-muted mb-0">
                             {isEditMode 
-                                ? `Cập nhật thông tin khoa/phòng ban #${id}` 
-                                : 'Tạo khoa/phòng ban mới trong hệ thống'
+                                ? `Cập nhật thông tin ngành học #${id}` 
+                                : 'Tạo ngành học mới trong hệ thống'
                             }
                         </p>
                     </div>
                     <div className="d-flex gap-2">
                         <Button
                             variant="outline-primary"
-                            onClick={() => navigate('/admin/academic/departments')}
+                            onClick={() => navigate('/admin/academic/majors')}
                             disabled={saving}
                         >
                             <FontAwesomeIcon icon={faArrowLeft} className="me-1" />
@@ -187,7 +238,7 @@ const DepartmentUpdate = () => {
                             <Card.Header className="bg-light border-0">
                                 <h5 className="mb-0 d-flex align-items-center">
                                     <FontAwesomeIcon icon={isEditMode ? faEdit : faPlus} className="me-2 text-primary" />
-                                    Thông Tin Khoa/Phòng Ban
+                                    Thông Tin Ngành Học
                                 </h5>
                             </Card.Header>
                             <Card.Body>
@@ -196,13 +247,13 @@ const DepartmentUpdate = () => {
                                         <Col md={12}>
                                             <Form.Group className="mb-4">
                                                 <Form.Label className="fw-medium">
-                                                    Tên Khoa/Phòng Ban <span className="text-danger">*</span>
+                                                    Tên Ngành Học <span className="text-danger">*</span>
                                                 </Form.Label>
                                                 <Form.Control
                                                     type="text"
                                                     value={formData.name}
                                                     onChange={(e) => handleInputChange('name', e.target.value)}
-                                                    placeholder="Nhập tên khoa/phòng ban..."
+                                                    placeholder="Nhập tên ngành học..."
                                                     disabled={saving}
                                                     isInvalid={!!formErrors.name}
                                                 />
@@ -210,7 +261,60 @@ const DepartmentUpdate = () => {
                                                     {formErrors.name}
                                                 </Form.Control.Feedback>
                                                 <Form.Text className="text-muted">
-                                                    Tên khoa/phòng ban phải có từ 2-255 ký tự
+                                                    Tên ngành học phải có từ 2-255 ký tự
+                                                </Form.Text>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+
+                                    <Row>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-4">
+                                                <Form.Label className="fw-medium">
+                                                    Khoa <span className="text-danger">*</span>
+                                                </Form.Label>
+                                                <Form.Select
+                                                    value={formData.departmentId}
+                                                    onChange={(e) => handleInputChange('departmentId', e.target.value)}
+                                                    disabled={saving}
+                                                    isInvalid={!!formErrors.departmentId}
+                                                >
+                                                    <option value="">Chọn khoa...</option>
+                                                    {departments.map(dept => (
+                                                        <option key={dept.id} value={dept.id}>
+                                                            {dept.name}
+                                                        </option>
+                                                    ))}
+                                                </Form.Select>
+                                                <Form.Control.Feedback type="invalid">
+                                                    {formErrors.departmentId}
+                                                </Form.Control.Feedback>
+                                                <Form.Text className="text-muted">
+                                                    Chọn khoa mà ngành học này thuộc về
+                                                </Form.Text>
+                                            </Form.Group>
+                                        </Col>
+
+                                        <Col md={6}>
+                                            <Form.Group className="mb-4">
+                                                <Form.Label className="fw-medium">
+                                                    Tổng Số Tín Chỉ Yêu Cầu
+                                                </Form.Label>
+                                                <Form.Control
+                                                    type="number"
+                                                    value={formData.totalCreditsRequired}
+                                                    onChange={(e) => handleInputChange('totalCreditsRequired', e.target.value)}
+                                                    placeholder="Nhập số tín chỉ..."
+                                                    disabled={saving}
+                                                    isInvalid={!!formErrors.totalCreditsRequired}
+                                                    min="0"
+                                                    max="300"
+                                                />
+                                                <Form.Control.Feedback type="invalid">
+                                                    {formErrors.totalCreditsRequired}
+                                                </Form.Control.Feedback>
+                                                <Form.Text className="text-muted">
+                                                    Số tín chỉ cần thiết để tốt nghiệp (0-300)
                                                 </Form.Text>
                                             </Form.Group>
                                         </Col>
@@ -220,7 +324,7 @@ const DepartmentUpdate = () => {
                                     <div className="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
                                         <Button 
                                             variant="outline-secondary"
-                                            onClick={() => navigate('/admin/academic/departments')}
+                                            onClick={() => navigate('/admin/academic/majors')}
                                             disabled={saving}
                                         >
                                             Hủy
@@ -228,7 +332,7 @@ const DepartmentUpdate = () => {
                                         <Button 
                                             variant="primary"
                                             type="submit"
-                                            disabled={saving || !formData.name.trim()}
+                                            disabled={saving || !formData.name.trim() || !formData.departmentId}
                                         >
                                             {saving ? (
                                                 <>
@@ -259,4 +363,4 @@ const DepartmentUpdate = () => {
     );
 };
 
-export default DepartmentUpdate; 
+export default MajorUpdate; 

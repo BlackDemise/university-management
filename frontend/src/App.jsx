@@ -15,6 +15,18 @@ import UserUpdate from "./components/user/UserUpdate.jsx";
 import DepartmentList from "./components/academic/department/DepartmentList.jsx";
 import DepartmentDetails from "./components/academic/department/DepartmentDetails.jsx";
 import DepartmentUpdate from "./components/academic/department/DepartmentUpdate.jsx";
+import MajorList from "./components/academic/major/MajorList.jsx";
+import MajorDetails from "./components/academic/major/MajorDetails.jsx";
+import MajorUpdate from "./components/academic/major/MajorUpdate.jsx";
+import CourseList from "./components/academic/course/CourseList.jsx";
+import CourseDetails from "./components/academic/course/CourseDetails.jsx";
+import CourseUpdate from "./components/academic/course/CourseUpdate.jsx";
+import ProgramCurriculumList from "./components/academic/program-curriculum/ProgramCurriculumList.jsx";
+import ProgramCurriculumDetails from "./components/academic/program-curriculum/ProgramCurriculumDetails.jsx";
+import ProgramCurriculumUpdate from "./components/academic/program-curriculum/ProgramCurriculumUpdate.jsx";
+import ClassroomList from "./components/facility/classroom/ClassroomList.jsx";
+import ClassroomDetails from "./components/facility/classroom/ClassroomDetails.jsx";
+import ClassroomUpdate from "./components/facility/classroom/ClassroomUpdate.jsx";
 
 function App() {
   return (
@@ -94,6 +106,106 @@ function App() {
           <Route path="/admin/academic/departments/create" element={
             <ProtectedRoute requiredRole="ADMIN">
               <DepartmentUpdate />
+            </ProtectedRoute>
+          } />
+
+          {/* Major Management Routes */}
+          <Route path="/admin/academic/majors" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <MajorList />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/academic/majors/details/:id" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <MajorDetails />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/academic/majors/edit/:id" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <MajorUpdate />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/academic/majors/create" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <MajorUpdate />
+            </ProtectedRoute>
+          } />
+
+          {/* Course Management Routes */}
+          <Route path="/admin/academic/courses" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <CourseList />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/academic/courses/details/:id" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <CourseDetails />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/academic/courses/edit/:id" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <CourseUpdate />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/academic/courses/create" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <CourseUpdate />
+            </ProtectedRoute>
+          } />
+
+          {/* Program Curriculum Management Routes */}
+          <Route path="/admin/academic/program-curriculum" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <ProgramCurriculumList />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/academic/program-curriculum/details/:id" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <ProgramCurriculumDetails />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/academic/program-curriculum/edit/:id" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <ProgramCurriculumUpdate />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/academic/program-curriculum/create" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <ProgramCurriculumUpdate />
+            </ProtectedRoute>
+          } />
+
+          {/* Classroom Management Routes */}
+          <Route path="/admin/facility/classrooms" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <ClassroomList />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/facility/classrooms/details/:id" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <ClassroomDetails />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/facility/classrooms/edit/:id" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <ClassroomUpdate />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/facility/classrooms/create" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <ClassroomUpdate />
             </ProtectedRoute>
           } />
 

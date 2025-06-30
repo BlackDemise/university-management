@@ -2,6 +2,7 @@ package org.endipi.academic.service;
 
 import org.endipi.academic.dto.request.MajorRequest;
 import org.endipi.academic.dto.response.MajorResponse;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -15,4 +16,6 @@ public interface MajorService {
     void deleteById(Long id);
 
     boolean validateMajor(Long majorId);
+
+    Page<MajorResponse> findBySearchingCriterion(int page, int size, String sort, String searchValue, String searchCriterion);
 }

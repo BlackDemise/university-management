@@ -13,6 +13,10 @@ import org.endipi.academic.repository.MajorRepository;
 import org.endipi.academic.service.MajorService;
 import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +39,30 @@ public class MajorServiceImpl implements MajorService {
                 .stream()
                 .map(majorMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    public Page<MajorResponse> findBySearchingCriterion(int page, int size, String sort, String searchValue, String searchCriterion) {
+        // Make sure 'sort' value is something like <criterion>,<direction>
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort.split(",")[0]).descending());
+
+        // If no search term, return all users
+        if (searchValue == null || searchValue.trim().isEmpty()) {
+            return majorRepository.findAll(pageable)
+                    .map(majorMapper::toResponse);
+        }
+
+        // Apply search based on search type
+        return switch (searchCriterion) {
+            case "name" -> majorRepository.findByNameContainingIgnoreCase(searchValue.trim(), pageable)
+                    .map(majorMapper::toResponse);
+            case "departmentResponse.name" -> majorRepository.findByDepartmentNameContainingIgnoreCase(searchValue.trim(), pageable)
+                    .map(majorMapper::toResponse);
+            default ->
+                // Fallback to no search
+                    majorRepository.findAll(pageable)
+                            .map(majorMapper::toResponse);
+        };
     }
 
     @Override

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Alert, Spinner, Form, Row, Col } from 'react-bootstrap';
+import { Table, Button, Badge, Dropdown, Alert, Spinner, Pagination, Form } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faPlus, faEye, faEdit, faTrash,
-    faRefresh, faSearch, faTimes, faBuilding
+    faEllipsisVertical, faRefresh, faSearch, faTimes, faBuilding
 } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -81,11 +81,6 @@ const DepartmentList = () => {
         loadDepartments('');
     };
 
-    const handleRefresh = () => {
-        setSearchTerm('');
-        loadDepartments('');
-    };
-
     // Handle department actions
     const handleViewDepartment = (department) => {
         navigate(`/admin/academic/departments/details/${department.id}`);
@@ -110,170 +105,201 @@ const DepartmentList = () => {
 
     return (
         <MainLayout activeMenu="academic">
-            <div className="container-fluid">
-                {/* Header Section */}
+            <div className="container-fluid pt-3 pb-5">
+                {/* Page Header */}
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2 className="fw-bold text-primary">
-                        <FontAwesomeIcon icon={faBuilding} className="me-2" />
-                        Quản Lý Khoa/Phòng Ban
-                    </h2>
-                    <Button
-                        variant="success"
-                        onClick={() => navigate('/admin/academic/departments/create')}
-                    >
-                        <FontAwesomeIcon icon={faPlus} className="me-2" />
-                        Thêm Khoa/Phòng Ban
-                    </Button>
-                </div>
-
-                {/* Search and Filter Section */}
-                <Row className="mb-4">
-                    <Col md={6}>
-                        <Form className="d-flex">
-                            <Form.Control
-                                type="text"
-                                placeholder="Tìm kiếm theo tên khoa/phòng ban..."
-                                value={searchTerm}
-                                onChange={handleSearchInputChange}
-                                onKeyPress={handleSearchKeyPress}
-                                className="me-2"
-                            />
-                            <Button
-                                variant="outline-primary"
-                                onClick={handleSearch}
-                                disabled={isSearching}
-                                className="me-2"
-                            >
-                                {isSearching ? (
-                                    <Spinner as="span" animation="border" size="sm" />
-                                ) : (
-                                    <FontAwesomeIcon icon={faSearch} />
-                                )}
-                            </Button>
+                    <div>
+                        <h2 className="h4 fw-bold text-dark">Quản Lý Khoa/Phòng Ban</h2>
+                        <p className="text-muted mb-0">
+                            Tổng cộng: {departments.length} khoa/phòng ban
                             {searchTerm && (
-                                <Button
-                                    variant="outline-secondary"
-                                    onClick={handleClearSearch}
-                                    title="Xóa tìm kiếm"
-                                >
-                                    <FontAwesomeIcon icon={faTimes} />
-                                </Button>
+                                <span className="text-primary ms-2">
+                                    (Tìm kiếm: "{searchTerm}")
+                                </span>
                             )}
-                        </Form>
-                    </Col>
-                    <Col md={6} className="text-end">
+                        </p>
+                    </div>
+                    <div className="d-flex gap-2">
                         <Button
-                            variant="outline-info"
-                            onClick={handleRefresh}
+                            variant="outline-secondary"
+                            onClick={() => loadDepartments(searchTerm)}
                             disabled={loading}
                         >
-                            <FontAwesomeIcon icon={faRefresh} className="me-2" />
-                            Làm mới
-                        </Button>
-                    </Col>
-                </Row>
-
-                {/* Results Summary */}
-                {!loading && (
-                    <div className="mb-3">
-                        <small className="text-muted">
-                            {searchTerm ? (
-                                <>Tìm thấy <strong>{departments.length}</strong> khoa/phòng ban với từ khóa "<em>{searchTerm}</em>"</>
-                            ) : (
-                                <>Hiển thị tất cả <strong>{departments.length}</strong> khoa/phòng ban</>
-                            )}
-                        </small>
-                    </div>
-                )}
-
-                {/* Error Display */}
-                {error && (
-                    <Alert variant="danger" className="d-flex align-items-center">
-                        <div className="flex-grow-1">{error}</div>
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={handleRefresh}
-                        >
                             <FontAwesomeIcon icon={faRefresh} className="me-1" />
-                            Thử lại
+                            Làm Mới
                         </Button>
+                        <Button
+                            variant="primary"
+                            onClick={() => navigate('/admin/academic/departments/create')}
+                        >
+                            <FontAwesomeIcon icon={faPlus} className="me-1" />
+                            Thêm Mới
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Error Alert */}
+                {error && (
+                    <Alert variant="danger" dismissible onClose={() => setError(null)}>
+                        {error}
                     </Alert>
                 )}
 
-                {/* Loading State */}
-                {loading && (
-                    <div className="text-center py-5">
-                        <Spinner animation="border" variant="primary" />
-                        <div className="mt-2 text-muted">Đang tải danh sách khoa/phòng ban...</div>
-                    </div>
-                )}
+                {/* Departments Table */}
+                <div className="card border-0 shadow-sm">
+                    <div className="card-body p-0">
+                        {/* Search Controls */}
+                        <div className="d-flex justify-content-between align-items-center p-3 border-bottom flex-wrap gap-3">
+                            {/* Search Section - Left Side */}
+                            <div className="d-flex align-items-center gap-3">
+                                <div className="d-flex align-items-center">
+                                    <span className="text-muted me-2">Tìm kiếm:</span>
+                                    <span className="badge bg-light text-dark">Tên khoa/phòng ban</span>
+                                </div>
 
-                {/* Table Section */}
-                {!loading && !error && (
-                    <div className="table-responsive">
-                        <Table striped bordered hover>
-                            <thead className="table-dark">
-                                <tr>
-                                    <th style={{ width: '10%' }}>ID</th>
-                                    <th style={{ width: '70%' }}>Tên Khoa/Phòng Ban</th>
-                                    <th style={{ width: '20%' }}>Thao Tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {departments.length === 0 ? (
+                                {/* Search Input */}
+                                <div className="d-flex align-items-center">
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Nhập tên khoa/phòng ban..."
+                                        value={searchTerm}
+                                        onChange={handleSearchInputChange}
+                                        onKeyPress={handleSearchKeyPress}
+                                        size="sm"
+                                        style={{ width: '250px' }}
+                                        disabled={loading || isSearching}
+                                    />
+                                </div>
+
+                                {/* Search Actions */}
+                                <div className="d-flex gap-2">
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        onClick={handleSearch}
+                                        disabled={loading || isSearching || !searchTerm.trim()}
+                                    >
+                                        {isSearching ? (
+                                            <Spinner
+                                                as="span"
+                                                animation="border"
+                                                size="sm"
+                                                role="status"
+                                                className="me-1"
+                                            />
+                                        ) : (
+                                            <FontAwesomeIcon icon={faSearch} className="me-1" />
+                                        )}
+                                        Tìm
+                                    </Button>
+                                    
+                                    {searchTerm && (
+                                        <Button
+                                            variant="outline-secondary"
+                                            size="sm"
+                                            onClick={handleClearSearch}
+                                            disabled={loading || isSearching}
+                                        >
+                                            <FontAwesomeIcon icon={faTimes} className="me-1" />
+                                            Xóa
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Right Side - Future features */}
+                            <div className="d-flex align-items-center">
+                                <span className="text-muted me-2">Hiển thị:</span>
+                                <span className="badge bg-light text-dark">{departments.length} khoa/phòng ban</span>
+                            </div>
+                        </div>
+
+                        {/* Loading State */}
+                        {loading ? (
+                            <div className="text-center py-5">
+                                <Spinner animation="border" variant="primary" />
+                                <p className="mt-2 text-muted">Đang tải dữ liệu...</p>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Table */}
+                                <Table responsive hover className="mb-0">
+                                    <thead className="bg-light">
                                     <tr>
-                                        <td colSpan="3" className="text-center text-muted py-4">
-                                            {searchTerm ? 
-                                                'Không tìm thấy khoa/phòng ban nào phù hợp với từ khóa tìm kiếm.' :
-                                                'Chưa có khoa/phòng ban nào được tạo.'
-                                            }
-                                        </td>
+                                        <th className="border-0">ID</th>
+                                        <th className="border-0">Tên Khoa/Phòng Ban</th>
+                                        <th className="border-0">Trạng Thái</th>
+                                        <th className="border-0 text-center">Thao Tác</th>
                                     </tr>
-                                ) : (
-                                    departments.map((department) => (
-                                        <tr key={department.id}>
-                                            <td>
-                                                <span className="fw-bold text-primary">#{department.id}</span>
-                                            </td>
-                                            <td>
-                                                <div className="fw-semibold">{department.name}</div>
-                                            </td>
-                                            <td>
-                                                <div className="d-flex gap-2">
-                                                    <Button
-                                                        variant="outline-info"
-                                                        size="sm"
-                                                        onClick={() => handleViewDepartment(department)}
-                                                        title="Xem chi tiết"
-                                                    >
-                                                        <FontAwesomeIcon icon={faEye} />
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline-warning"
-                                                        size="sm"
-                                                        onClick={() => handleEditDepartment(department)}
-                                                        title="Chỉnh sửa"
-                                                    >
-                                                        <FontAwesomeIcon icon={faEdit} />
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline-danger"
-                                                        size="sm"
-                                                        onClick={() => handleDeleteDepartment(department)}
-                                                        title="Xóa"
-                                                    >
-                                                        <FontAwesomeIcon icon={faTrash} />
-                                                    </Button>
+                                    </thead>
+                                    <tbody>
+                                    {departments.length > 0 ? (
+                                        departments.map((department) => (
+                                            <tr key={department.id}>
+                                                <td className="fw-medium">#{department.id}</td>
+                                                <td>
+                                                    <div>
+                                                        <div className="fw-medium">{department.name}</div>
+                                                        <small className="text-muted">
+                                                            <FontAwesomeIcon icon={faBuilding} className="me-1" />
+                                                            Khoa/Phòng Ban
+                                                        </small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <Badge bg="success" className="px-2 py-1">
+                                                        Hoạt động
+                                                    </Badge>
+                                                </td>
+                                                <td className="text-center">
+                                                    <Dropdown>
+                                                        <Dropdown.Toggle
+                                                            variant="light"
+                                                            size="sm"
+                                                            className="border-0"
+                                                        >
+                                                            <FontAwesomeIcon icon={faEllipsisVertical} />
+                                                        </Dropdown.Toggle>
+                                                        <Dropdown.Menu align="end">
+                                                            <Dropdown.Item onClick={() => handleViewDepartment(department)}>
+                                                                <FontAwesomeIcon icon={faEye} className="me-2" />
+                                                                Chi Tiết
+                                                            </Dropdown.Item>
+                                                            <Dropdown.Item onClick={() => handleEditDepartment(department)}>
+                                                                <FontAwesomeIcon icon={faEdit} className="me-2" />
+                                                                Chỉnh Sửa
+                                                            </Dropdown.Item>
+                                                            <Dropdown.Divider />
+                                                            <Dropdown.Item
+                                                                onClick={() => handleDeleteDepartment(department)}
+                                                                className="text-danger"
+                                                            >
+                                                                <FontAwesomeIcon icon={faTrash} className="me-2" />
+                                                                Xóa
+                                                            </Dropdown.Item>
+                                                        </Dropdown.Menu>
+                                                    </Dropdown>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="4" className="text-center py-4">
+                                                <div className="text-muted">
+                                                    {searchTerm ? 
+                                                        `Không tìm thấy kết quả cho "${searchTerm}"` : 
+                                                        'Không có dữ liệu khoa/phòng ban'
+                                                    }
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </Table>
+                                    )}
+                                    </tbody>
+                                </Table>
+                            </>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
         </MainLayout>
     );

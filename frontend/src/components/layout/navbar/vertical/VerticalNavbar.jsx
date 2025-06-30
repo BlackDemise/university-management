@@ -47,7 +47,7 @@ function VerticalNavbar({ sidebarCollapsed, toggleSidebar, activeMenu, setActive
                             { id: 'departments', title: 'Khoa/Phòng Ban', path: '/admin/academic/departments' },
                             { id: 'majors', title: 'Ngành Học', path: '/admin/academic/majors' },
                             { id: 'courses', title: 'Môn Học', path: '/admin/academic/courses' },
-                            { id: 'curriculum', title: 'Chương Trình Đào Tạo', path: '/admin/academic/curriculum' },
+                            { id: 'curriculum', title: 'Chương Trình Đào Tạo', path: '/admin/academic/program-curriculum' },
                             { id: 'prerequisites', title: 'Môn Tiên Quyết', path: '/admin/academic/prerequisites' },
                             { id: 'department-members', title: 'Thành Viên Khoa', path: '/admin/academic/department-members' }
                         ]
@@ -80,7 +80,7 @@ function VerticalNavbar({ sidebarCollapsed, toggleSidebar, activeMenu, setActive
                         title: 'Quản Lý Cơ Sở',
                         path: '/admin/facilities',
                         submenu: [
-                            { id: 'classrooms', title: 'Phòng Học', path: '/admin/facilities/classrooms' }
+                            { id: 'classrooms', title: 'Phòng Học', path: '/admin/facility/classrooms' }
                         ]
                     },
                     {

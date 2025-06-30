@@ -3,49 +3,49 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Row, Col, Badge, Button, Spinner, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-    faBuilding, faArrowLeft, faEdit, faIdCard, faInfoCircle,
-    faGraduationCap, faUsers, faRefresh
+    faGraduationCap, faArrowLeft, faEdit, faIdCard, faInfoCircle,
+    faBuilding, faBook, faRefresh
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-hot-toast';
-import departmentService from "../../../services/departmentService.js";
+import { majorService } from "../../../services/apiService.js";
 import MainLayout from "../../layout/main/MainLayout.jsx";
 
-const DepartmentDetails = () => {
+const MajorDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
     // State management
-    const [department, setDepartment] = useState(null);
+    const [major, setMajor] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isNotFound, setIsNotFound] = useState(false);
 
-    // Load department details
-    const loadDepartmentDetails = async () => {
+    // Load major details
+    const loadMajorDetails = async () => {
         try {
             setLoading(true);
             setError(null);
             setIsNotFound(false);
 
-            const response = await departmentService.getDepartmentById(id);
+            const response = await majorService.getMajorById(id);
             
             if (response.result) {
-                setDepartment(response.result);
+                setMajor(response.result);
             } else {
-                setDepartment(response);
+                setMajor(response);
             }
         } catch (err) {
-            console.error('Error loading department details:', err);
+            console.error('Error loading major details:', err);
             
-            // Check if it's a 404 error (department not found)
+            // Check if it's a 404 error (major not found)
             if (err.response && err.response.status === 404) {
                 setIsNotFound(true);
                 setError(null);
             } else {
                 // Other types of errors
-                setError('Không thể tải thông tin khoa/phòng ban. Vui lòng thử lại.');
+                setError('Không thể tải thông tin ngành học. Vui lòng thử lại.');
                 setIsNotFound(false);
-                toast.error('Lỗi khi tải thông tin khoa/phòng ban');
+                toast.error('Lỗi khi tải thông tin ngành học');
             }
         } finally {
             setLoading(false);
@@ -55,7 +55,7 @@ const DepartmentDetails = () => {
     // Load data on component mount
     useEffect(() => {
         if (id) {
-            loadDepartmentDetails();
+            loadMajorDetails();
         }
     }, [id]);
 
@@ -79,7 +79,7 @@ const DepartmentDetails = () => {
                     <Alert variant="danger">
                         {error}
                     </Alert>
-                    <Button variant="outline-primary" onClick={() => navigate('/admin/academic/departments')}>
+                    <Button variant="outline-primary" onClick={() => navigate('/admin/academic/majors')}>
                         <FontAwesomeIcon icon={faArrowLeft} className="me-1" />
                         Quay lại danh sách
                     </Button>
@@ -95,19 +95,19 @@ const DepartmentDetails = () => {
                     <div className="text-center py-5">
                         <div className="mb-4">
                             <FontAwesomeIcon 
-                                icon={faBuilding} 
+                                icon={faGraduationCap} 
                                 size="5x" 
                                 className="text-muted opacity-50" 
                             />
                         </div>
-                        <h3 className="text-muted mb-3">Không Tìm Thấy Khoa/Phòng Ban</h3>
+                        <h3 className="text-muted mb-3">Không Tìm Thấy Ngành Học</h3>
                         <p className="text-muted mb-4">
-                            Khoa/Phòng ban với ID <code>#{id}</code> không tồn tại trong hệ thống.
+                            Ngành học với ID <code>#{id}</code> không tồn tại trong hệ thống.
                         </p>
                         <div className="d-flex gap-2 justify-content-center">
                             <Button 
                                 variant="primary" 
-                                onClick={() => navigate('/admin/academic/departments')}
+                                onClick={() => navigate('/admin/academic/majors')}
                             >
                                 <FontAwesomeIcon icon={faArrowLeft} className="me-1" />
                                 Quay Lại Danh Sách
@@ -132,22 +132,22 @@ const DepartmentDetails = () => {
                 {/* Header */}
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h2 className="h4 fw-bold text-dark">Chi Tiết Khoa/Phòng Ban</h2>
+                        <h2 className="h4 fw-bold text-dark">Chi Tiết Ngành Học</h2>
                         <p className="text-muted mb-0">
-                            Thông tin chi tiết của {department.name}
+                            Thông tin chi tiết của {major.name}
                         </p>
                     </div>
                     <div className="d-flex gap-2">
                         <Button
                             variant="outline-primary"
-                            onClick={() => navigate('/admin/academic/departments')}
+                            onClick={() => navigate('/admin/academic/majors')}
                         >
                             <FontAwesomeIcon icon={faArrowLeft} className="me-1" />
                             Quay lại
                         </Button>
                         <Button
                             variant="primary"
-                            onClick={() => navigate(`/admin/academic/departments/edit/${department.id}`)}
+                            onClick={() => navigate(`/admin/academic/majors/edit/${major.id}`)}
                         >
                             <FontAwesomeIcon icon={faEdit} className="me-1" />
                             Chỉnh sửa
@@ -161,31 +161,41 @@ const DepartmentDetails = () => {
                         <Card className="border-0 shadow-sm">
                             <Card.Header className="bg-light border-0">
                                 <h5 className="mb-0 d-flex align-items-center">
-                                    <FontAwesomeIcon icon={faBuilding} className="me-2 text-primary" />
+                                    <FontAwesomeIcon icon={faGraduationCap} className="me-2 text-primary" />
                                     Thông Tin Cơ Bản
                                 </h5>
                             </Card.Header>
                             <Card.Body>
                                 <Row>
-                                    {/* Basic Department Information - Left Side */}
+                                    {/* Basic Major Information - Left Side */}
                                     <Col md={8}>
                                         <Row>
                                             <Col md={6}>
                                                 <div className="mb-3">
                                                     <label className="text-muted small mb-1">ID</label>
-                                                    <div className="fw-medium">#{department.id}</div>
+                                                    <div className="fw-medium">#{major.id}</div>
                                                 </div>
                                                 
                                                 <div className="mb-3">
-                                                    <label className="text-muted small mb-1">Tên Khoa/Phòng Ban</label>
-                                                    <div className="fw-medium fs-5">{department.name}</div>
+                                                    <label className="text-muted small mb-1">Tên Ngành Học</label>
+                                                    <div className="fw-medium fs-5">{major.name}</div>
+                                                </div>
+
+                                                <div className="mb-3">
+                                                    <label className="text-muted small mb-1">
+                                                        <FontAwesomeIcon icon={faBuilding} className="me-1" />
+                                                        Khoa
+                                                    </label>
+                                                    <div className="text-primary">
+                                                        {major.departmentResponse?.name || 'Chưa xác định'}
+                                                    </div>
                                                 </div>
 
                                                 <div className="mb-3">
                                                     <label className="text-muted small mb-1">Trạng Thái</label>
                                                     <div>
                                                         <Badge bg="success" className="px-3 py-2">
-                                                            <FontAwesomeIcon icon={faBuilding} className="me-2" />
+                                                            <FontAwesomeIcon icon={faGraduationCap} className="me-2" />
                                                             Hoạt động
                                                         </Badge>
                                                     </div>
@@ -195,18 +205,24 @@ const DepartmentDetails = () => {
                                             <Col md={6}>
                                                 <div className="mb-3">
                                                     <label className="text-muted small mb-1">
-                                                        <FontAwesomeIcon icon={faGraduationCap} className="me-1" />
-                                                        Số Ngành Học
+                                                        <FontAwesomeIcon icon={faBook} className="me-1" />
+                                                        Tổng Số Tín Chỉ Yêu Cầu
                                                     </label>
-                                                    <div className="text-muted">Chưa có dữ liệu</div>
+                                                    <div>
+                                                        <Badge bg="info" className="px-3 py-2">
+                                                            {major.totalCreditsRequired || 0} tín chỉ
+                                                        </Badge>
+                                                    </div>
                                                 </div>
 
                                                 <div className="mb-3">
                                                     <label className="text-muted small mb-1">
-                                                        <FontAwesomeIcon icon={faUsers} className="me-1" />
-                                                        Số Thành Viên
+                                                        <FontAwesomeIcon icon={faIdCard} className="me-1" />
+                                                        ID Khoa
                                                     </label>
-                                                    <div className="text-muted">Chưa có dữ liệu</div>
+                                                    <div className="text-muted">
+                                                        #{major.departmentResponse?.id || 'N/A'}
+                                                    </div>
                                                 </div>
                                             </Col>
                                         </Row>
@@ -221,19 +237,21 @@ const DepartmentDetails = () => {
                                             </h6>
                                             <div className="d-flex justify-content-between align-items-center mb-2">
                                                 <span className="text-muted small">ID:</span>
-                                                <Badge bg="primary">#{department.id}</Badge>
+                                                <Badge bg="primary">#{major.id}</Badge>
                                             </div>
                                             <div className="d-flex justify-content-between align-items-center mb-2">
                                                 <span className="text-muted small">Trạng thái:</span>
                                                 <Badge bg="success">Hoạt động</Badge>
                                             </div>
                                             <div className="d-flex justify-content-between align-items-center mb-2">
-                                                <span className="text-muted small">Ngành học:</span>
-                                                <span className="small">-</span>
+                                                <span className="text-muted small">Tín chỉ:</span>
+                                                <Badge bg="info">{major.totalCreditsRequired || 0}</Badge>
                                             </div>
                                             <div className="d-flex justify-content-between align-items-center">
-                                                <span className="text-muted small">Thành viên:</span>
-                                                <span className="small">-</span>
+                                                <span className="text-muted small">Khoa:</span>
+                                                <span className="small text-truncate" style={{maxWidth: '100px'}}>
+                                                    {major.departmentResponse?.name || '-'}
+                                                </span>
                                             </div>
                                         </div>
                                     </Col>
@@ -247,14 +265,14 @@ const DepartmentDetails = () => {
                         <Card className="border-0 shadow-sm">
                             <Card.Header className="bg-light border-0">
                                 <h5 className="mb-0 d-flex align-items-center">
-                                    <FontAwesomeIcon icon={faGraduationCap} className="me-2 text-primary" />
-                                    Ngành Học Thuộc Khoa
+                                    <FontAwesomeIcon icon={faBook} className="me-2 text-primary" />
+                                    Chương Trình Đào Tạo
                                 </h5>
                             </Card.Header>
                             <Card.Body>
                                 <div className="text-center py-4">
-                                    <FontAwesomeIcon icon={faGraduationCap} size="2x" className="text-muted mb-2" />
-                                    <p className="text-muted mb-0">Danh sách ngành học sẽ được hiển thị sau khi Major service được tích hợp</p>
+                                    <FontAwesomeIcon icon={faBook} size="2x" className="text-muted mb-2" />
+                                    <p className="text-muted mb-0">Danh sách chương trình đào tạo sẽ được hiển thị sau khi ProgramCurriculum service được tích hợp</p>
                                 </div>
                             </Card.Body>
                         </Card>
@@ -264,14 +282,14 @@ const DepartmentDetails = () => {
                         <Card className="border-0 shadow-sm">
                             <Card.Header className="bg-light border-0">
                                 <h5 className="mb-0 d-flex align-items-center">
-                                    <FontAwesomeIcon icon={faUsers} className="me-2 text-primary" />
-                                    Thành Viên Khoa
+                                    <FontAwesomeIcon icon={faGraduationCap} className="me-2 text-primary" />
+                                    Sinh Viên
                                 </h5>
                             </Card.Header>
                             <Card.Body>
                                 <div className="text-center py-4">
-                                    <FontAwesomeIcon icon={faUsers} size="2x" className="text-muted mb-2" />
-                                    <p className="text-muted mb-0">Danh sách thành viên khoa sẽ được hiển thị sau khi DepartmentMember service được tích hợp</p>
+                                    <FontAwesomeIcon icon={faGraduationCap} size="2x" className="text-muted mb-2" />
+                                    <p className="text-muted mb-0">Danh sách sinh viên thuộc ngành học sẽ được hiển thị sau khi User service được tích hợp</p>
                                 </div>
                             </Card.Body>
                         </Card>
@@ -282,4 +300,4 @@ const DepartmentDetails = () => {
     );
 };
 
-export default DepartmentDetails; 
+export default MajorDetails; 
