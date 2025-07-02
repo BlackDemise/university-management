@@ -56,7 +56,7 @@ public class MajorServiceImpl implements MajorService {
         return switch (searchCriterion) {
             case "name" -> majorRepository.findByNameContainingIgnoreCase(searchValue.trim(), pageable)
                     .map(majorMapper::toResponse);
-            case "departmentResponse.name" -> majorRepository.findByDepartmentNameContainingIgnoreCase(searchValue.trim(), pageable)
+            case "departmentName" -> majorRepository.findByDepartmentNameContainingIgnoreCase(searchValue.trim(), pageable)
                     .map(majorMapper::toResponse);
             default ->
                 // Fallback to no search

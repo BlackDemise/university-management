@@ -268,9 +268,63 @@ const ClassroomList = () => {
           </div>
         </div>
 
+        {/* Search and Filter Section */}
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          {/* Search Block - Left Side */}
+          <div className="d-flex align-items-center gap-2">
+            <span>Tìm kiếm:</span>
+            <Form.Select
+              style={{ width: "150px" }}
+              value={searchType}
+              onChange={(e) => handleSearchTypeChange(e.target.value)}
+            >
+              <option value="name">Tên Phòng</option>
+              <option value="building">Tòa Nhà</option>
+            </Form.Select>
+            <div className="d-flex gap-2">
+              <Form.Control
+                type="text"
+                placeholder="Nhập từ khóa..."
+                value={searchTerm}
+                onChange={handleSearchInputChange}
+                onKeyPress={handleSearchKeyPress}
+                style={{ width: "300px" }}
+              />
+              <Button variant="primary" onClick={handleSearch} disabled={isSearching}>
+                {isSearching ? (
+                  <Spinner size="sm" animation="border" />
+                ) : (
+                  <FontAwesomeIcon icon={faSearch} />
+                )}
+                <span className="ms-2">Tìm</span>
+              </Button>
+              {searchTerm && (
+                <Button variant="secondary" onClick={handleClearSearch}>
+                  <FontAwesomeIcon icon={faTimes} />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Page Size Selection - Right Side */}
+          <div className="d-flex align-items-center gap-2">
+            <span>Hiển thị:</span>
+            <Form.Select
+              style={{ width: "110px" }}
+              value={pageSize}
+              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+            >
+              <option value={5}>5 dòng</option>
+              <option value={10}>10 dòng</option>
+              <option value={20}>20 dòng</option>
+              <option value={50}>50 dòng</option>
+            </Form.Select>
+          </div>
+        </div>
+
         {/* Error Alert */}
         {error && (
-          <Alert variant="danger" dismissible onClose={() => setError(null)}>
+          <Alert variant="danger" className="mb-4">
             {error}
           </Alert>
         )}
@@ -278,71 +332,6 @@ const ClassroomList = () => {
         {/* Classrooms Table */}
         <div className="card border-0 shadow-sm">
           <div className="card-body p-0">
-            {/* Search and Page Size Controls */}
-            <div className="d-flex justify-content-between align-items-center p-3 border-bottom flex-wrap gap-3">
-              <div
-                className="d-flex gap-2 flex-grow-1"
-                style={{ maxWidth: "500px" }}
-              >
-                <Form.Control
-                  type="text"
-                  placeholder="Tìm kiếm phòng học..."
-                  value={searchTerm}
-                  onChange={handleSearchInputChange}
-                  onKeyPress={handleSearchKeyPress}
-                />
-                <Dropdown>
-                  <Dropdown.Toggle
-                    variant="outline-secondary"
-                    id="search-type-dropdown"
-                  >
-                    {getSearchTypeDisplayText(searchType)}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <Dropdown.Item
-                      active={searchType === "roomNumber"}
-                      onClick={() => handleSearchTypeChange("roomNumber")}
-                    >
-                      Số Phòng
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      active={searchType === "building"}
-                      onClick={() => handleSearchTypeChange("building")}
-                    >
-                      Tòa Nhà
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-                <Button
-                  variant="primary"
-                  onClick={handleSearch}
-                  disabled={loading}
-                >
-                  <FontAwesomeIcon icon={faSearch} />
-                </Button>
-                {searchTerm && (
-                  <Button
-                    variant="outline-secondary"
-                    onClick={handleClearSearch}
-                    disabled={loading}
-                  >
-                    <FontAwesomeIcon icon={faTimes} />
-                  </Button>
-                )}
-              </div>
-              <Form.Select
-                style={{ width: "auto" }}
-                value={pageSize}
-                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                disabled={loading}
-              >
-                <option value="10">10 hàng</option>
-                <option value="20">20 hàng</option>
-                <option value="50">50 hàng</option>
-                <option value="100">100 hàng</option>
-              </Form.Select>
-            </div>
-
             {/* Table Content */}
             {loading ? (
               <div className="text-center py-5">

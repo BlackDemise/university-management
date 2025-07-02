@@ -1,5 +1,5 @@
 // frontend/src/components/layout/navbar/vertical/VerticalNavbar.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Nav, Button, Collapse } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -7,14 +7,16 @@ import {
     faClipboardList, faBook, faClipboardCheck, faCalendarCheck,
     faChartBar, faCalendar, faCog, faBuilding, faChevronDown, faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import styles from './VerticalNavbar.module.css';
 import {useAuth} from "../../../../contexts/AuthContext.jsx";
 
 function VerticalNavbar({ sidebarCollapsed, toggleSidebar, activeMenu, setActiveMenu }) {
     const navigate = useNavigate();
+    const location = useLocation();
     const { userRole } = useAuth();
     const [expandedMenus, setExpandedMenus] = useState({});
+    const [submenuToParentMap, setSubmenuToParentMap] = useState({});
 
     // ========================================
     // NAVIGATION ITEMS BY ROLE
@@ -178,6 +180,44 @@ function VerticalNavbar({ sidebarCollapsed, toggleSidebar, activeMenu, setActive
         }
     };
 
+    // Initialize submenuToParentMap
+    useEffect(() => {
+        const newSubmenuToParentMap = {};
+        getNavigationItems().forEach(item => {
+            if (item.submenu) {
+                item.submenu.forEach(subItem => {
+                    newSubmenuToParentMap[subItem.id] = item.id;
+                    newSubmenuToParentMap[subItem.path] = item.id;
+                });
+            }
+        });
+        setSubmenuToParentMap(newSubmenuToParentMap);
+    }, [userRole]);
+
+    // Handle initial path and navigation changes
+    useEffect(() => {
+        const currentPath = location.pathname;
+        
+        // Find matching navigation item
+        const allItems = getNavigationItems().flatMap(item => 
+            item.submenu ? [...item.submenu, item] : [item]
+        );
+        
+        const activeItem = allItems.find(item => item.path === currentPath);
+        
+        if (activeItem) {
+            setActiveMenu(activeItem.id);
+            // If it's a submenu item, expand its parent
+            const parentId = submenuToParentMap[activeItem.id] || submenuToParentMap[activeItem.path];
+            if (parentId) {
+                setExpandedMenus(prev => ({
+                    ...prev,
+                    [parentId]: true
+                }));
+            }
+        }
+    }, [location.pathname, submenuToParentMap]);
+
     // ========================================
     // EVENT HANDLERS
     // ========================================
@@ -196,6 +236,11 @@ function VerticalNavbar({ sidebarCollapsed, toggleSidebar, activeMenu, setActive
 
     const handleSubmenuNavigation = (parentId, submenuItem) => {
         setActiveMenu(submenuItem.id);
+        // Ensure parent menu is expanded
+        setExpandedMenus(prev => ({
+            ...prev,
+            [parentId]: true
+        }));
         navigate(submenuItem.path);
     };
 
@@ -206,13 +251,14 @@ function VerticalNavbar({ sidebarCollapsed, toggleSidebar, activeMenu, setActive
         }));
     };
 
-    // Check if current menu or any submenu is active
     const isMenuActive = (item) => {
-        if (activeMenu === item.id) return true;
+        if (item.path === location.pathname) return true;
         if (item.submenu) {
-            return item.submenu.some(sub => activeMenu === sub.id);
+            return item.submenu.some(subItem => 
+                subItem.path === location.pathname
+            );
         }
-        return false;
+        return activeMenu === item.id;
     };
 
     const navItems = getNavigationItems();

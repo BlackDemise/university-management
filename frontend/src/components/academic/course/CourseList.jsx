@@ -295,9 +295,64 @@ const CourseList = () => {
           </div>
         </div>
 
+        {/* Search and Filter Section */}
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          {/* Search Block - Left Side */}
+          <div className="d-flex align-items-center gap-2">
+            <span>Tìm kiếm:</span>
+            <Form.Select
+              style={{ width: "150px" }}
+              value={searchType}
+              onChange={(e) => handleSearchTypeChange(e.target.value)}
+            >
+              <option value="name">Tên Môn Học</option>
+              <option value="code">Mã Môn Học</option>
+              <option value="courseType">Loại Môn Học</option>
+            </Form.Select>
+            <div className="d-flex gap-2">
+              <Form.Control
+                type="text"
+                placeholder="Nhập từ khóa..."
+                value={searchTerm}
+                onChange={handleSearchInputChange}
+                onKeyPress={handleSearchKeyPress}
+                style={{ width: "300px" }}
+              />
+              <Button variant="primary" onClick={handleSearch} disabled={isSearching}>
+                {isSearching ? (
+                  <Spinner size="sm" animation="border" />
+                ) : (
+                  <FontAwesomeIcon icon={faSearch} />
+                )}
+                <span className="ms-2">Tìm</span>
+              </Button>
+              {searchTerm && (
+                <Button variant="secondary" onClick={handleClearSearch}>
+                  <FontAwesomeIcon icon={faTimes} />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Page Size Selection - Right Side */}
+          <div className="d-flex align-items-center gap-2">
+            <span>Hiển thị:</span>
+            <Form.Select
+              style={{ width: "110px" }}
+              value={pageSize}
+              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+            >
+              <option value={5}>5 dòng</option>
+              <option value={10}>10 dòng</option>
+              <option value={20}>20 dòng</option>
+              <option value={50}>50 dòng</option>
+            </Form.Select>
+          </div>
+        </div>
+
         {/* Error Alert */}
         {error && (
-          <Alert variant="danger" dismissible onClose={() => setError(null)}>
+          <Alert variant="danger" className="mb-4">
             {error}
           </Alert>
         )}
@@ -305,111 +360,6 @@ const CourseList = () => {
         {/* Courses Table */}
         <div className="card border-0 shadow-sm">
           <div className="card-body p-0">
-            {/* Search and Page Size Controls */}
-            <div className="d-flex justify-content-between align-items-center p-3 border-bottom flex-wrap gap-3">
-              {/* Search Section - Left Side */}
-              <div className="d-flex align-items-center gap-3">
-                <div className="d-flex align-items-center">
-                  <span className="text-muted me-2">Tìm kiếm:</span>
-                  <Dropdown>
-                    <Dropdown.Toggle
-                      variant="light"
-                      size="sm"
-                      className="text-dark"
-                    >
-                      {getSearchTypeDisplayText(searchType)}
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                      <Dropdown.Item
-                        onClick={() => handleSearchTypeChange("name")}
-                      >
-                        Tên Môn Học
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        onClick={() => handleSearchTypeChange("code")}
-                      >
-                        Mã Môn Học
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        onClick={() => handleSearchTypeChange("courseType")}
-                      >
-                        Loại Môn Học
-                      </Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown>
-                </div>
-
-                {/* Search Input */}
-                <div className="d-flex align-items-center">
-                  <Form.Control
-                    type="text"
-                    placeholder="Nhập từ khóa tìm kiếm..."
-                    value={searchTerm}
-                    onChange={handleSearchInputChange}
-                    onKeyPress={handleSearchKeyPress}
-                    size="sm"
-                    style={{ width: "250px" }}
-                    disabled={loading || isSearching}
-                  />
-                </div>
-
-                {/* Search Actions */}
-                <div className="d-flex gap-2">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleSearch}
-                    disabled={loading || isSearching || !searchTerm.trim()}
-                  >
-                    {isSearching ? (
-                      <Spinner
-                        as="span"
-                        animation="border"
-                        size="sm"
-                        role="status"
-                        className="me-1"
-                      />
-                    ) : (
-                      <FontAwesomeIcon icon={faSearch} className="me-1" />
-                    )}
-                    Tìm
-                  </Button>
-
-                  {searchTerm && (
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      onClick={handleClearSearch}
-                      disabled={loading || isSearching}
-                    >
-                      <FontAwesomeIcon icon={faTimes} className="me-1" />
-                      Xóa
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              {/* Page Size Control - Right Side */}
-              <div className="d-flex align-items-center gap-2">
-                <span className="text-muted">Hiển thị:</span>
-                <Form.Select
-                  size="sm"
-                  value={pageSize}
-                  onChange={(e) =>
-                    handlePageSizeChange(parseInt(e.target.value))
-                  }
-                  style={{ width: "auto" }}
-                  disabled={loading}
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                </Form.Select>
-                <span className="text-muted">mục</span>
-              </div>
-            </div>
-
             {/* Loading State */}
             {loading && (
               <div className="text-center py-5">

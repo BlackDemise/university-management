@@ -11,20 +11,10 @@ const majorService = {
      * @param {string} params.searchBy - Search field: 'name' or 'departmentResponse.name' (optional)
      * @returns {Promise} - Promise with paginated user response
      */
-    getAllMajors: async (params = {}) => {
+    getAllMajors: async (params) => {
         try {
-            const { page = 0, size = 10, sort = 'id,asc', search, searchBy } = params;
-
-            const queryParams = { page, size, sort };
-
-            // Add search parameters if they exist (map to backend parameter names)
-            if (search && search.trim()) {
-                queryParams.searchValue = search.trim();
-                queryParams.searchCriterion = searchBy || 'name';
-            }
-
             const response = await API.get(`/v1/major/all/page`, {
-                params: queryParams
+                params
             });
             return response.data;
         } catch (error) {
