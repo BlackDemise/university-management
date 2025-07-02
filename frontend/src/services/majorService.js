@@ -23,6 +23,27 @@ const majorService = {
     },
 
     /**
+     * Get major curriculum summary with pagination
+     * @param {Object} params - Query parameters
+     * @param {number} params.page - Page number (0-based)
+     * @param {number} params.size - Page size
+     * @param {string} params.sort - Sort field and direction
+     * @param {string} params.searchValue - Search term (optional)
+     * @param {string} params.searchCriterion - Search field (optional)
+     * @returns {Promise} - Promise with paginated major curriculum summary response
+     */
+    getMajorCurriculumSummary: async (params) => {
+        try {
+            const response = await API.get(`/v1/major/all/summary/page`, {
+                params
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    /**
      * Get major by ID
      * @param {number} id - Major ID
      * @returns {Promise} - Promise with major details

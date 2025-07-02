@@ -3,6 +3,7 @@ package org.endipi.academic.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.endipi.academic.dto.request.ProgramCurriculumRequest;
+import org.endipi.academic.dto.response.MajorCurriculumResponse;
 import org.endipi.academic.dto.response.ProgramCurriculumResponse;
 import org.endipi.academic.entity.ProgramCurriculum;
 import org.endipi.academic.enums.error.ErrorCode;

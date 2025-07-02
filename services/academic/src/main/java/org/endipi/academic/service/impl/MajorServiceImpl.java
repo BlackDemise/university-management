@@ -3,6 +3,7 @@ package org.endipi.academic.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.endipi.academic.dto.request.MajorRequest;
+import org.endipi.academic.dto.response.MajorCurriculumResponse;
 import org.endipi.academic.dto.response.MajorResponse;
 import org.endipi.academic.entity.Major;
 import org.endipi.academic.enums.error.ErrorCode;
@@ -63,6 +64,13 @@ public class MajorServiceImpl implements MajorService {
                     majorRepository.findAll(pageable)
                             .map(majorMapper::toResponse);
         };
+    }
+
+    @Override
+    public Page<MajorCurriculumResponse> findMajorCurriculumSummary(int page, int size, String sort, String searchValue, String searchCriterion) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort.split(",")[0]).ascending());
+
+        return majorRepository.findMajorCurriculumSummary(pageable);
     }
 
     @Override
