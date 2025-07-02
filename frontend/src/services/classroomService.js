@@ -1,8 +1,13 @@
-import API from './api';
+import API from "./api.js"
 
 const classroomService = {
     getAllClassrooms: async (params = {}) => {
-        const response = await API.get(`/v1/classroom/all`, { params });
+        // Use paginated endpoint if params are provided, otherwise fallback to non-paginated
+        const endpoint = (params.page !== undefined || params.size !== undefined) 
+            ? `/v1/classroom/all/page`
+            : `/v1/classroom/all`;
+        
+        const response = await API.get(endpoint, { params });
         return response.data;
     },
 

@@ -3,8 +3,10 @@ package org.endipi.academic.resource;
 import lombok.RequiredArgsConstructor;
 import org.endipi.academic.dto.request.ProgramCurriculumRequest;
 import org.endipi.academic.dto.response.ApiResponse;
+import org.endipi.academic.dto.response.CourseResponse;
 import org.endipi.academic.dto.response.ProgramCurriculumResponse;
 import org.endipi.academic.service.ProgramCurriculumService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,26 @@ public class ProgramCurriculumResource {
                 .statusCode(HttpStatus.OK.value())
                 .message("OK")
                 .result(programCurriculumResponses)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/all/page")
+    public ResponseEntity<?> getAllProgramCurriculums(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,desc") String sort,
+            @RequestParam(required = false) String searchValue,
+            @RequestParam(defaultValue = "name") String searchCriterion
+    ) {
+        Page<ProgramCurriculumResponse> response = programCurriculumService.findBySearchingCriterion(page, size, sort, searchValue, searchCriterion);
+
+        ApiResponse<String, Page<ProgramCurriculumResponse>> apiResponse = ApiResponse.<String, Page<ProgramCurriculumResponse>>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.OK.value())
+                .message("OK")
+                .result(response)
                 .build();
 
         return ResponseEntity.ok(apiResponse);

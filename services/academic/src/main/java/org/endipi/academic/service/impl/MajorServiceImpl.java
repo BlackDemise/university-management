@@ -44,7 +44,7 @@ public class MajorServiceImpl implements MajorService {
     @Override
     public Page<MajorResponse> findBySearchingCriterion(int page, int size, String sort, String searchValue, String searchCriterion) {
         // Make sure 'sort' value is something like <criterion>,<direction>
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sort.split(",")[0]).descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort.split(",")[0]).ascending());
 
         // If no search term, return all users
         if (searchValue == null || searchValue.trim().isEmpty()) {

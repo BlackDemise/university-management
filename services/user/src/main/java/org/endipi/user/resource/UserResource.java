@@ -39,7 +39,7 @@ public class UserResource {
     public ResponseEntity<?> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id,desc") String sort,
+            @RequestParam(defaultValue = "id,asc") String sort,
             @RequestParam(required = false) String searchValue,
             @RequestParam(defaultValue = "fullName") String searchCriterion
     ) {

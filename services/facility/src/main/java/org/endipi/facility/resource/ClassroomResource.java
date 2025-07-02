@@ -6,6 +6,7 @@ import org.endipi.facility.dto.request.ClassroomRequest;
 import org.endipi.facility.dto.response.ApiResponse;
 import org.endipi.facility.dto.response.ClassroomResponse;
 import org.endipi.facility.service.ClassroomService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,26 @@ public class ClassroomResource {
                         .message("OK")
                         .result(classroomResponses)
                         .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/all/page")
+    public ResponseEntity<?> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,asc") String sort,
+            @RequestParam(required = false) String searchValue,
+            @RequestParam(defaultValue = "fullName") String searchCriterion
+    ) {
+        Page<ClassroomResponse> response = classroomService.findBySearchingCriterion(page, size, sort, searchValue, searchCriterion);
+
+        ApiResponse<String, Page<ClassroomResponse>> apiResponse = ApiResponse.<String, Page<ClassroomResponse>>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.OK.value())
+                .message("OK")
+                .result(response)
+                .build();
 
         return ResponseEntity.ok(apiResponse);
     }

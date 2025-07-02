@@ -12,6 +12,10 @@ import org.endipi.academic.repository.DepartmentRepository;
 import org.endipi.academic.service.DepartmentService;
 import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
@@ -64,6 +68,27 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
         departmentRepository.deleteById(id);
+    }
+
+    @Override
+    public Page<DepartmentResponse> findBySearchingCriterion(int page, int size, String sort, String searchValue, String searchCriterion) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort.split(",")[0]).ascending());
+
+        // If no search term, return all users
+        if (searchValue == null || searchValue.trim().isEmpty()) {
+            return departmentRepository.findAll(pageable)
+                    .map(departmentMapper::toResponse);
+        }
+
+        // Apply search based on search type
+        return switch (searchCriterion) {
+            case "name" -> departmentRepository.findByNameContainingIgnoreCase(searchValue.trim(), pageable)
+                    .map(departmentMapper::toResponse);
+            default ->
+                // Fallback to no search
+                    departmentRepository.findAll(pageable)
+                            .map(departmentMapper::toResponse);
+        };
     }
 
     private DepartmentResponse save(DepartmentRequest departmentRequest) {

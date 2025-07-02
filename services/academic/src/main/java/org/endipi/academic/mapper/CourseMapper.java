@@ -18,6 +18,8 @@ public interface CourseMapper {
             expression = "java(org.endipi.academic.enums.course.CourseType.valueOf(courseRequest.getCourseType()))")
     Course toEntity(CourseRequest courseRequest);
 
+    @Mapping(target = "courseTypeEnum",
+            expression = "java(course.getCourseType().name())")
     @Mapping(target = "courseType",
             expression = "java(course.getCourseType().getCourseType())")
     CourseResponse toResponse(Course course);

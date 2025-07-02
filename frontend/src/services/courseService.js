@@ -1,13 +1,25 @@
-import API from './api';
+import API from "./api";
 
 const courseService = {
   /**
-   * Get all courses
-   * @returns {Promise} - Promise with courses array
+   * Get all courses with pagination and search
+   * @param {Object} params - Query parameters
+   * @param {number} params.page - Page number (0-based)
+   * @param {number} params.size - Page size
+   * @param {string} params.search - Search term
+   * @param {string} params.searchBy - Field to search by
+   * @param {string} params.sort - Sort parameter (e.g., "id,desc")
+   * @returns {Promise} - Promise with paginated courses
    */
-  getAllCourses: async () => {
+  getAllCourses: async (params = {}) => {
     try {
-      const response = await API.get(`/v1/course/all`);
+      // Use paginated endpoint if params are provided, otherwise fallback to non-paginated
+      const endpoint =
+        params.page !== undefined || params.size !== undefined
+          ? `/v1/course/all/page`
+          : `/v1/course/all`;
+
+      const response = await API.get(endpoint, { params });
       return response.data;
     } catch (error) {
       throw error;
@@ -57,4 +69,4 @@ const courseService = {
   },
 };
 
-export default courseService; 
+export default courseService;

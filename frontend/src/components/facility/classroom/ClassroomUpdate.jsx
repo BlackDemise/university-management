@@ -86,7 +86,7 @@ const ClassroomUpdate = () => {
             };
 
             // Call API
-            const response = await classroomService.createClassroom(submitData);
+            const response = await classroomService.saveClassroom(submitData);
             
             toast.success(
                 isEditMode 

@@ -13,6 +13,10 @@ import org.endipi.facility.repository.ClassroomRepository;
 import org.endipi.facility.service.ClassroomService;
 import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
@@ -66,6 +70,29 @@ public class ClassroomServiceImpl implements ClassroomService {
         }
 
         classroomRepository.deleteById(id);
+    }
+
+    @Override
+    public Page<ClassroomResponse> findBySearchingCriterion(int page, int size, String sort, String searchValue, String searchCriterion) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort.split(",")[0]).ascending());
+
+        // If no search term, return all users
+        if (searchValue == null || searchValue.trim().isEmpty()) {
+            return classroomRepository.findAll(pageable)
+                    .map(classroomMapper::toResponse);
+        }
+
+        // Apply search based on search type
+        return switch (searchCriterion) {
+            case "roomNumber" -> classroomRepository.findByRoomNumberContainingIgnoreCase(searchValue.trim(), pageable)
+                    .map(classroomMapper::toResponse);
+            case "building" -> classroomRepository.findByBuildingContainingIgnoreCase(searchValue.trim(), pageable)
+                    .map(classroomMapper::toResponse);
+            default ->
+                // Fallback to no search
+                    classroomRepository.findAll(pageable)
+                            .map(classroomMapper::toResponse);
+        };
     }
 
     @Override

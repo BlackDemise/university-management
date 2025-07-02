@@ -5,6 +5,7 @@ import org.endipi.academic.dto.request.DepartmentRequest;
 import org.endipi.academic.dto.response.ApiResponse;
 import org.endipi.academic.dto.response.DepartmentResponse;
 import org.endipi.academic.service.DepartmentService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,26 @@ public class DepartmentResource {
                 .statusCode(HttpStatus.OK.value())
                 .message("OK")
                 .result(departmentResponses)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/all/page")
+    public ResponseEntity<?> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,desc") String sort,
+            @RequestParam(required = false) String searchValue,
+            @RequestParam(defaultValue = "fullName") String searchCriterion
+    ) {
+        Page<DepartmentResponse> response = departmentService.findBySearchingCriterion(page, size, sort, searchValue, searchCriterion);
+
+        ApiResponse<String, Page<DepartmentResponse>> apiResponse = ApiResponse.<String, Page<DepartmentResponse>>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.OK.value())
+                .message("OK")
+                .result(response)
                 .build();
 
         return ResponseEntity.ok(apiResponse);

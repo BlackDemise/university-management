@@ -14,4 +14,5 @@ public class CourseResponse {
     private Integer creditsTheory;
     private Integer creditsPractical;
     private String courseType;
+    private String courseTypeEnum;
 }

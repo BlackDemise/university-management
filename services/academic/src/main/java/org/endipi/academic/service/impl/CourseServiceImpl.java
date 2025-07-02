@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.endipi.academic.dto.request.CourseRequest;
 import org.endipi.academic.dto.response.CourseResponse;
 import org.endipi.academic.entity.Course;
+import org.endipi.academic.enums.course.CourseType;
 import org.endipi.academic.enums.error.ErrorCode;
 import org.endipi.academic.exception.ApplicationException;
 import org.endipi.academic.mapper.CourseMapper;
@@ -12,6 +13,10 @@ import org.endipi.academic.repository.CourseRepository;
 import org.endipi.academic.service.CourseService;
 import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +38,47 @@ public class CourseServiceImpl implements CourseService {
                 .stream()
                 .map(courseMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    public Page<CourseResponse> findBySearchingCriterion(int page, int size, String sort, String searchValue, String searchCriterion) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort.split(",")[0]).descending());
+
+        // If no search term, return all users
+        if (searchValue == null || searchValue.trim().isEmpty()) {
+            return courseRepository.findAll(pageable)
+                    .map(courseMapper::toResponse);
+        }
+
+        Page<CourseResponse> courseResponses;
+
+        // Apply search based on search type
+        switch (searchCriterion) {
+            case "name" ->
+                    courseResponses = courseRepository.findByNameContainingIgnoreCase(searchValue.trim(), pageable)
+                            .map(courseMapper::toResponse);
+            case "code" ->
+                    courseResponses = courseRepository.findByCodeContainingIgnoreCase(searchValue.trim(), pageable)
+                            .map(courseMapper::toResponse);
+            case "courseType" -> {
+                CourseType courseType;
+
+                try {
+                    courseType = CourseType.valueOf(searchValue);
+                } catch (IllegalArgumentException e) {
+                    throw new ApplicationException(ErrorCode.INVALID_COURSE_TYPE);
+                }
+
+                courseResponses = courseRepository.findByCourseType(courseType, pageable)
+                        .map(courseMapper::toResponse);
+            }
+            default ->
+                // Fallback to no search
+                    courseResponses = courseRepository.findAll(pageable)
+                            .map(courseMapper::toResponse);
+        }
+
+        return courseResponses;
     }
 
     @Override

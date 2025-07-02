@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.endipi.academic.dto.request.CourseRequest;
 import org.endipi.academic.dto.response.ApiResponse;
 import org.endipi.academic.dto.response.CourseResponse;
+import org.endipi.academic.dto.response.DepartmentResponse;
 import org.endipi.academic.service.CourseService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,26 @@ public class CourseResource {
                 .statusCode(HttpStatus.OK.value())
                 .message("OK")
                 .result(courseResponses)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/all/page")
+    public ResponseEntity<?> getAllCourses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,desc") String sort,
+            @RequestParam(required = false) String searchValue,
+            @RequestParam(defaultValue = "name") String searchCriterion
+    ) {
+        Page<CourseResponse> response = courseService.findBySearchingCriterion(page, size, sort, searchValue, searchCriterion);
+
+        ApiResponse<String, Page<CourseResponse>> apiResponse = ApiResponse.<String, Page<CourseResponse>>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.OK.value())
+                .message("OK")
+                .result(response)
                 .build();
 
         return ResponseEntity.ok(apiResponse);
