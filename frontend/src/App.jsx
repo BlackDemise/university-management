@@ -36,6 +36,9 @@ import PrerequisiteCourseUpdate from "./components/academic/prerequisite-course/
 import SemesterUpdate from "./components/enrollment/semester/SemesterUpdate.jsx";
 import SemesterDetails from "./components/enrollment/semester/SemesterDetails.jsx";
 import SemesterList from "./components/enrollment/semester/SemesterList.jsx";
+import CourseOfferingList from "./components/enrollment/course-offering/CourseOfferingList.jsx";
+import CourseOfferingDetails from "./components/enrollment/course-offering/CourseOfferingDetails.jsx";
+import CourseOfferingUpdate from "./components/enrollment/course-offering/CourseOfferingUpdate.jsx";
 
 function App() {
     return (
@@ -284,6 +287,31 @@ function App() {
                         <Route path="/admin/enrollment/semesters/create" element={
                             <ProtectedRoute requiredRole="ADMIN">
                                 <SemesterUpdate/>
+                            </ProtectedRoute>
+                        }/>
+
+                        {/* Course Offering Routes */}
+                        <Route path="/admin/enrollment/course-offerings" element={
+                            <ProtectedRoute requiredRole="ADMIN">
+                                <CourseOfferingList/>
+                            </ProtectedRoute>
+                        }/>
+
+                        <Route path="/admin/enrollment/course-offerings/details/:id" element={
+                            <ProtectedRoute requiredRole="ADMIN">
+                                <CourseOfferingDetails/>
+                            </ProtectedRoute>
+                        }/>
+
+                        <Route path="/admin/enrollment/course-offerings/edit/:id" element={
+                            <ProtectedRoute requiredRole="ADMIN">
+                                <CourseOfferingUpdate/>
+                            </ProtectedRoute>
+                        }/>
+
+                        <Route path="/admin/enrollment/course-offerings/create" element={
+                            <ProtectedRoute requiredRole="ADMIN">
+                                <CourseOfferingUpdate/>
                             </ProtectedRoute>
                         }/>
 

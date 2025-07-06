@@ -18,5 +18,4 @@ public class CourseOfferingRequest {
     private Long courseId;
     private Long semesterId;
     private Long teacherId;
-    private Long classroomId;
 }

@@ -63,6 +63,19 @@ const userService = {
             throw error;
         }
     },
+
+    /**
+     * Get all teachers for dropdown selection
+     * @returns {Promise} - Promise with all teachers list
+     */
+    getAllTeachers: async () => {
+        try {
+            const response = await API.get(`/v1/user/teachers/all`);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
 };
 
 export default userService;

@@ -5,6 +5,7 @@ import org.endipi.enrollment.dto.request.CourseOfferingRequest;
 import org.endipi.enrollment.dto.response.ApiResponse;
 import org.endipi.enrollment.dto.response.CourseOfferingResponse;
 import org.endipi.enrollment.service.CourseOfferingService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,26 @@ public class CourseOfferingResource {
                         .message("OK")
                         .result(responses)
                         .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/all/page")
+    public ResponseEntity<?> getAllCourseOfferings(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,asc") String sort,
+            @RequestParam(required = false) String searchValue,
+            @RequestParam(defaultValue = "openTime") String searchCriterion
+    ) {
+        Page<CourseOfferingResponse> response = courseOfferingService.findBySearchingCriterion(page, size, sort, searchValue, searchCriterion);
+
+        ApiResponse<String, Page<CourseOfferingResponse>> apiResponse = ApiResponse.<String, Page<CourseOfferingResponse>>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.OK.value())
+                .message("OK")
+                .result(response)
+                .build();
 
         return ResponseEntity.ok(apiResponse);
     }

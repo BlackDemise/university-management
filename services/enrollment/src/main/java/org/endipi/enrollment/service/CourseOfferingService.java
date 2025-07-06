@@ -2,6 +2,7 @@ package org.endipi.enrollment.service;
 
 import org.endipi.enrollment.dto.request.CourseOfferingRequest;
 import org.endipi.enrollment.dto.response.CourseOfferingResponse;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -15,4 +16,6 @@ public interface CourseOfferingService {
     void deleteById(Long id);
 
     boolean validateCourseOffering(Long courseOfferingId);
+
+    Page<CourseOfferingResponse> findBySearchingCriterion(int page, int size, String sort, String searchValue, String searchCriterion);
 }

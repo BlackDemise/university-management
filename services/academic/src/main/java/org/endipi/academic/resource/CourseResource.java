@@ -118,4 +118,20 @@ public class CourseResource {
 
         return ResponseEntity.ok(isValid);
     }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/details/{courseId}")
+    public ResponseEntity<CourseResponse> getCourseDetails(@PathVariable Long courseId) {
+        CourseResponse courseResponse = courseService.findById(courseId);
+
+        return ResponseEntity.ok(courseResponse);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/all")
+    public ResponseEntity<List<CourseResponse>> getAllCourses() {
+        List<CourseResponse> courseResponses = courseService.findAll();
+
+        return ResponseEntity.ok(courseResponses);
+    }
 }

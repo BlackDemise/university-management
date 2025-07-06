@@ -34,7 +34,7 @@ public class SemesterResource {
     }
 
     @GetMapping("/all/page")
-    public ResponseEntity<?> getAllUsers(
+    public ResponseEntity<?> getAllSemesters(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id,asc") String sort,

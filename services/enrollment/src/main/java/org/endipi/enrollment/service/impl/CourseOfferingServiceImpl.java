@@ -2,10 +2,8 @@ package org.endipi.enrollment.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.endipi.enrollment.client.classroomservice.ClassroomServiceClient;
 import org.endipi.enrollment.client.courseservice.CourseServiceClient;
 import org.endipi.enrollment.client.userservice.UserServiceClient;
-import org.endipi.enrollment.dto.external.ClassroomValidationResponse;
 import org.endipi.enrollment.dto.external.TeacherValidationResponse;
 import org.endipi.enrollment.dto.request.CourseOfferingRequest;
 import org.endipi.enrollment.dto.response.CourseOfferingResponse;
@@ -18,10 +16,15 @@ import org.endipi.enrollment.repository.SemesterRepository;
 import org.endipi.enrollment.service.CourseOfferingService;
 import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
@@ -33,7 +36,6 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
     private final SemesterRepository semesterRepository;
     private final CourseServiceClient courseServiceClient;
     private final UserServiceClient userServiceClient;
-    private final ClassroomServiceClient classroomServiceClient;
 
     @Value("${retry.course-offering.attempts}")
     private long retryAttempts;
@@ -42,14 +44,14 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
     public List<CourseOfferingResponse> findAll() {
         return courseOfferingRepository.findAll()
                 .stream()
-                .map(courseOfferingMapper::toResponse)
+                .map(courseOffering -> courseOfferingMapper.toResponse(courseOffering, userServiceClient, courseServiceClient))
                 .toList();
     }
 
     @Override
     public CourseOfferingResponse findById(Long id) {
         return courseOfferingRepository.findById(id)
-                .map(courseOfferingMapper::toResponse)
+                .map(courseOffering -> courseOfferingMapper.toResponse(courseOffering, userServiceClient, courseServiceClient))
                 .orElseThrow(() -> new ApplicationException(ErrorCode.COURSE_OFFERING_NOT_FOUND));
     }
 
@@ -100,20 +102,6 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
             throw new ApplicationException(ErrorCode.TEACHER_VALIDATION_FAILED);
         }
 
-        // Validate classroom existence
-        try {
-            ClassroomValidationResponse validation = classroomServiceClient.validateClassroom(request.getClassroomId());
-
-            if (!validation.isExists()) {
-                throw new ApplicationException(ErrorCode.CLASSROOM_NOT_FOUND);
-            }
-
-            log.info("Classroom validation successful: {}", validation.getClassroomType());
-        } catch (Exception e) {
-            log.error("Failed to validate classroom with ID: {}", request.getClassroomId(), e);
-            throw new ApplicationException(ErrorCode.CLASSROOM_VALIDATION_FAILED);
-        }
-
         CourseOffering courseOffering;
         boolean isUpdate = request.getId() != null;
 
@@ -138,7 +126,7 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
         }
 
         courseOffering = courseOfferingRepository.save(courseOffering);
-        return courseOfferingMapper.toResponse(courseOffering);
+        return courseOfferingMapper.toResponse(courseOffering, userServiceClient, courseServiceClient);
     }
 
     @Override
@@ -153,6 +141,38 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
     @Override
     public boolean validateCourseOffering(Long courseOfferingId) {
         return courseOfferingRepository.existsById(courseOfferingId);
+    }
+
+    @Override
+    public Page<CourseOfferingResponse> findBySearchingCriterion(int page, int size, String sort, String searchValue, String searchCriterion) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort.split(",")[0]).ascending());
+
+        // If no search term, return all users
+        if (searchValue == null || searchValue.trim().isEmpty()) {
+            return courseOfferingRepository.findAll(pageable)
+                    .map(courseOffering -> courseOfferingMapper.toResponse(courseOffering, userServiceClient, courseServiceClient));
+        }
+
+        // Apply search based on search type
+        switch (searchCriterion) {
+            case "openTime" -> {
+                LocalDateTime openTime = LocalDateTime.parse(searchValue.trim(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+                return courseOfferingRepository.findByOpenTimeAfter(openTime, pageable)
+                        .map(courseOffering -> courseOfferingMapper.toResponse(courseOffering, userServiceClient, courseServiceClient));
+            }
+            case "closeTime" -> {
+                LocalDateTime closeTime = LocalDateTime.parse(searchValue.trim(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+                courseOfferingRepository.findByCloseTimeBefore(closeTime, pageable)
+                        .map(courseOffering -> courseOfferingMapper.toResponse(courseOffering, userServiceClient, courseServiceClient));
+            }
+            default -> {
+                // Fallback to no search
+                return courseOfferingRepository.findAll(pageable)
+                        .map(courseOffering -> courseOfferingMapper.toResponse(courseOffering, userServiceClient, courseServiceClient));
+            }
+        }
+        return courseOfferingRepository.findAll(pageable)
+                .map(courseOffering -> courseOfferingMapper.toResponse(courseOffering, userServiceClient, courseServiceClient));
     }
 
     /// Capacity management check

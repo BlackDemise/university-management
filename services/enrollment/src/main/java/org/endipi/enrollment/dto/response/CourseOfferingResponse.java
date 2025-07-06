@@ -1,6 +1,8 @@
 package org.endipi.enrollment.dto.response;
 
 import lombok.*;
+import org.endipi.enrollment.dto.external.CourseResponse;
+import org.endipi.enrollment.dto.external.TeacherResponse;
 
 import java.time.LocalDateTime;
 
@@ -15,8 +17,7 @@ public class CourseOfferingResponse {
     private Integer currentStudents;
     private LocalDateTime openTime;
     private LocalDateTime closeTime;
-    private Long courseId;
-    private Long semesterId;
-    private Long teacherId;
-    private Long classroomId;
+    private SemesterResponse semesterResponse;
+    private CourseResponse courseResponse;
+    private TeacherResponse teacherResponse;
 }
