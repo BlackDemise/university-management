@@ -7,11 +7,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Set;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     User findByRole_RoleTitleAndId(RoleTitle roleTitle, Long id);
 
     List<User> findByRole_RoleTitle(RoleTitle roleTitle);
+
+    List<User> findAllByRole_RoleTitleAndIdIn(RoleTitle roleTitle, Set<Long> ids);
 
     // Search by full name with pagination
     Page<User> findByFullNameContainingIgnoreCase(String fullName, Pageable pageable);

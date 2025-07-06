@@ -3,6 +3,7 @@ package org.endipi.academic.resource;
 import lombok.RequiredArgsConstructor;
 import org.endipi.academic.dto.request.CourseRequest;
 import org.endipi.academic.dto.response.ApiResponse;
+import org.endipi.academic.dto.response.CourseBasicInfo;
 import org.endipi.academic.dto.response.CourseResponse;
 import org.endipi.academic.dto.response.DepartmentResponse;
 import org.endipi.academic.service.CourseService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/course")
@@ -133,5 +135,17 @@ public class CourseResource {
         List<CourseResponse> courseResponses = courseService.findAll();
 
         return ResponseEntity.ok(courseResponses);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/id-name")
+    public Map<Long, String> getCourseNamesByIds(@RequestParam Set<Long> ids) {
+        return courseService.getCourseNamesByIds(ids);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/id-basic-info")
+    public Map<Long, CourseBasicInfo> getCourseBasicInfoByIds(@RequestParam Set<Long> ids) {
+        return courseService.getCourseBasicInfoByIds(ids);
     }
 }

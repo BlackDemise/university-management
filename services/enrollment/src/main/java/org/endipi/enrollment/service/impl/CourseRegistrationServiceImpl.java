@@ -2,10 +2,13 @@ package org.endipi.enrollment.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.endipi.enrollment.client.courseservice.CourseServiceClient;
 import org.endipi.enrollment.client.userservice.UserServiceClient;
+import org.endipi.enrollment.dto.external.CourseBasicInfo;
 import org.endipi.enrollment.dto.external.StudentValidationResponse;
 import org.endipi.enrollment.dto.request.CourseRegistrationRequest;
 import org.endipi.enrollment.dto.response.CourseRegistrationResponse;
+import org.endipi.enrollment.dto.response.CourseRegistrationSummaryResponse;
 import org.endipi.enrollment.entity.CourseOffering;
 import org.endipi.enrollment.entity.CourseRegistration;
 import org.endipi.enrollment.enums.error.ErrorCode;
@@ -16,11 +19,18 @@ import org.endipi.enrollment.repository.CourseRegistrationRepository;
 import org.endipi.enrollment.service.CourseRegistrationService;
 import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,6 +40,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
     private final CourseRegistrationMapper courseRegistrationMapper;
     private final CourseOfferingRepository courseOfferingRepository;
     private final UserServiceClient userServiceClient;
+    private final CourseServiceClient courseServiceClient;
 
     @Value("${retry.course-registration.attempts}")
     private long retryAttempts;
@@ -85,8 +96,86 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
     }
 
     @Override
+    public Page<CourseRegistrationSummaryResponse> findCourseRegistrationSummariesWithPaging(
+            int page, int size, String sort, String sortDirection, String searchTerm) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort.split(",")[0]).ascending());
+
+        Page<CourseRegistrationSummaryResponse> pageResult = courseRegistrationRepository
+                .findCourseRegistrationSummariesWithPaging(pageable);
+
+        // Step 1: Extract unique courseIds and teacherIds
+        Set<Long> courseIds = pageResult.stream()
+                .map(CourseRegistrationSummaryResponse::getCourseId)
+                .collect(Collectors.toSet());
+
+        Set<Long> teacherIds = pageResult.stream()
+                .map(CourseRegistrationSummaryResponse::getTeacherId)
+                .collect(Collectors.toSet());
+
+        // Step 2: Call other services in batch
+        Map<Long, CourseBasicInfo> courseBasicInfoById = courseServiceClient.getCourseBasicInfoByIds(courseIds);
+        Map<Long, String> teacherNamesById = userServiceClient.getTeacherNamesByIds(teacherIds);
+
+        // Step 3: Map and enrich each element
+        return pageResult.map(summary -> {
+            CourseBasicInfo courseInfo = courseBasicInfoById.get(summary.getCourseId());
+            if (courseInfo != null) {
+                summary.setCourseCode(courseInfo.getCode());
+                summary.setCourseName(courseInfo.getName());
+            }
+            summary.setTeacherName(teacherNamesById.get(summary.getTeacherId()));
+
+            // Calculate registration status
+            summary.setRegistrationStatus(calculateRegistrationStatus(
+                summary.getCurrentStudents(),
+                summary.getMaxStudents()
+            ));
+
+            return summary;
+        });
+    }
+
+
+    @Override
+    public List<CourseRegistrationResponse> findByCourseOfferingId(Long courseOfferingId) {
+        return courseRegistrationRepository.findByCourseOfferingId(courseOfferingId)
+                .stream()
+                .map(courseRegistrationMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public Page<CourseRegistrationResponse> findByCourseOfferingIdWithPaging(Long courseOfferingId, int page, int size, String sort) {
+        String[] sortParts = sort.split(",");
+        String sortField = sortParts[0];
+        String sortDirection = sortParts.length > 1 ? sortParts[1] : "asc";
+
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+
+        Page<CourseRegistration> courseRegistrations = courseRegistrationRepository.findByCourseOfferingId(courseOfferingId, pageable);
+
+        return courseRegistrations.map(courseRegistrationMapper::toResponse);
+    }
+
+    @Override
     public boolean validateCourseRegistration(Long courseRegistrationId) {
         return courseRegistrationRepository.existsById(courseRegistrationId);
+    }
+
+    private String calculateRegistrationStatus(Integer currentStudents, Integer maxStudents) {
+        if (currentStudents == null || maxStudents == null) {
+            return "UNKNOWN";
+        }
+
+        if (currentStudents >= maxStudents) {
+            return "FULL";
+        }
+
+        // For now, we'll consider all non-full courses as "OPEN"
+        // In the future, this could check against openTime/closeTime
+        return "OPEN";
     }
 
     private CourseRegistrationResponse save(CourseRegistrationRequest request) {

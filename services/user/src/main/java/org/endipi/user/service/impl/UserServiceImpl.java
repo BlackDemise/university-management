@@ -41,7 +41,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -152,6 +155,14 @@ public class UserServiceImpl implements UserService {
             // ... publish event to academic service
             teacherEventProducer.publishTeacherRemoved(user);
         }
+    }
+
+    @Override
+    public Map<Long, String> getTeacherNamesByIds(Set<Long> ids) {
+        List<User> teachers = userRepository.findAllByRole_RoleTitleAndIdIn(RoleTitle.TEACHER, ids);
+
+        return teachers.stream()
+                .collect(Collectors.toMap(User::getId, User::getFullName));
     }
 
     @Override

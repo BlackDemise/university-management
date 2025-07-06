@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -127,5 +129,11 @@ public class UserResource {
         StudentValidationResponse validation = userService.validateStudent(studentId);
 
         return ResponseEntity.ok(validation);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/id-name")
+    public Map<Long, String> getTeacherNamesByIds(@RequestParam Set<Long> teacherIds) {
+        return userService.getTeacherNamesByIds(teacherIds);
     }
 }

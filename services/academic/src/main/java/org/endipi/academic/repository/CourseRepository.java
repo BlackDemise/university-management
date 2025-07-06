@@ -32,7 +32,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
            "JOIN pc.major m " +
            "JOIN m.department d")
     List<CourseDepartmentProjection> findAllCoursesWithDepartments();
-    
+
     // Projection interface for structured results
     interface CourseDepartmentProjection {
         Long getCourseId();

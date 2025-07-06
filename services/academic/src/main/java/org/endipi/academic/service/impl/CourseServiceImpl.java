@@ -3,6 +3,7 @@ package org.endipi.academic.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.endipi.academic.dto.request.CourseRequest;
+import org.endipi.academic.dto.response.CourseBasicInfo;
 import org.endipi.academic.dto.response.CourseResponse;
 import org.endipi.academic.entity.Course;
 import org.endipi.academic.enums.course.CourseType;
@@ -21,6 +22,9 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -79,6 +83,28 @@ public class CourseServiceImpl implements CourseService {
         }
 
         return courseResponses;
+    }
+
+    @Override
+    public Map<Long, String> getCourseNamesByIds(Set<Long> ids) {
+        List<Course> course = courseRepository.findAllById(ids);
+
+        return course.stream()
+                .collect(Collectors.toMap(Course::getId, Course::getName));
+    }
+
+    @Override
+    public Map<Long, CourseBasicInfo> getCourseBasicInfoByIds(Set<Long> ids) {
+        List<Course> courses = courseRepository.findAllById(ids);
+
+        return courses.stream()
+                .collect(Collectors.toMap(
+                        Course::getId,
+                        course -> CourseBasicInfo.builder()
+                                .code(course.getCode())
+                                .name(course.getName())
+                                .build()
+                ));
     }
 
     @Override
