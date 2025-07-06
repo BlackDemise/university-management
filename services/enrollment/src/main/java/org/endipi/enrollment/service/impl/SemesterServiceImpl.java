@@ -12,6 +12,10 @@ import org.endipi.enrollment.repository.SemesterRepository;
 import org.endipi.enrollment.service.SemesterService;
 import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +73,27 @@ public class SemesterServiceImpl implements SemesterService {
 
         semesterRepository.deleteById(id);
         log.info("Successfully deleted semester with ID: {}", id);
+    }
+
+    @Override
+    public Page<SemesterResponse> findBySearchingCriterion(int page, int size, String sort, String searchValue, String searchCriterion) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort.split(",")[0]).ascending());
+
+        // If no search term, return all users
+        if (searchValue == null || searchValue.trim().isEmpty()) {
+            return semesterRepository.findAll(pageable)
+                    .map(semesterMapper::toResponse);
+        }
+
+        // Apply search based on search type
+        return switch (searchCriterion) {
+            case "name" -> semesterRepository.findByNameContainingIgnoreCase(searchValue.trim(), pageable)
+                    .map(semesterMapper::toResponse);
+            default ->
+                // Fallback to no search
+                    semesterRepository.findAll(pageable)
+                            .map(semesterMapper::toResponse);
+        };
     }
 
     private SemesterResponse save(SemesterRequest request) {

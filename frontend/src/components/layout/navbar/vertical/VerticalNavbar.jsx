@@ -50,7 +50,7 @@ function VerticalNavbar({ sidebarCollapsed, toggleSidebar, activeMenu, setActive
                             { id: 'majors', title: 'Ngành Học', path: '/admin/academic/majors' },
                             { id: 'courses', title: 'Môn Học', path: '/admin/academic/courses' },
                             { id: 'curriculum', title: 'Chương Trình Đào Tạo', path: '/admin/academic/program-curriculum' },
-                            { id: 'prerequisites', title: 'Môn Tiên Quyết', path: '/admin/academic/prerequisites' },
+                            { id: 'prerequisites', title: 'Môn Tiên Quyết', path: '/admin/academic/prerequisite-courses' },
                             { id: 'department-members', title: 'Thành Viên Khoa', path: '/admin/academic/department-members' }
                         ]
                     },

@@ -15,6 +15,7 @@ public enum ErrorCode {
     INVALID_CREDITS_REQUIRED(400, "Số tín chỉ ít nhất là 1!", HttpStatus.BAD_REQUEST),
     INVALID_SEMESTER_RECOMMENDED(400, "Học kỳ đề nghị ít nhất là 0!", HttpStatus.BAD_REQUEST),
     INVALID_COURSE_TYPE(400, "Loại môn học không hợp lệ!", HttpStatus.BAD_REQUEST),
+    INVALID_PREREQUISITE_ADDITION(400, "Không thể thêm môn học tiên quyết cho môn học này! Hãy kiểm tra lại.", HttpStatus.BAD_REQUEST),
 
     /**
      * 401 Unauthorized

@@ -44,7 +44,7 @@ function HorizontalNavbar({ toggleSidebar, sidebarCollapsed }) {
                             <FontAwesomeIcon icon={faHome} className="text-primary" />
                         </div>
                         <div>
-                            <h1 className={`${styles.brandName} mb-0`}>Arista</h1>
+                            <h1 className={`${styles.brandName} mb-0`}>Uni</h1>
                         </div>
                     </Navbar.Brand>
                 </div>

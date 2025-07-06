@@ -1,23 +1,23 @@
 import API from './api';
 
-const departmentService = {
+const semesterService = {
     /**
-     * Get all departments with pagination and search
+     * Get all semesters with pagination and search
      * @param {Object} params - Query parameters
      * @param {number} params.page - Page number (0-based)
      * @param {number} params.size - Page size
      * @param {string} params.search - Search term
      * @param {string} params.searchBy - Field to search by
      * @param {string} params.sort - Sort parameter (e.g., "id,desc")
-     * @returns {Promise} - Promise with paginated departments
+     * @returns {Promise} - Promise with paginated semesters
      */
-    getAllDepartments: async (params = {}) => {
+    getAllSemesters: async (params = {}) => {
         try {
             // Use paginated endpoint if params are provided, otherwise fallback to non-paginated
             const endpoint = (params.page !== undefined || params.size !== undefined) 
-                ? `/v1/department/all/page`
-                : `/v1/department/all`;
-            
+                ? `/v1/semester/all/page`
+                : `/v1/semester/all`;
+
             const response = await API.get(endpoint, { params });
             return response.data;
         } catch (error) {
@@ -26,13 +26,13 @@ const departmentService = {
     },
 
     /**
-     * Get department by ID
-     * @param {number} id - Department ID
-     * @returns {Promise} - Promise with department details
+     * Get semester by ID
+     * @param {number} id - Semester ID
+     * @returns {Promise} - Promise with semester details
      */
-    getDepartmentById: async (id) => {
+    getSemesterById: async (id) => {
         try {
-            const response = await API.get(`/v1/department/details/${id}`);
+            const response = await API.get(`/v1/semester/details/${id}`);
             return response.data;
         } catch (error) {
             throw error;
@@ -40,13 +40,13 @@ const departmentService = {
     },
 
     /**
-     * Create or update department
-     * @param {Object} departmentData - Department data
-     * @returns {Promise} - Promise with created/updated department
+     * Create or update semester
+     * @param {Object} semesterData - Semester data
+     * @returns {Promise} - Promise with created/updated semester
      */
-    saveDepartment: async (departmentData) => {
+    saveSemester: async (semesterData) => {
         try {
-            const response = await API.post(`/v1/department/save`, departmentData);
+            const response = await API.post(`/v1/semester/save`, semesterData);
             return response.data;
         } catch (error) {
             throw error;
@@ -54,13 +54,13 @@ const departmentService = {
     },
 
     /**
-     * Delete department
-     * @param {number} id - Department ID
+     * Delete semester
+     * @param {number} id - Semester ID
      * @returns {Promise} - Promise with deletion response
      */
-    deleteDepartment: async (id) => {
+    deleteSemester: async (id) => {
         try {
-            const response = await API.delete(`/v1/department/delete/${id}`);
+            const response = await API.delete(`/v1/semester/delete/${id}`);
             return response.data;
         } catch (error) {
             throw error;
@@ -68,4 +68,4 @@ const departmentService = {
     },
 };
 
-export default departmentService; 
+export default semesterService; 

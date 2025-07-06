@@ -5,6 +5,7 @@ import org.endipi.enrollment.dto.request.SemesterRequest;
 import org.endipi.enrollment.dto.response.ApiResponse;
 import org.endipi.enrollment.dto.response.SemesterResponse;
 import org.endipi.enrollment.service.SemesterService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,26 @@ public class SemesterResource {
                         .message("OK")
                         .result(responses)
                         .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/all/page")
+    public ResponseEntity<?> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,asc") String sort,
+            @RequestParam(required = false) String searchValue,
+            @RequestParam(defaultValue = "name") String searchCriterion
+    ) {
+        Page<SemesterResponse> response = semesterService.findBySearchingCriterion(page, size, sort, searchValue, searchCriterion);
+
+        ApiResponse<String, Page<SemesterResponse>> apiResponse = ApiResponse.<String, Page<SemesterResponse>>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.OK.value())
+                .message("OK")
+                .result(response)
+                .build();
 
         return ResponseEntity.ok(apiResponse);
     }
