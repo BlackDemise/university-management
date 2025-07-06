@@ -226,6 +226,8 @@ const CourseOfferingUpdate = () => {
                 teacherId: parseInt(formData.teacherId)
             };
 
+            console.log('Submitting course offering data:', requestData);
+
             const response = await courseOfferingService.saveCourseOffering(requestData);
 
             const successMessage = isEditMode

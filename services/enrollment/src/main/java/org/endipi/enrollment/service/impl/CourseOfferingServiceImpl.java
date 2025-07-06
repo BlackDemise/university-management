@@ -183,7 +183,7 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
     /// Registration duration check
     private boolean isRegistrationOpen(CourseOffering courseOffering) {
         LocalDateTime now = LocalDateTime.now();
-        return now.isAfter(courseOffering.getOpenTime()) && now.isBefore(courseOffering.getCloseTime());
+        return now.isBefore(courseOffering.getCloseTime()) && courseOffering.getOpenTime().isBefore(courseOffering.getCloseTime());
     }
 
     /// Duration creation logic check
