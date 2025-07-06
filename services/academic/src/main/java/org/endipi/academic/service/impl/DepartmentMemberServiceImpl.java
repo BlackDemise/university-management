@@ -4,8 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.endipi.academic.client.userservice.UserServiceClient;
 import org.endipi.academic.dto.external.TeacherValidationResponse;
+import org.endipi.academic.dto.external.TeacherResponse;
 import org.endipi.academic.dto.request.DepartmentMemberRequest;
+import org.endipi.academic.dto.response.DepartmentMemberDetailResponse;
 import org.endipi.academic.dto.response.DepartmentMemberResponse;
+import org.endipi.academic.dto.response.DepartmentSummaryResponse;
+import org.endipi.academic.dto.response.MemberSelectionResponse;
 import org.endipi.academic.entity.DepartmentMember;
 import org.endipi.academic.enums.error.ErrorCode;
 import org.endipi.academic.exception.ApplicationException;
@@ -15,11 +19,16 @@ import org.endipi.academic.repository.DepartmentRepository;
 import org.endipi.academic.service.DepartmentMemberService;
 import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -99,6 +108,59 @@ public class DepartmentMemberServiceImpl implements DepartmentMemberService {
         departmentMemberRepository.deleteByTeacherId(teacherId);
     }
 
+    @Override
+    public Page<DepartmentSummaryResponse> findDepartmentSummaryWithPaging(int page, int size, String sort, String searchValue, String searchCriterion) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort.split(",")[0]).ascending());
+
+        if (searchValue == null || searchValue.trim().isEmpty()) {
+            return departmentMemberRepository.findDepartmentSummaryWithPaging(pageable);
+        }
+
+        return switch (searchCriterion) {
+            case "departmentName" -> departmentMemberRepository.findDepartmentSummaryByNameWithPaging(searchValue.trim(), pageable);
+            default -> departmentMemberRepository.findDepartmentSummaryWithPaging(pageable);
+        };
+    }
+
+    @Override
+    public List<DepartmentMemberDetailResponse> getDepartmentDetails(Long departmentId) {
+        List<DepartmentMember> members = departmentMemberRepository.findByDepartmentId(departmentId);
+        
+        return members.stream()
+                .map(this::enrichMemberWithTeacherDetails)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MemberSelectionResponse> getAvailableTeachers() {
+        try {
+            List<TeacherResponse> teachers = userServiceClient.getAllTeachers();
+
+            return teachers.stream()
+                    .map(teacher -> MemberSelectionResponse.builder()
+                            .teacherId(teacher.getTeacherId())
+                            .teacherName(teacher.getTeacherName())
+                            .teacherCode(teacher.getTeacherCode())
+                            .teacherEmail(teacher.getTeacherEmail())
+                            .build())
+                    .collect(Collectors.toList());
+                    
+        } catch (Exception e) {
+            log.error("Failed to fetch teachers from user service", e);
+            throw new ApplicationException(ErrorCode.USER_SERVICE_UNAVAILABLE);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteAllByDepartmentId(Long departmentId) {
+        List<DepartmentMember> members = departmentMemberRepository.findByDepartmentId(departmentId);
+        
+        log.info("Removing {} department members from department: {}", members.size(), departmentId);
+        
+        departmentMemberRepository.deleteAll(members);
+    }
+
     // MAIN BUSINESS LOGIC WITH S2S VALIDATION
     private DepartmentMemberResponse save(DepartmentMemberRequest departmentMemberRequest) {
         // S2S Validation: Check if teacher exists and has TEACHER role
@@ -156,6 +218,41 @@ public class DepartmentMemberServiceImpl implements DepartmentMemberService {
 
         if (exists) {
             throw new ApplicationException(ErrorCode.DUPLICATE_DEPARTMENT_MEMBERSHIP);
+        }
+    }
+
+    // Helper method to enrich member with teacher details
+    private DepartmentMemberDetailResponse enrichMemberWithTeacherDetails(DepartmentMember member) {
+        try {
+            TeacherResponse teacher = userServiceClient.getTeacherDetails(member.getTeacherId());
+            
+            return DepartmentMemberDetailResponse.builder()
+                    .id(member.getId())
+                    .departmentId(member.getDepartment().getId())
+                    .departmentName(member.getDepartment().getName())
+                    .teacherId(member.getTeacherId())
+                    .teacherName(teacher.getTeacherName())
+                    .teacherCode(teacher.getTeacherCode())
+                    .departmentMemberType(member.getDepartmentMemberType().getDepartmentMemberType())
+                    .startDate(member.getStartDate() != null ? member.getStartDate().toString() : null)
+                    .endDate(member.getEndDate() != null ? member.getEndDate().toString() : null)
+                    .build();
+                    
+        } catch (Exception e) {
+            log.warn("Failed to fetch teacher details for teacherId: {}", member.getTeacherId(), e);
+            
+            // Return basic information without teacher details
+            return DepartmentMemberDetailResponse.builder()
+                    .id(member.getId())
+                    .departmentId(member.getDepartment().getId())
+                    .departmentName(member.getDepartment().getName())
+                    .teacherId(member.getTeacherId())
+                    .teacherName("Teacher details unavailable")
+                    .teacherCode("N/A")
+                    .departmentMemberType(member.getDepartmentMemberType().getDepartmentMemberType())
+                    .startDate(member.getStartDate() != null ? member.getStartDate().toString() : null)
+                    .endDate(member.getEndDate() != null ? member.getEndDate().toString() : null)
+                    .build();
         }
     }
 }

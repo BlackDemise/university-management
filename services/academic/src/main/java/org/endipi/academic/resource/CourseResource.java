@@ -6,18 +6,35 @@ import org.endipi.academic.dto.response.ApiResponse;
 import org.endipi.academic.dto.response.CourseResponse;
 import org.endipi.academic.dto.response.DepartmentResponse;
 import org.endipi.academic.service.CourseService;
+import org.endipi.academic.util.EnumUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/course")
 @RequiredArgsConstructor
 public class CourseResource {
     private final CourseService courseService;
+    private final EnumUtil enumUtil;
+
+    @GetMapping("/enum/course-types")
+    public ResponseEntity<?> getCourseTypes() {
+        Map<String, String> courseTypes = enumUtil.getCourseTypes();
+
+        ApiResponse<String, Map<String, String>> apiResponse = ApiResponse.<String, Map<String, String>>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.OK.value())
+                .message("OK")
+                .result(courseTypes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
 
     @GetMapping("/all")
     public ResponseEntity<?> findAll() {

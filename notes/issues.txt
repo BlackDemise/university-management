@@ -6,3 +6,5 @@
 
 3. user-service:
 - Email -> format validation is not implemented.
+
+4. Validation: Should we prevent overlapping date ranges for the same teacher-department combination? Yes, but later.

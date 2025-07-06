@@ -24,6 +24,9 @@ import CourseUpdate from "./components/academic/course/CourseUpdate.jsx";
 import ProgramCurriculumList from "./components/academic/program-curriculum/ProgramCurriculumList.jsx";
 import ProgramCurriculumDetails from "./components/academic/program-curriculum/ProgramCurriculumDetails.jsx";
 import ProgramCurriculumUpdate from "./components/academic/program-curriculum/ProgramCurriculumUpdate.jsx";
+import DepartmentMemberList from "./components/academic/department-member/DepartmentMemberList.jsx";
+import DepartmentMemberDetails from "./components/academic/department-member/DepartmentMemberDetails.jsx";
+import DepartmentMemberUpdate from "./components/academic/department-member/DepartmentMemberUpdate.jsx";
 import ClassroomList from "./components/facility/classroom/ClassroomList.jsx";
 import ClassroomDetails from "./components/facility/classroom/ClassroomDetails.jsx";
 import ClassroomUpdate from "./components/facility/classroom/ClassroomUpdate.jsx";
@@ -181,6 +184,31 @@ function App() {
           <Route path="/admin/academic/program-curriculum/create" element={
             <ProtectedRoute requiredRole="ADMIN">
               <ProgramCurriculumUpdate />
+            </ProtectedRoute>
+          } />
+
+          {/* Department Member Management Routes */}
+          <Route path="/admin/academic/department-members" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <DepartmentMemberList />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/academic/department-members/details/:id" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <DepartmentMemberDetails />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/academic/department-members/edit/:id" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <DepartmentMemberUpdate />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/academic/department-members/create" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <DepartmentMemberUpdate />
             </ProtectedRoute>
           } />
 

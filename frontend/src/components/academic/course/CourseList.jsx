@@ -43,12 +43,43 @@ const CourseList = () => {
   const [searchType, setSearchType] = useState("name");
   const [isSearching, setIsSearching] = useState(false);
 
+  // Course types state
+  const [courseTypes, setCourseTypes] = useState({});
+  const [loadingCourseTypes, setLoadingCourseTypes] = useState(false);
+
   // Course type display mapping
   const courseTypeDisplayMap = {
     GENERAL: "Môn chung",
     SPECIALIZED: "Môn chuyên ngành",
     ELECTIVE: "Môn tự chọn",
     CORE: "Môn cơ sở",
+  };
+
+  // Load course types
+  const loadCourseTypes = async () => {
+    try {
+      setLoadingCourseTypes(true);
+      const response = await courseService.getCourseTypes();
+      
+      // Handle response structure - extract the result object
+      if (response.result) {
+        setCourseTypes(response.result);
+      } else {
+        setCourseTypes(response);
+      }
+    } catch (err) {
+      console.error("Error loading course types:", err);
+      toast.error("Không thể tải danh sách loại môn học");
+      // Set default course types as fallback
+      setCourseTypes({
+        CORE: "Môn cơ sở",
+        GENERAL: "Môn chung", 
+        SPECIALIZED: "Môn chuyên ngành",
+        ELECTIVE: "Môn tự chọn"
+      });
+    } finally {
+      setLoadingCourseTypes(false);
+    }
   };
 
   // Load courses data
@@ -102,6 +133,7 @@ const CourseList = () => {
   // Load data on component mount
   useEffect(() => {
     loadCourses();
+    loadCourseTypes(); // Load course types on mount
   }, []);
 
   // Handle page change
@@ -118,10 +150,12 @@ const CourseList = () => {
   // Search handler functions
   const handleSearchTypeChange = (type) => {
     setSearchType(type);
+    // Clear search term when switching types
+    setSearchTerm("");
     if (searchTerm.trim()) {
-      // If there's an existing search term, re-search with new type
+      // If there's an existing search term, clear the search
       setCurrentPage(0);
-      loadCourses(0, pageSize, searchTerm, type);
+      loadCourses(0, pageSize, "", type);
     }
   };
 
@@ -133,6 +167,23 @@ const CourseList = () => {
 
   const handleSearchInputChange = (e) => {
     setSearchTerm(e.target.value);
+  };
+
+  // Handler specifically for course type select dropdown
+  const handleCourseTypeSelectChange = (e) => {
+    const selectedValue = e.target.value;
+    setSearchTerm(selectedValue);
+    
+    // Automatically trigger search when course type is selected
+    if (selectedValue) {
+      setIsSearching(true);
+      setCurrentPage(0);
+      loadCourses(0, pageSize, selectedValue, searchType);
+    } else {
+      // If empty value is selected, clear the search
+      setCurrentPage(0);
+      loadCourses(0, pageSize, "", searchType);
+    }
   };
 
   const handleSearchKeyPress = (e) => {
@@ -198,6 +249,14 @@ const CourseList = () => {
       default:
         return type;
     }
+  };
+
+  // Get display text for search term (especially for course type)
+  const getSearchTermDisplayText = (term, type) => {
+    if (type === "courseType" && courseTypes[term]) {
+      return courseTypes[term];
+    }
+    return term;
   };
 
   // Get status badge based on credits
@@ -269,7 +328,7 @@ const CourseList = () => {
               Tổng cộng: {totalElements} môn học
               {searchTerm && (
                 <span className="text-primary ms-2">
-                  (Tìm kiếm: "{searchTerm}")
+                  (Tìm kiếm: "{getSearchTermDisplayText(searchTerm, searchType)}")
                 </span>
               )}
             </p>
@@ -310,22 +369,40 @@ const CourseList = () => {
               <option value="courseType">Loại Môn Học</option>
             </Form.Select>
             <div className="d-flex gap-2">
-              <Form.Control
-                type="text"
-                placeholder="Nhập từ khóa..."
-                value={searchTerm}
-                onChange={handleSearchInputChange}
-                onKeyPress={handleSearchKeyPress}
-                style={{ width: "300px" }}
-              />
-              <Button variant="primary" onClick={handleSearch} disabled={isSearching}>
-                {isSearching ? (
-                  <Spinner size="sm" animation="border" />
-                ) : (
-                  <FontAwesomeIcon icon={faSearch} />
-                )}
-                <span className="ms-2">Tìm</span>
-              </Button>
+              {searchType === "courseType" ? (
+                <Form.Select
+                  style={{ width: "200px" }}
+                  value={searchTerm}
+                  onChange={handleCourseTypeSelectChange}
+                  disabled={loadingCourseTypes}
+                >
+                  <option value="">Tất cả loại</option>
+                  {Object.entries(courseTypes).map(([key, value]) => (
+                    <option key={key} value={key}>
+                      {value}
+                    </option>
+                  ))}
+                </Form.Select>
+              ) : (
+                <Form.Control
+                  type="text"
+                  placeholder="Nhập từ khóa..."
+                  value={searchTerm}
+                  onChange={handleSearchInputChange}
+                  onKeyPress={handleSearchKeyPress}
+                  style={{ width: "300px" }}
+                />
+              )}
+              {searchType !== "courseType" && (
+                <Button variant="primary" onClick={handleSearch} disabled={isSearching}>
+                  {isSearching ? (
+                    <Spinner size="sm" animation="border" />
+                  ) : (
+                    <FontAwesomeIcon icon={faSearch} />
+                  )}
+                  <span className="ms-2">Tìm</span>
+                </Button>
+              )}
               {searchTerm && (
                 <Button variant="secondary" onClick={handleClearSearch}>
                   <FontAwesomeIcon icon={faTimes} />

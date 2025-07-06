@@ -9,6 +9,7 @@ import org.endipi.user.dto.request.UserRequest;
 import org.endipi.user.dto.response.StudentValidationResponse;
 import org.endipi.user.dto.response.TeacherValidationResponse;
 import org.endipi.user.dto.response.UserResponse;
+import org.endipi.user.dto.s2s.S2STeacherResponse;
 import org.endipi.user.entity.Student;
 import org.endipi.user.entity.Teacher;
 import org.endipi.user.entity.User;
@@ -68,6 +69,14 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll()
                 .stream()
                 .map(userMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<S2STeacherResponse> findAllTeachers() {
+        return userRepository.findByRole_RoleTitle(RoleTitle.TEACHER)
+                .stream()
+                .map(userMapper::toS2SResponse)
                 .toList();
     }
 
@@ -143,6 +152,16 @@ public class UserServiceImpl implements UserService {
             // ... publish event to academic service
             teacherEventProducer.publishTeacherRemoved(user);
         }
+    }
+
+    @Override
+    public S2STeacherResponse findByTeacherId(Long teacherId) {
+        User user = userRepository.findByRole_RoleTitleAndId(RoleTitle.TEACHER, teacherId);
+        if (user == null) {
+            throw new ApplicationException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        return userMapper.toS2SResponse(user);
     }
 
     @Override

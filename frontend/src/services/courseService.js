@@ -2,6 +2,19 @@ import API from "./api";
 
 const courseService = {
   /**
+   * Get all course types enum values
+   * @returns {Promise} - Promise with course types object
+   */
+  getCourseTypes: async () => {
+    try {
+      const response = await API.get(`/v1/course/enum/course-types`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
    * Get all courses with pagination and search
    * @param {Object} params - Query parameters
    * @param {number} params.page - Page number (0-based)

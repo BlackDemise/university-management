@@ -2,6 +2,7 @@ package org.endipi.user.mapper;
 
 import org.endipi.user.dto.request.UserRequest;
 import org.endipi.user.dto.response.UserResponse;
+import org.endipi.user.dto.s2s.S2STeacherResponse;
 import org.endipi.user.entity.User;
 import org.endipi.user.repository.RoleRepository;
 import org.mapstruct.Context;
@@ -35,4 +36,11 @@ public interface UserMapper {
     @Mapping(target = "role",
             expression = "java(roleRepository.findByRoleTitle(org.endipi.user.enums.role.RoleTitle.valueOf(userRequest.getRole())).orElse(null))")
     void updateFromRequest(UserRequest userRequest, @MappingTarget User user, @Context RoleRepository roleRepository);
+
+    /// S2S mapping
+    @Mapping(target = "teacherName", source = "user.fullName")
+    @Mapping(target = "teacherId", source = "user.id")
+    @Mapping(target = "teacherEmail", source = "user.email")
+    @Mapping(target = "teacherCode", source = "user.teacher.teacherCode")
+    S2STeacherResponse toS2SResponse(User user);
 }

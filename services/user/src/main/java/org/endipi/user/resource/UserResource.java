@@ -7,6 +7,7 @@ import org.endipi.user.dto.response.ApiResponse;
 import org.endipi.user.dto.response.StudentValidationResponse;
 import org.endipi.user.dto.response.TeacherValidationResponse;
 import org.endipi.user.dto.response.UserResponse;
+import org.endipi.user.dto.s2s.S2STeacherResponse;
 import org.endipi.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -102,6 +103,22 @@ public class UserResource {
         TeacherValidationResponse validation = userService.validateTeacher(teacherId);
 
         return ResponseEntity.ok(validation);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/teachers/all")
+    public ResponseEntity<?> getAllTeachers() {
+        List<S2STeacherResponse> teachers = userService.findAllTeachers();
+
+        return ResponseEntity.ok(teachers);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/teachers/{teacherId}/details")
+    public ResponseEntity<?> getTeacherDetails(@PathVariable Long teacherId) {
+        S2STeacherResponse teacherDetails = userService.findByTeacherId(teacherId);
+
+        return ResponseEntity.ok(teacherDetails);
     }
 
     // S2S ENDPOINT -> no ApiResponse wrapper for clarity
