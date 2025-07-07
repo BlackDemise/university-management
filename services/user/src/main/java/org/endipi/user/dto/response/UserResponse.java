@@ -14,6 +14,7 @@ public class UserResponse {
     private String role;
     private String displayedRole;
     private String phone;
+    private String avatarUrl;
     private String identityNumber;
     private String permanentAddress;
     private String currentAddress;

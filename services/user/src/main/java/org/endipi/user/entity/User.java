@@ -18,6 +18,9 @@ public class User {
 
     private String phone;
 
+    @Column(length = 1000)
+    private String avatarUrl;
+
     /// CCCD in Vietnam
     private String identityNumber;
 

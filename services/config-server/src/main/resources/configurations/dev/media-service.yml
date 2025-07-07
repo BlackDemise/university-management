@@ -1,0 +1,18 @@
+image-upload-dir: frontend/public
+
+servlet:
+  multipart:
+    max-file-size: 5MB
+    max-request-size: 5MB
+
+spring:
+  cloud:
+    gcp:
+      storage:
+        project-id: university-management
+        bucket: university-management-files
+      credentials:
+        location: classpath:gcp-key.json
+
+server:
+  port: 8006

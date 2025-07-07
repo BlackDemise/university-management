@@ -3,6 +3,7 @@ package org.endipi.user.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.endipi.user.client.departmentservice.MajorServiceClient;
+import org.endipi.user.client.mediaservice.MediaServiceClient;
 import org.endipi.user.dto.request.StudentRequest;
 import org.endipi.user.dto.request.TeacherRequest;
 import org.endipi.user.dto.request.UserRequest;
@@ -40,7 +41,13 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,6 +71,7 @@ public class UserServiceImpl implements UserService {
     private final TeacherMapper teacherMapper;
     private final TeacherEventProducer teacherEventProducer;
     private final MajorServiceClient majorServiceClient;
+    private final MediaServiceClient mediaServiceClient;
 
     @Value("${retry.user.attempts}")
     private long retryAttempts;
@@ -155,6 +163,99 @@ public class UserServiceImpl implements UserService {
         if (wasTeacher) {
             // ... publish event to academic service
             teacherEventProducer.publishTeacherRemoved(user);
+        }
+    }
+
+    @Override
+    @Transactional
+    public UserResponse uploadAvatar(Long userId, MultipartFile file) {
+        log.info("Starting avatar upload for user ID: {}", userId);
+
+        // Find user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
+
+        try {
+            // Generate unique filename: {email}-{timestamp}.{extension}
+            String originalFilename = file.getOriginalFilename();
+            String fileExtension = originalFilename != null && originalFilename.contains(".") 
+                    ? originalFilename.substring(originalFilename.lastIndexOf(".")) 
+                    : ".jpg";
+            
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            String newFilename = user.getEmail() + "-" + timestamp + fileExtension;
+            
+            log.info("Generated filename for avatar: {}", newFilename);
+
+            // Create a new MultipartFile with the new filename
+            MultipartFile renamedFile = new MultipartFile() {
+                @Override
+                public String getName() {
+                    return file.getName();
+                }
+
+                @Override
+                public String getOriginalFilename() {
+                    return newFilename;
+                }
+
+                @Override
+                public String getContentType() {
+                    return file.getContentType();
+                }
+
+                @Override
+                public boolean isEmpty() {
+                    return file.isEmpty();
+                }
+
+                @Override
+                public long getSize() {
+                    return file.getSize();
+                }
+
+                @Override
+                public byte[] getBytes() throws IOException {
+                    return file.getBytes();
+                }
+
+                @Override
+                public InputStream getInputStream() throws IOException {
+                    return file.getInputStream();
+                }
+
+                @Override
+                public void transferTo(File dest) throws IOException, IllegalStateException {
+                    file.transferTo(dest);
+                }
+            };
+
+            // Upload to media service and get URL
+            String avatarUrl = mediaServiceClient.uploadFile(renamedFile);
+            log.info("Successfully uploaded avatar to media service, URL: {}", avatarUrl);
+
+            // Delete old avatar if exists
+            if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) {
+                try {
+                    // Extract filename from old URL to delete
+                    String oldUrl = user.getAvatarUrl();
+                    log.info("User had previous avatar, will be replaced: {}", oldUrl);
+                } catch (Exception e) {
+                    log.warn("Failed to extract filename from old avatar URL for deletion: {}", e.getMessage());
+                }
+            }
+
+            // Update user avatar URL
+            user.setAvatarUrl(avatarUrl);
+            user = userRepository.save(user);
+
+            log.info("Successfully updated avatar URL for user ID: {}", userId);
+
+            return userMapper.toResponse(user);
+
+        } catch (Exception e) {
+            log.error("Failed to upload avatar for user ID: {}: {}", userId, e.getMessage(), e);
+            throw new ApplicationException(ErrorCode.GENERIC_ERROR);
         }
     }
 
@@ -569,4 +670,3 @@ public class UserServiceImpl implements UserService {
                 ));
     }
 }
-

@@ -76,6 +76,25 @@ const userService = {
             throw error;
         }
     },
+
+    /**
+     * Upload avatar for user
+     * @param {number} userId - User ID
+     * @param {FormData} formData - FormData containing the file
+     * @returns {Promise} - Promise with upload response
+     */
+    uploadAvatar: async (userId, formData) => {
+        try {
+            const response = await API.post(`/v1/user/${userId}/avatar`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
 };
 
 export default userService;

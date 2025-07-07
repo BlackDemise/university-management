@@ -28,9 +28,15 @@ public class ClientConfig {
                 log.warn("No JWT token found in security context for Feign request");
             }
 
-            // Add common headers
-            requestTemplate.header("Content-Type", "application/json");
-            requestTemplate.header("Accept", "application/json");
+            // Add Accept header if not present
+            if (!requestTemplate.headers().containsKey("Accept")) {
+                requestTemplate.header("Accept", "application/json");
+            }
+
+            // Do NOT force Content-Type, only set if not already present
+            if (!requestTemplate.headers().containsKey("Content-Type")) {
+                requestTemplate.header("Content-Type", "application/json");
+            }
         };
     }
 

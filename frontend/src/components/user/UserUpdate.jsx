@@ -6,7 +6,7 @@ import {
     faUser, faEnvelope, faPhone, faIdCard, faMapMarkerAlt,
     faArrowLeft, faSave, faGraduationCap, faChalkboardTeacher,
     faCalendarAlt, faAward, faCertificate, faBook, faUserGraduate,
-    faPlus, faEdit
+    faPlus, faEdit, faCamera, faUpload, faImage, faCheck
 } from '@fortawesome/free-solid-svg-icons';
 import {toast} from 'react-hot-toast';
 import {userService} from "../../services/apiService.js";
@@ -25,6 +25,12 @@ const UserUpdate = () => {
     const [error, setError] = useState(null);
     const [availableRoles, setAvailableRoles] = useState([]);
 
+    // Avatar upload state
+    const [avatarFile, setAvatarFile] = useState(null);
+    const [avatarPreview, setAvatarPreview] = useState(null);
+    const [avatarUploading, setAvatarUploading] = useState(false);
+    const [avatarUploadSuccess, setAvatarUploadSuccess] = useState(false);
+
     // Form data state
     const [formData, setFormData] = useState({
         // User core information
@@ -36,6 +42,7 @@ const UserUpdate = () => {
         permanentAddress: '',
         currentAddress: '',
         role: '',
+        avatarUrl: '',
 
         // Student specific information
         studentCode: '',
@@ -98,6 +105,7 @@ const UserUpdate = () => {
                 permanentAddress: user.permanentAddress || '',
                 currentAddress: user.currentAddress || '',
                 role: user.role || '',
+                avatarUrl: user.avatarUrl || '',
 
                 // Student data
                 studentId: user.studentResponse?.id,
@@ -146,6 +154,80 @@ const UserUpdate = () => {
         
         initializeComponent();
     }, [id]);
+
+    // Avatar upload handlers
+    const handleAvatarFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                toast.error('Vui lòng chọn tệp hình ảnh hợp lệ');
+                return;
+            }
+
+            // Validate file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('Kích thước tệp không được vượt quá 5MB');
+                return;
+            }
+
+            setAvatarFile(file);
+            
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setAvatarPreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+            
+            // Reset upload status
+            setAvatarUploadSuccess(false);
+        }
+    };
+
+    const handleAvatarUpload = async () => {
+        if (!avatarFile || !isEditMode) {
+            toast.error('Vui lòng chọn ảnh và đảm bảo đang chỉnh sửa người dùng hiện có');
+            return;
+        }
+
+        try {
+            setAvatarUploading(true);
+
+            const formDataUpload = new FormData();
+            formDataUpload.append('file', avatarFile);
+
+            const response = await userService.uploadAvatar(formData.id, formDataUpload);
+
+            toast.success('Tải ảnh đại diện thành công!');
+            setAvatarUploadSuccess(true);
+            
+            // Reload user data to get updated avatar URL
+            await loadUserData();
+            
+            // Clear file selection
+            setAvatarFile(null);
+            setAvatarPreview(null);
+
+        } catch (err) {
+            console.error('Error uploading avatar:', err);
+            toast.error('Lỗi, xin vui lòng thử lại');
+        } finally {
+            setAvatarUploading(false);
+        }
+    };
+
+    const clearAvatarSelection = () => {
+        setAvatarFile(null);
+        setAvatarPreview(null);
+        setAvatarUploadSuccess(false);
+        
+        // Clear file input
+        const fileInput = document.getElementById('avatarFileInput');
+        if (fileInput) {
+            fileInput.value = '';
+        }
+    };
 
     // Handle input changes
     const handleInputChange = (field, value) => {
@@ -356,6 +438,147 @@ const UserUpdate = () => {
 
                 <Form onSubmit={handleSubmit}>
                     <Row>
+                        {/* Avatar Upload Section - Only for Edit Mode */}
+                        {isEditMode && (
+                            <Col lg={12} className="mb-4">
+                                <Card className="border-0 shadow-sm">
+                                    <Card.Header className="bg-primary bg-opacity-10 border-0">
+                                        <h5 className="mb-0 d-flex align-items-center text-primary">
+                                            <FontAwesomeIcon icon={faCamera} className="me-2"/>
+                                            Ảnh Đại Diện
+                                        </h5>
+                                    </Card.Header>
+                                    <Card.Body>
+                                        <Row>
+                                            {/* Current Avatar Display */}
+                                            <Col md={4} className="text-center">
+                                                <div className="mb-3">
+                                                    <label className="text-muted small mb-2 d-block">Ảnh hiện tại</label>
+                                                    <div 
+                                                        className="bg-light border rounded d-flex align-items-center justify-content-center"
+                                                        style={{ width: '120px', height: '120px', margin: '0 auto' }}
+                                                    >
+                                                        {formData.avatarUrl ? (
+                                                            <img 
+                                                                src={formData.avatarUrl} 
+                                                                alt="Current avatar"
+                                                                className="rounded"
+                                                                style={{ 
+                                                                    width: '100%', 
+                                                                    height: '100%', 
+                                                                    objectFit: 'cover' 
+                                                                }}
+                                                                onError={(e) => {
+                                                                    e.target.style.display = 'none';
+                                                                    e.target.nextSibling.style.display = 'block';
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        
+                                                        <div 
+                                                            className="text-center text-muted"
+                                                            style={{ display: formData.avatarUrl ? 'none' : 'block' }}
+                                                        >
+                                                            <FontAwesomeIcon icon={faUser} size="2x" className="mb-1" />
+                                                            <div className="small">Chưa có ảnh</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </Col>
+
+                                            {/* Avatar Preview */}
+                                            {avatarPreview && (
+                                                <Col md={4} className="text-center">
+                                                    <div className="mb-3">
+                                                        <label className="text-muted small mb-2 d-block">Xem trước</label>
+                                                        <div 
+                                                            className="bg-light border rounded d-flex align-items-center justify-content-center"
+                                                            style={{ width: '120px', height: '120px', margin: '0 auto' }}
+                                                        >
+                                                            <img 
+                                                                src={avatarPreview} 
+                                                                alt="Avatar preview"
+                                                                className="rounded"
+                                                                style={{ 
+                                                                    width: '100%', 
+                                                                    height: '100%', 
+                                                                    objectFit: 'cover' 
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </Col>
+                                            )}
+
+                                            {/* Upload Controls */}
+                                            <Col md={avatarPreview ? 4 : 8}>
+                                                <Form.Group className="mb-3">
+                                                    <Form.Label>
+                                                        <FontAwesomeIcon icon={faImage} className="me-1"/>
+                                                        Chọn ảnh mới
+                                                    </Form.Label>
+                                                    <Form.Control
+                                                        id="avatarFileInput"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleAvatarFileChange}
+                                                        disabled={avatarUploading}
+                                                    />
+                                                    <Form.Text className="text-muted">
+                                                        Hỗ trợ định dạng: JPG, PNG, GIF. Tối đa 5MB.
+                                                    </Form.Text>
+                                                </Form.Group>
+
+                                                {avatarFile && (
+                                                    <div className="d-flex gap-2 mb-3">
+                                                        <Button
+                                                            variant="success"
+                                                            size="sm"
+                                                            onClick={handleAvatarUpload}
+                                                            disabled={avatarUploading}
+                                                        >
+                                                            {avatarUploading ? (
+                                                                <>
+                                                                    <Spinner
+                                                                        as="span"
+                                                                        animation="border"
+                                                                        size="sm"
+                                                                        role="status"
+                                                                        className="me-1"
+                                                                    />
+                                                                    Đang tải...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <FontAwesomeIcon icon={faUpload} className="me-1"/>
+                                                                    Tải lên
+                                                                </>
+                                                            )}
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline-secondary"
+                                                            size="sm"
+                                                            onClick={clearAvatarSelection}
+                                                            disabled={avatarUploading}
+                                                        >
+                                                            Hủy
+                                                        </Button>
+                                                    </div>
+                                                )}
+
+                                                {avatarUploadSuccess && (
+                                                    <Alert variant="success" className="mb-0">
+                                                        <FontAwesomeIcon icon={faCheck} className="me-1"/>
+                                                        Tải ảnh đại diện thành công!
+                                                    </Alert>
+                                                )}
+                                            </Col>
+                                        </Row>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        )}
+
                         {/* Core Information */}
                         <Col lg={12} className="mb-4">
                             <Card className="border-0 shadow-sm">
@@ -413,27 +636,6 @@ const UserUpdate = () => {
                                                     placeholder="0123456789"
                                                 />
                                             </Form.Group>
-
-                                            <Form.Group className="mb-3">
-                                                <Form.Label>
-                                                    Vai Trò <span className="text-danger">*</span>
-                                                </Form.Label>
-                                                <Form.Select
-                                                    value={formData.role}
-                                                    onChange={(e) => handleInputChange('role', e.target.value)}
-                                                    isInvalid={!!formErrors.role}
-                                                >
-                                                    <option value="">Chọn vai trò</option>
-                                                    {availableRoles.map(role => (
-                                                        <option key={role.label} value={role.label}>
-                                                            {role.value}
-                                                        </option>
-                                                    ))}
-                                                </Form.Select>
-                                                <Form.Control.Feedback type="invalid">
-                                                    {formErrors.role}
-                                                </Form.Control.Feedback>
-                                            </Form.Group>
                                         </Col>
 
                                         <Col md={6}>
@@ -476,6 +678,28 @@ const UserUpdate = () => {
                                                     onChange={(e) => handleInputChange('currentAddress', e.target.value)}
                                                     placeholder="Nhập địa chỉ hiện tại"
                                                 />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col md={12}>
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>
+                                                    Vai Trò <span className="text-danger">*</span>
+                                                </Form.Label>
+                                                <Form.Select
+                                                    value={formData.role}
+                                                    onChange={(e) => handleInputChange('role', e.target.value)}
+                                                    isInvalid={!!formErrors.role}
+                                                >
+                                                    <option value="">Chọn vai trò</option>
+                                                    {availableRoles.map(role => (
+                                                        <option key={role.label} value={role.label}>
+                                                            {role.value}
+                                                        </option>
+                                                    ))}
+                                                </Form.Select>
+                                                <Form.Control.Feedback type="invalid">
+                                                    {formErrors.role}
+                                                </Form.Control.Feedback>
                                             </Form.Group>
                                         </Col>
                                     </Row>

@@ -18,6 +18,7 @@ public class UserRequest {
 
     private String role;
     private String phone;
+    private String avatarUrl;
     private String identityNumber;
     private String permanentAddress;
     private String currentAddress;

@@ -8,6 +8,7 @@ import org.endipi.user.dto.s2s.S2SStudentResponse;
 import org.endipi.user.dto.s2s.S2STeacherResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,9 @@ public interface UserService {
     UserResponse saveWithRetry(UserRequest userRequest);
 
     void deleteById(Long id);
+
+    // Avatar upload functionality
+    UserResponse uploadAvatar(Long userId, MultipartFile file);
 
     // This helps enrollment-service to retrieve teacherName by id via a batch instead of one by one
     Map<Long, String> getTeacherNamesByIds(Set<Long> ids); // Map<teacherId, teacherName>

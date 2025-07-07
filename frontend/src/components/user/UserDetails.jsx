@@ -276,14 +276,35 @@ const UserDetails = () => {
                                         </Row>
                                     </Col>
 
-                                    {/* User Image Placeholder - Right Side */}
+                                    {/* User Avatar - Right Side */}
                                     <Col md={4} className="text-center">
                                         <div className="position-relative">
                                             <div 
                                                 className="bg-light border rounded d-flex align-items-center justify-content-center"
                                                 style={{ width: '150px', height: '180px', margin: '0 auto' }}
                                             >
-                                                <div className="text-center text-muted">
+                                                {user.avatarUrl ? (
+                                                    <img 
+                                                        src={user.avatarUrl} 
+                                                        alt={`${user.fullName} avatar`}
+                                                        className="rounded"
+                                                        style={{ 
+                                                            width: '100%', 
+                                                            height: '100%', 
+                                                            objectFit: 'cover' 
+                                                        }}
+                                                        onError={(e) => {
+                                                            // Fallback to placeholder if image fails to load
+                                                            e.target.style.display = 'none';
+                                                            e.target.nextSibling.style.display = 'block';
+                                                        }}
+                                                    />
+                                                ) : null}
+                                                
+                                                <div 
+                                                    className="text-center text-muted"
+                                                    style={{ display: user.avatarUrl ? 'none' : 'block' }}
+                                                >
                                                     <FontAwesomeIcon icon={faUser} size="3x" className="mb-2" />
                                                     <div className="small">Ảnh đại diện</div>
                                                     <div className="small">(Chưa có)</div>

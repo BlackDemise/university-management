@@ -46,6 +46,10 @@ spring:
               uri: lb://ENROLLMENT-SERVICE
               predicates:
                 - Path=/api/v1/course-offering/**,/api/v1/course-registration/**,/api/v1/semester/**
+            - id: media-service
+              uri: lb://MEDIA-SERVICE
+              predicates:
+                - Path=/api/v1/files/**,/api/v1/gcs/**
 
 server:
   port: 8222

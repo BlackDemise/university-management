@@ -12,8 +12,10 @@ import org.endipi.user.dto.s2s.S2STeacherResponse;
 import org.endipi.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -95,6 +97,23 @@ public class UserResource {
                 .timestamp(System.currentTimeMillis())
                 .statusCode(HttpStatus.OK.value())
                 .message("OK")
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @PostMapping(value = "/{userId}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadAvatar(
+            @PathVariable Long userId,
+            @RequestParam("file") MultipartFile file) {
+        
+        UserResponse userResponse = userService.uploadAvatar(userId, file);
+
+        ApiResponse<String, UserResponse> apiResponse = ApiResponse.<String, UserResponse>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.OK.value())
+                .message("Tải ảnh đại diện thành công!")
+                .result(userResponse)
                 .build();
 
         return ResponseEntity.ok(apiResponse);

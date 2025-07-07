@@ -32,8 +32,13 @@ public enum ErrorCode {
      * 404 Not Found
      */
     USER_NOT_FOUND(404, "Không tìm thấy người dùng!", HttpStatus.NOT_FOUND),
-
     MAJOR_NOT_FOUND(404, "Không tìm thấy chuyên ngành!", HttpStatus.NOT_FOUND),
+    RESOURCE_NOT_FOUND(404, "Không tìm thấy tài nguyên!", HttpStatus.NOT_FOUND),
+
+    /**
+     * 413 Payload Too Large
+     */
+    FILE_TOO_LARGE(413, "Tệp tin quá lớn! Vui lòng chọn tệp tin nhỏ hơn 5MB.", HttpStatus.PAYLOAD_TOO_LARGE),
 
     /**
      * 500 Internal Server Error
@@ -43,7 +48,8 @@ public enum ErrorCode {
     /**
      * 503 Service Unavailable
      */
-    ACADEMIC_SERVICE_UNAVAILABLE(503, "Dịch vụ học thuật hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.SERVICE_UNAVAILABLE);
+    ACADEMIC_SERVICE_UNAVAILABLE(503, "Dịch vụ học thuật hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.SERVICE_UNAVAILABLE),
+    MEDIA_SERVICE_UNAVAILABLE(503, "Dịch vụ tải tệp tin hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.SERVICE_UNAVAILABLE);
 
     private final int code;
     private final String message;
