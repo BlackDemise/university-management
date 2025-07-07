@@ -2,7 +2,7 @@ package org.endipi.assessment.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.endipi.assessment.enums.score.ScoreType;
+import org.endipi.assessment.enums.grade.GradeType;
 
 @Entity
 @Getter
@@ -17,9 +17,9 @@ public class Grade {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private ScoreType scoreType;
+    private GradeType gradeType;
 
-    private Double scoreValue;
+    private Double gradeValue;
 
     // This field depends on enrollment-service
     // Logic guard properly on this field

@@ -144,8 +144,14 @@ public class CourseResource {
     }
 
     // S2S ENDPOINT -> no ApiResponse wrapper for clarity
-    @GetMapping("/s2s/id-basic-info")
+    @GetMapping("/s2s/basic-info")
     public Map<Long, CourseBasicInfo> getCourseBasicInfoByIds(@RequestParam Set<Long> ids) {
+        return courseService.getCourseBasicInfoByIds(ids);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/id-basic-info")
+    public Map<Long, CourseBasicInfo> getCourseBasicInfoByIdsV1(@RequestParam Set<Long> ids) {
         return courseService.getCourseBasicInfoByIds(ids);
     }
 }

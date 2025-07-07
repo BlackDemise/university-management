@@ -7,6 +7,7 @@ import org.endipi.user.dto.response.ApiResponse;
 import org.endipi.user.dto.response.StudentValidationResponse;
 import org.endipi.user.dto.response.TeacherValidationResponse;
 import org.endipi.user.dto.response.UserResponse;
+import org.endipi.user.dto.s2s.S2SStudentResponse;
 import org.endipi.user.dto.s2s.S2STeacherResponse;
 import org.endipi.user.service.UserService;
 import org.springframework.data.domain.Page;
@@ -135,5 +136,33 @@ public class UserResource {
     @GetMapping("/s2s/id-name")
     public Map<Long, String> getTeacherNamesByIds(@RequestParam Set<Long> teacherIds) {
         return userService.getTeacherNamesByIds(teacherIds);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/students/all")
+    public ResponseEntity<List<S2SStudentResponse>> getAllStudents() {
+        List<S2SStudentResponse> students = userService.findAllStudents();
+
+        return ResponseEntity.ok(students);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/students/{studentId}/details")
+    public ResponseEntity<S2SStudentResponse> getStudentDetails(@PathVariable Long studentId) {
+        S2SStudentResponse studentDetails = userService.findByStudentId(studentId);
+
+        return ResponseEntity.ok(studentDetails);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/students/id-name")
+    public Map<Long, String> getStudentNamesByIds(@RequestParam Set<Long> studentIds) {
+        return userService.getStudentNamesByIds(studentIds);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/teacher/batch-details")
+    public Map<Long, TeacherValidationResponse> getTeacherDetailsByIds(@RequestParam Set<Long> teacherIds) {
+        return userService.getTeacherDetailsByIds(teacherIds);
     }
 }

@@ -48,6 +48,14 @@ import CourseRegistrationSummaryList from "./components/enrollment/course-regist
 import CourseOfferingRegistrationDetails from "./components/enrollment/course-registration/CourseOfferingRegistrationDetails.jsx";
 import CourseRegistrationDetails from "./components/enrollment/course-registration/CourseRegistrationDetails.jsx";
 import CourseRegistrationUpdate from "./components/enrollment/course-registration/CourseRegistrationUpdate.jsx";
+import StudentList from "./components/assessment/grade/StudentList.jsx";
+import StudentGradeList from "./components/assessment/grade/StudentGradeList.jsx";
+import StudentGradeDetails from "./components/assessment/grade/StudentGradeDetails.jsx";
+import StudentGradeUpdate from "./components/assessment/grade/StudentGradeUpdate.jsx";
+import CourseSessionSummary from "./components/assessment/session/CourseSessionSummary.jsx";
+import CourseSessionList from "./components/assessment/session/CourseSessionList.jsx";
+import CourseSessionDetails from "./components/assessment/session/CourseSessionDetails.jsx";
+import CourseSessionUpdate from "./components/assessment/session/CourseSessionUpdate.jsx";
 
 function App() {
   return (
@@ -492,6 +500,98 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="ADMIN">
                   <CourseRegistrationUpdate />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Grade Management Routes */}
+            <Route
+              path="/admin/assessment/grades"
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <StudentList />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/assessment/grade/student/:studentId/grades"
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <StudentGradeList />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/assessment/grade/course-registration/:courseRegistrationId/details"
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <StudentGradeDetails />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/assessment/grade/course-registration/:courseRegistrationId/update"
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <StudentGradeUpdate />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/assessment/grade/course-registration/:courseRegistrationId/create"
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <StudentGradeUpdate />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Session Management Routes */}
+            <Route
+              path="/admin/assessment/sessions/summary"
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <CourseSessionSummary />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/assessment/sessions/course-offering/:courseOfferingId"
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <CourseSessionList />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/assessment/sessions/details/:sessionId"
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <CourseSessionDetails />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/assessment/sessions/edit/:sessionId"
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <CourseSessionUpdate />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/assessment/sessions/create"
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <CourseSessionUpdate />
                 </ProtectedRoute>
               }
             />

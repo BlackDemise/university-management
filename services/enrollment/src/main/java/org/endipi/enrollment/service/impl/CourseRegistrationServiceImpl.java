@@ -5,10 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.endipi.enrollment.client.courseservice.CourseServiceClient;
 import org.endipi.enrollment.client.userservice.UserServiceClient;
 import org.endipi.enrollment.dto.external.CourseBasicInfo;
+import org.endipi.enrollment.dto.external.CourseResponse;
 import org.endipi.enrollment.dto.external.StudentValidationResponse;
 import org.endipi.enrollment.dto.request.CourseRegistrationRequest;
+import org.endipi.enrollment.dto.response.CourseRegistrationDetailsResponse;
 import org.endipi.enrollment.dto.response.CourseRegistrationResponse;
 import org.endipi.enrollment.dto.response.CourseRegistrationSummaryResponse;
+import org.endipi.enrollment.dto.response.SemesterResponse;
 import org.endipi.enrollment.entity.CourseOffering;
 import org.endipi.enrollment.entity.CourseRegistration;
 import org.endipi.enrollment.enums.error.ErrorCode;
@@ -28,6 +31,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -271,5 +277,97 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
 
         log.info("Validating business rules for course registration - StudentId: {}, CourseOfferingId: {}",
                 request.getStudentId(), request.getCourseOfferingId());
+    }
+
+    @Override
+    public Map<Long, CourseRegistrationDetailsResponse> getCourseRegistrationDetailsByIds(Set<Long> courseRegistrationIds) {
+        log.info("Fetching course registration details for {} IDs", courseRegistrationIds.size());
+
+        // Step 1: Get course registrations
+        List<CourseRegistration> courseRegistrations = courseRegistrationRepository.findAllById(courseRegistrationIds);
+
+        // Step 2: Extract course IDs for batch call
+        Set<Long> courseIds = courseRegistrations.stream()
+                .map(cr -> cr.getCourseOffering().getCourseId())
+                .collect(Collectors.toSet());
+
+        // Step 3: Batch call to academic-service for course details
+        Map<Long, CourseResponse> courseDetailsById = courseServiceClient.getCourseBasicInfoByIds(courseIds)
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> CourseResponse.builder()
+                                .id(entry.getKey())
+                                .code(entry.getValue().getCode())
+                                .name(entry.getValue().getName())
+                                .build()
+                ));
+
+        // Step 4: Build response map
+        return courseRegistrations.stream()
+                .collect(Collectors.toMap(
+                        CourseRegistration::getId,
+                        cr -> CourseRegistrationDetailsResponse.builder()
+                                .id(cr.getId())
+                                .registrationDate(cr.getRegistrationDate())
+                                .courseRegistrationStatus(cr.getCourseRegistrationStatus().getCourseRegistrationStatus())
+                                .studentId(cr.getStudentId())
+                                .courseOfferingId(cr.getCourseOffering().getId())
+                                .courseResponse(courseDetailsById.get(cr.getCourseOffering().getCourseId()))
+                                .semesterResponse(SemesterResponse.builder()
+                                        .id(cr.getCourseOffering().getSemester().getId())
+                                        .name(cr.getCourseOffering().getSemester().getName())
+                                        .startDate(String.valueOf(cr.getCourseOffering().getSemester().getStartDate()))
+                                        .endDate(String.valueOf(cr.getCourseOffering().getSemester().getEndDate()))
+                                        .build())
+                                .build()
+                ));
+    }
+
+    @Override
+    public List<CourseRegistrationDetailsResponse> getCourseRegistrationsByStudentId(Long studentId) {
+        log.info("Fetching course registrations for student ID: {}", studentId);
+
+        // Step 1: Get course registrations for student
+        List<CourseRegistration> courseRegistrations = courseRegistrationRepository.findByStudentId(studentId);
+
+        if (courseRegistrations.isEmpty()) {
+            return List.of();
+        }
+
+        // Step 2: Extract course IDs for batch call
+        Set<Long> courseIds = courseRegistrations.stream()
+                .map(cr -> cr.getCourseOffering().getCourseId())
+                .collect(Collectors.toSet());
+
+        // Step 3: Batch call to academic-service for course details
+        Map<Long, CourseResponse> courseDetailsById = courseServiceClient.getCourseBasicInfoByIds(courseIds)
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> CourseResponse.builder()
+                                .id(entry.getKey())
+                                .code(entry.getValue().getCode())
+                                .name(entry.getValue().getName())
+                                .build()
+                ));
+
+        // Step 4: Build response list
+        return courseRegistrations.stream()
+                .map(cr -> CourseRegistrationDetailsResponse.builder()
+                        .id(cr.getId())
+                        .registrationDate(cr.getRegistrationDate())
+                        .courseRegistrationStatus(cr.getCourseRegistrationStatus().getCourseRegistrationStatus())
+                        .studentId(cr.getStudentId())
+                        .courseOfferingId(cr.getCourseOffering().getId())
+                        .courseResponse(courseDetailsById.get(cr.getCourseOffering().getCourseId()))
+                        .semesterResponse(SemesterResponse.builder()
+                                .id(cr.getCourseOffering().getSemester().getId())
+                                .name(cr.getCourseOffering().getSemester().getName())
+                                .startDate(String.valueOf(cr.getCourseOffering().getSemester().getStartDate()))
+                                .endDate(String.valueOf(cr.getCourseOffering().getSemester().getEndDate()))
+                                .build())
+                        .build())
+                .toList();
     }
 }

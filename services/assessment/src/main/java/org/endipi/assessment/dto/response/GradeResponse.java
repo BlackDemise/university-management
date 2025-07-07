@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 public class GradeResponse {
     private Long id;
-    private String scoreType;
-    private Double scoreValue;
+    private String gradeType;
+    private Double gradeValue;
     private Long courseRegistrationId;
 }

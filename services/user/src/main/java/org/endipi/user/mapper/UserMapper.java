@@ -2,6 +2,7 @@ package org.endipi.user.mapper;
 
 import org.endipi.user.dto.request.UserRequest;
 import org.endipi.user.dto.response.UserResponse;
+import org.endipi.user.dto.s2s.S2SStudentResponse;
 import org.endipi.user.dto.s2s.S2STeacherResponse;
 import org.endipi.user.entity.User;
 import org.endipi.user.repository.RoleRepository;
@@ -43,4 +44,14 @@ public interface UserMapper {
     @Mapping(target = "teacherEmail", source = "user.email")
     @Mapping(target = "teacherCode", source = "user.teacher.teacherCode")
     S2STeacherResponse toS2SResponse(User user);
+
+    @Mapping(target = "studentName", source = "user.fullName")
+    @Mapping(target = "studentId", source = "user.student.id")
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "studentEmail", source = "user.email")
+    @Mapping(target = "studentCode", source = "user.student.studentCode")
+    @Mapping(target = "studentStatus", expression = "java(user.getStudent().getStudentStatus().getStudentStatus())")
+    @Mapping(target = "courseYear", source = "user.student.courseYear")
+    @Mapping(target = "majorId", source = "user.student.majorId")
+    S2SStudentResponse toS2SStudentResponse(User user);
 }

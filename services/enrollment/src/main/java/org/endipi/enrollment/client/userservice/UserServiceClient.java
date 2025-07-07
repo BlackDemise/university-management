@@ -33,4 +33,7 @@ public interface UserServiceClient {
 
     @GetMapping("/s2s/id-name")
     Map<Long, String> getTeacherNamesByIds(@RequestParam Set<Long> teacherIds);
+
+    @GetMapping("/s2s/teacher/batch-details")
+    Map<Long, TeacherValidationResponse> getTeacherDetailsByIds(@RequestParam Set<Long> teacherIds);
 }

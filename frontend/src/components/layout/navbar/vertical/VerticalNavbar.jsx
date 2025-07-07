@@ -131,7 +131,7 @@ function VerticalNavbar({
               {
                 id: "sessions",
                 title: "Buổi Học",
-                path: "/admin/assessment/sessions",
+                path: "/admin/assessment/sessions/summary",
               },
               {
                 id: "attendance",
@@ -150,29 +150,6 @@ function VerticalNavbar({
                 id: "classrooms",
                 title: "Phòng Học",
                 path: "/admin/facility/classrooms",
-              },
-            ],
-          },
-          {
-            id: "reports",
-            icon: faChartBar,
-            title: "Báo Cáo & Thống Kê",
-            path: "/admin/reports",
-            submenu: [
-              {
-                id: "enrollment-stats",
-                title: "Thống Kê Đăng Ký",
-                path: "/admin/reports/enrollment",
-              },
-              {
-                id: "grade-reports",
-                title: "Báo Cáo Điểm",
-                path: "/admin/reports/grades",
-              },
-              {
-                id: "attendance-reports",
-                title: "Báo Cáo Điểm Danh",
-                path: "/admin/reports/attendance",
               },
             ],
           },

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.endipi.assessment.dto.request.GradeRequest;
 import org.endipi.assessment.dto.response.ApiResponse;
 import org.endipi.assessment.dto.response.GradeResponse;
+import org.endipi.assessment.dto.response.StudentGradeDetailsResponse;
 import org.endipi.assessment.service.GradeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -73,5 +74,19 @@ public class GradeResource {
                 .build();
 
         return ResponseEntity.ok(apiResponse);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/student/{studentId}/details")
+    public ResponseEntity<StudentGradeDetailsResponse> getStudentGradeDetails(@PathVariable Long studentId) {
+        StudentGradeDetailsResponse response = gradeService.getStudentGradeDetails(studentId);
+        return ResponseEntity.ok(response);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/course-registration/{courseRegistrationId}")
+    public ResponseEntity<List<GradeResponse>> getGradesByCourseRegistrationId(@PathVariable Long courseRegistrationId) {
+        List<GradeResponse> response = gradeService.getGradesByCourseRegistrationId(courseRegistrationId);
+        return ResponseEntity.ok(response);
     }
 }

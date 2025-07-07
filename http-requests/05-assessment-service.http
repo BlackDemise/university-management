@@ -22,7 +22,7 @@ Content-Type: {{contentType}}
 Authorization: {{authHeader}}
 
 {
-  "scoreType": "MIDTERM",
+  "gradeType": "MIDTERM",
   "scoreValue": 8.5,
   "courseRegistrationId": {{courseRegistrationId}}
 }
@@ -34,7 +34,7 @@ Content-Type: {{contentType}}
 Authorization: {{authHeader}}
 
 {
-  "scoreType": "FINAL",
+  "gradeType": "FINAL",
   "scoreValue": 9.0,
   "courseRegistrationId": {{courseRegistrationId}}
 }
@@ -46,7 +46,7 @@ Content-Type: {{contentType}}
 Authorization: {{authHeader}}
 
 {
-  "scoreType": "QUIZ",
+  "gradeType": "QUIZ",
   "scoreValue": 7.5,
   "courseRegistrationId": {{courseRegistrationId}}
 }
@@ -58,7 +58,7 @@ Content-Type: {{contentType}}
 Authorization: {{authHeader}}
 
 {
-  "scoreType": "ASSIGNMENT",
+  "gradeType": "ASSIGNMENT",
   "scoreValue": 8.0,
   "courseRegistrationId": {{courseRegistrationId}}
 }
@@ -70,7 +70,7 @@ Content-Type: {{contentType}}
 Authorization: {{authHeader}}
 
 {
-  "scoreType": "FINAL",
+  "gradeType": "FINAL",
   "scoreValue": 10.0,
   "courseRegistrationId": 2
 }
@@ -83,7 +83,7 @@ Authorization: {{authHeader}}
 
 {
   "id": {{gradeId}},
-  "scoreType": "MIDTERM",
+  "gradeType": "MIDTERM",
   "scoreValue": 9.0,
   "courseRegistrationId": {{courseRegistrationId}}
 }

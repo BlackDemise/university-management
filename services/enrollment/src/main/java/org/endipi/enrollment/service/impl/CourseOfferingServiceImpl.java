@@ -6,6 +6,7 @@ import org.endipi.enrollment.client.courseservice.CourseServiceClient;
 import org.endipi.enrollment.client.userservice.UserServiceClient;
 import org.endipi.enrollment.dto.external.TeacherValidationResponse;
 import org.endipi.enrollment.dto.request.CourseOfferingRequest;
+import org.endipi.enrollment.dto.response.CourseOfferingDetailsResponse;
 import org.endipi.enrollment.dto.response.CourseOfferingResponse;
 import org.endipi.enrollment.entity.CourseOffering;
 import org.endipi.enrollment.enums.error.ErrorCode;
@@ -26,6 +27,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -191,5 +195,73 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
         LocalDateTime openTime = courseOffering.getOpenTime();
         LocalDateTime closeTime = courseOffering.getCloseTime();
         return openTime != null && closeTime != null && openTime.isBefore(closeTime);
+    }
+
+    @Override
+    public Map<Long, CourseOfferingDetailsResponse> getCourseOfferingDetailsByIds(Set<Long> courseOfferingIds) {
+        log.info("Getting course offering details for {} IDs", courseOfferingIds.size());
+
+        List<CourseOffering> courseOfferings = courseOfferingRepository.findAllById(courseOfferingIds);
+
+        // Get teacher IDs for batch fetching teacher details
+        Set<Long> teacherIds = courseOfferings.stream()
+                .map(CourseOffering::getTeacherId)
+                .collect(Collectors.toSet());
+
+        // Batch fetch teacher details
+        Map<Long, TeacherValidationResponse> teacherDetails = userServiceClient.getTeacherDetailsByIds(teacherIds);
+
+        return courseOfferings.stream()
+                .collect(Collectors.toMap(
+                        CourseOffering::getId,
+                        offering -> {
+                            TeacherValidationResponse teacher = teacherDetails.get(offering.getTeacherId());
+                            return CourseOfferingDetailsResponse.builder()
+                                    .id(offering.getId())
+                                    .courseId(offering.getCourseId())
+                                    .semesterName(offering.getSemester().getName())
+                                    .teacherId(offering.getTeacherId())
+                                    .teacherName(teacher != null ? teacher.getFullName() : "Unknown Teacher")
+                                    .teacherEmail(teacher != null ? teacher.getEmail() : "N/A")
+                                    .maxStudents(offering.getMaxStudents())
+                                    .currentStudents(offering.getCurrentStudents())
+                                    .build();
+                        }
+                ));
+    }
+
+    @Override
+    public List<CourseOfferingDetailsResponse> getAllCourseOfferingsWithDetails() {
+        log.info("Getting all course offerings with details");
+
+        List<CourseOffering> courseOfferings = courseOfferingRepository.findAll();
+
+        if (courseOfferings.isEmpty()) {
+            return List.of();
+        }
+
+        // Get teacher IDs for batch fetching teacher details
+        Set<Long> teacherIds = courseOfferings.stream()
+                .map(CourseOffering::getTeacherId)
+                .collect(Collectors.toSet());
+
+        // Batch fetch teacher details
+        Map<Long, TeacherValidationResponse> teacherDetails = userServiceClient.getTeacherDetailsByIds(teacherIds);
+
+        return courseOfferings.stream()
+                .map(offering -> {
+                    TeacherValidationResponse teacher = teacherDetails.get(offering.getTeacherId());
+                    return CourseOfferingDetailsResponse.builder()
+                            .id(offering.getId())
+                            .courseId(offering.getCourseId())
+                            .semesterName(offering.getSemester().getName())
+                            .teacherId(offering.getTeacherId())
+                            .teacherName(teacher != null ? teacher.getFullName() : "Unknown Teacher")
+                            .teacherEmail(teacher != null ? teacher.getEmail() : "N/A")
+                            .maxStudents(offering.getMaxStudents())
+                            .currentStudents(offering.getCurrentStudents())
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 }

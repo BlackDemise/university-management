@@ -31,11 +31,11 @@ CREATE TABLE IF NOT EXISTS attendance
 CREATE TABLE IF NOT EXISTS grade
 (
     id                     BIGINT NOT NULL AUTO_INCREMENT,
-    score_type             VARCHAR(20),
-    score_value            DOUBLE,
+    grade_type             VARCHAR(20),
+    grade_value            DOUBLE,
     course_registration_id BIGINT,
     PRIMARY KEY (id),
-    UNIQUE KEY UK_registration_score_type (course_registration_id, score_type)
+    UNIQUE KEY UK_registration_score_type (course_registration_id, grade_type)
 );
 
 -- Insert Sample Session data (20 sessions)
@@ -89,25 +89,25 @@ VALUES ('PRESENT', 1, 1),
 ON DUPLICATE KEY UPDATE attendance_status = VALUES(attendance_status);
 
 -- Insert Sample Grade data (20 grade records)
-INSERT INTO grade (score_type, score_value, course_registration_id)
-VALUES ('MIDTERM', 85.5, 1),
+INSERT INTO grade (grade_type, grade_value, course_registration_id)
+VALUES ('MID_TERM', 85.5, 1),
        ('FINAL', 92.0, 1),
        ('ASSIGNMENT', 88.0, 1),
        ('QUIZ', 90.5, 1),
-       ('MIDTERM', 78.0, 2),
+       ('MID_TERM', 78.0, 2),
        ('FINAL', 85.5, 2),
        ('ASSIGNMENT', 82.0, 2),
        ('QUIZ', 87.0, 2),
-       ('MIDTERM', 92.5, 3),
+       ('MID_TERM', 92.5, 3),
        ('FINAL', 89.0, 3),
        ('ASSIGNMENT', 95.0, 3),
        ('QUIZ', 93.5, 3),
-       ('MIDTERM', 76.0, 4),
+       ('MID_TERM', 76.0, 4),
        ('FINAL', 81.5, 4),
        ('ASSIGNMENT', 79.0, 4),
        ('QUIZ', 84.0, 4),
-       ('MIDTERM', 88.5, 5),
+       ('MID_TERM', 88.5, 5),
        ('FINAL', 91.0, 5),
        ('ASSIGNMENT', 86.5, 5),
        ('QUIZ', 89.0, 5)
-ON DUPLICATE KEY UPDATE score_value = VALUES(score_value);
+ON DUPLICATE KEY UPDATE grade_value = VALUES(grade_value);

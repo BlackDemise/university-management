@@ -31,4 +31,6 @@ public interface CourseRegistrationRepository extends JpaRepository<CourseRegist
     List<CourseRegistration> findByCourseOfferingId(Long courseOfferingId);
 
     Page<CourseRegistration> findByCourseOfferingId(Long courseOfferingId, Pageable pageable);
+
+    List<CourseRegistration> findByStudentId(Long studentId);
 }

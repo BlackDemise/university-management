@@ -3,11 +3,15 @@ package org.endipi.assessment.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.endipi.assessment.client.enrollmentservice.EnrollmentServiceClient;
+import org.endipi.assessment.client.userservice.UserServiceClient;
+import org.endipi.assessment.dto.external.CourseRegistrationDetailsResponse;
+import org.endipi.assessment.dto.external.S2SStudentResponse;
 import org.endipi.assessment.dto.request.GradeRequest;
 import org.endipi.assessment.dto.response.GradeResponse;
+import org.endipi.assessment.dto.response.StudentGradeDetailsResponse;
 import org.endipi.assessment.entity.Grade;
 import org.endipi.assessment.enums.error.ErrorCode;
-import org.endipi.assessment.enums.score.ScoreType;
+import org.endipi.assessment.enums.grade.GradeType;
 import org.endipi.assessment.exception.ApplicationException;
 import org.endipi.assessment.mapper.GradeMapper;
 import org.endipi.assessment.repository.GradeRepository;
@@ -16,6 +20,11 @@ import org.hibernate.StaleObjectStateException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import java.util.List;
 
@@ -26,6 +35,7 @@ public class GradeServiceImpl implements GradeService {
     private final GradeRepository gradeRepository;
     private final GradeMapper gradeMapper;
     private final EnrollmentServiceClient enrollmentServiceClient;
+    private final UserServiceClient userServiceClient;
 
     @Value("${retry.grade.attempts}")
     private long retryAttempts;
@@ -62,7 +72,7 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public void deleteById(Long id) {
-        Grade grade = gradeRepository.findById(id)
+        gradeRepository.findById(id)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.GRADE_NOT_FOUND));
 
         gradeRepository.deleteById(id);
@@ -94,8 +104,8 @@ public class GradeServiceImpl implements GradeService {
 
     private void validateBusinessRules(GradeRequest gradeRequest, boolean isUpdate) {
         // 1. Validate score value range [0, 10]
-        if (gradeRequest.getScoreValue() != null) {
-            if (gradeRequest.getScoreValue() < 0 || gradeRequest.getScoreValue() > 10) {
+        if (gradeRequest.getGradeValue() != null) {
+            if (gradeRequest.getGradeValue() < 0 || gradeRequest.getGradeValue() > 10) {
                 throw new ApplicationException(ErrorCode.INVALID_SCORE_VALUE);
             }
         }
@@ -108,9 +118,9 @@ public class GradeServiceImpl implements GradeService {
 
         // 3. Check for duplicate grade entries (same scoreType for same courseRegistration)
          if (!isUpdate) {
-             boolean exists = gradeRepository.existsByCourseRegistrationIdAndScoreType(
+             boolean exists = gradeRepository.existsByCourseRegistrationIdAndGradeType(
                  gradeRequest.getCourseRegistrationId(),
-                 ScoreType.valueOf(gradeRequest.getScoreType())
+                 GradeType.valueOf(gradeRequest.getGradeType())
              );
              if (exists) {
                  throw new ApplicationException(ErrorCode.DUPLICATE_GRADE_ENTRY);
@@ -118,6 +128,74 @@ public class GradeServiceImpl implements GradeService {
          }
 
         log.info("Validating business rules for grade - CourseRegistration: {}, ScoreType: {}, Value: {}",
-                gradeRequest.getCourseRegistrationId(), gradeRequest.getScoreType(), gradeRequest.getScoreValue());
+                gradeRequest.getCourseRegistrationId(), gradeRequest.getGradeType(), gradeRequest.getGradeValue());
+    }
+
+    @Override
+    public StudentGradeDetailsResponse getStudentGradeDetails(Long studentId) {
+        log.info("Fetching grade details for student ID: {}", studentId);
+
+        // Step 1: Get student details
+        S2SStudentResponse studentDetails = userServiceClient.getStudentDetails(studentId);
+
+        // Step 2: Get course registrations for the student
+        List<CourseRegistrationDetailsResponse> courseRegistrations =
+                enrollmentServiceClient.getCourseRegistrationsByStudentId(studentId);
+
+        if (courseRegistrations.isEmpty()) {
+            return StudentGradeDetailsResponse.builder()
+                    .studentId(studentDetails.getStudentId())
+                    .studentName(studentDetails.getStudentName())
+                    .studentCode(studentDetails.getStudentCode())
+                    .studentEmail(studentDetails.getStudentEmail())
+                    .gradesByCourse(Map.of())
+                    .build();
+        }
+
+        // Step 3: Get grades for all course registrations
+        List<Long> courseRegistrationIds = courseRegistrations.stream()
+                .map(CourseRegistrationDetailsResponse::getId)
+                .toList();
+
+        List<Grade> grades = gradeRepository.findByCourseRegistrationIdIn(courseRegistrationIds);
+
+        // Step 4: Group grades by course
+        Map<String, StudentGradeDetailsResponse.CourseGradeGroup> gradesByCourse = new LinkedHashMap<>();
+
+        for (CourseRegistrationDetailsResponse courseReg : courseRegistrations) {
+            String courseKey = courseReg.getCourseResponse().getCode() + " - " + courseReg.getCourseResponse().getName();
+
+            List<GradeResponse> courseGrades = grades.stream()
+                    .filter(grade -> grade.getCourseRegistrationId().equals(courseReg.getId()))
+                    .map(gradeMapper::toResponse)
+                    .toList();
+
+            gradesByCourse.put(courseKey, StudentGradeDetailsResponse.CourseGradeGroup.builder()
+                    .courseId(courseReg.getCourseResponse().getId())
+                    .courseCode(courseReg.getCourseResponse().getCode())
+                    .courseName(courseReg.getCourseResponse().getName())
+                    .semesterName(courseReg.getSemesterResponse().getName())
+                    .courseRegistrationId(courseReg.getId())
+                    .grades(courseGrades)
+                    .build());
+        }
+
+        return StudentGradeDetailsResponse.builder()
+                .studentId(studentDetails.getStudentId())
+                .studentName(studentDetails.getStudentName())
+                .studentCode(studentDetails.getStudentCode())
+                .studentEmail(studentDetails.getStudentEmail())
+                .gradesByCourse(gradesByCourse)
+                .build();
+    }
+
+    @Override
+    public List<GradeResponse> getGradesByCourseRegistrationId(Long courseRegistrationId) {
+        log.info("Fetching grades for course registration ID: {}", courseRegistrationId);
+
+        return gradeRepository.findByCourseRegistrationId(courseRegistrationId)
+                .stream()
+                .map(gradeMapper::toResponse)
+                .toList();
     }
 }

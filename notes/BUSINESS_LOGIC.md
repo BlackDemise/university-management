@@ -329,7 +329,7 @@ Many entities are missing critical unique constraints:
 - Attendance: (studentId, scheduleId)
 - CourseOffering: (courseId, semesterId, teacherId, classroomId)  
 - CourseRegistration: (studentId, courseOfferingId)
-- Grade: (courseRegistrationId, scoreType)
+- Grade: (courseRegistrationId, gradeType)
 - Schedule: (courseOfferingId, classroomId)
 - Student: studentCode
 - Teacher: teacherCode

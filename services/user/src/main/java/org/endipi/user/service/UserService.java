@@ -4,6 +4,7 @@ import org.endipi.user.dto.request.UserRequest;
 import org.endipi.user.dto.response.StudentValidationResponse;
 import org.endipi.user.dto.response.TeacherValidationResponse;
 import org.endipi.user.dto.response.UserResponse;
+import org.endipi.user.dto.s2s.S2SStudentResponse;
 import org.endipi.user.dto.s2s.S2STeacherResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,4 +38,14 @@ public interface UserService {
     TeacherValidationResponse validateTeacher(Long teacherId);
 
     StudentValidationResponse validateStudent(Long studentId);
+
+    // Student S2S methods
+    List<S2SStudentResponse> findAllStudents();
+
+    S2SStudentResponse findByStudentId(Long studentId);
+
+    Map<Long, String> getStudentNamesByIds(Set<Long> ids); // Map<studentId, studentName>
+
+    // New batch method for cross-service optimization
+    Map<Long, TeacherValidationResponse> getTeacherDetailsByIds(Set<Long> teacherIds);
 }

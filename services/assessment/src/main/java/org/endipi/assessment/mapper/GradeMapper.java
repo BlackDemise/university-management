@@ -11,15 +11,15 @@ import org.springframework.stereotype.Component;
 @Component
 @Mapper(componentModel = "spring")
 public interface GradeMapper {
-    @Mapping(target = "scoreType",
-            expression = "java(org.endipi.assessment.enums.score.ScoreType.valueOf(gradeRequest.getScoreType()))")
+    @Mapping(target = "gradeType",
+            expression = "java(org.endipi.assessment.enums.grade.GradeType.valueOf(gradeRequest.getGradeType()))")
     Grade toEntity(GradeRequest gradeRequest);
 
-    @Mapping(target = "scoreType",
-            expression = "java(grade.getScoreType().getScoreType())")
+    @Mapping(target = "gradeType",
+            expression = "java(grade.getGradeType().getGradeType())")
     GradeResponse toResponse(Grade grade);
 
-    @Mapping(target = "scoreType",
-            expression = "java(org.endipi.assessment.enums.score.ScoreType.valueOf(gradeRequest.getScoreType()))")
+    @Mapping(target = "gradeType",
+            expression = "java(org.endipi.assessment.enums.grade.GradeType.valueOf(gradeRequest.getGradeType()))")
     void updateFromRequest(GradeRequest gradeRequest, @MappingTarget Grade grade);
 }

@@ -1,6 +1,7 @@
 package org.endipi.assessment.client.userservice;
 
 import org.endipi.assessment.client.common.ClientConfig;
+import org.endipi.assessment.dto.external.S2SStudentResponse;
 import org.endipi.assessment.dto.external.StudentValidationResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,4 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface UserServiceClient {
     @GetMapping("/students/{studentId}/validate")
     StudentValidationResponse validateStudent(@PathVariable Long studentId);
+
+    @GetMapping("/students/{studentId}/details")
+    S2SStudentResponse getStudentDetails(@PathVariable Long studentId);
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.endipi.facility.dto.external.ClassroomValidationResponse;
 import org.endipi.facility.dto.request.ClassroomRequest;
 import org.endipi.facility.dto.response.ApiResponse;
+import org.endipi.facility.dto.response.ClassroomDetailsResponse;
 import org.endipi.facility.dto.response.ClassroomResponse;
 import org.endipi.facility.service.ClassroomService;
 import org.springframework.data.domain.Page;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -103,5 +106,17 @@ public class ClassroomResource {
         ClassroomValidationResponse isValid = classroomService.validateClassroom(classroomId);
 
         return ResponseEntity.ok(isValid);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/batch-details")
+    public Map<Long, ClassroomDetailsResponse> getClassroomDetailsByIds(@RequestParam Set<Long> classroomIds) {
+        return classroomService.getClassroomDetailsByIds(classroomIds);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/all")
+    public List<ClassroomDetailsResponse> getAllClassroomsWithDetails() {
+        return classroomService.getAllClassroomsWithDetails();
     }
 }

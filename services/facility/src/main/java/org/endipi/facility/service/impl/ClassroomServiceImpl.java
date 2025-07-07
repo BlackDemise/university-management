@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.endipi.facility.dto.external.ClassroomValidationResponse;
 import org.endipi.facility.dto.request.ClassroomRequest;
+import org.endipi.facility.dto.response.ClassroomDetailsResponse;
 import org.endipi.facility.dto.response.ClassroomResponse;
 import org.endipi.facility.entity.Classroom;
 import org.endipi.facility.enums.error.ErrorCode;
@@ -21,6 +22,9 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -123,5 +127,39 @@ public class ClassroomServiceImpl implements ClassroomService {
         classroom = classroomRepository.save(classroom);
 
         return classroomMapper.toResponse(classroom);
+    }
+
+    @Override
+    public Map<Long, ClassroomDetailsResponse> getClassroomDetailsByIds(Set<Long> classroomIds) {
+        log.info("Getting classroom details for {} IDs", classroomIds.size());
+
+        List<Classroom> classrooms = classroomRepository.findAllById(classroomIds);
+
+        return classrooms.stream()
+                .collect(Collectors.toMap(
+                        Classroom::getId,
+                        classroom -> ClassroomDetailsResponse.builder()
+                                .id(classroom.getId())
+                                .name(classroom.getRoomNumber())
+                                .classroomType(classroom.getClassroomType().getClassroomType())
+                                .capacity(classroom.getCapacity())
+                                .build()
+                ));
+    }
+
+    @Override
+    public List<ClassroomDetailsResponse> getAllClassroomsWithDetails() {
+        log.info("Getting all classrooms with details");
+
+        List<Classroom> classrooms = classroomRepository.findAll();
+
+        return classrooms.stream()
+                .map(classroom -> ClassroomDetailsResponse.builder()
+                        .id(classroom.getId())
+                        .name(classroom.getRoomNumber())
+                        .classroomType(classroom.getClassroomType().getClassroomType())
+                        .capacity(classroom.getCapacity())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

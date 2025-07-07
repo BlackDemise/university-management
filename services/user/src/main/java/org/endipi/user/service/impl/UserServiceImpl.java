@@ -9,6 +9,7 @@ import org.endipi.user.dto.request.UserRequest;
 import org.endipi.user.dto.response.StudentValidationResponse;
 import org.endipi.user.dto.response.TeacherValidationResponse;
 import org.endipi.user.dto.response.UserResponse;
+import org.endipi.user.dto.s2s.S2SStudentResponse;
 import org.endipi.user.dto.s2s.S2STeacherResponse;
 import org.endipi.user.entity.Student;
 import org.endipi.user.entity.Teacher;
@@ -522,6 +523,50 @@ public class UserServiceImpl implements UserService {
         } catch (IllegalArgumentException e) {
             return false;
         }
+    }
+
+    // Student S2S methods implementation
+    @Override
+    public List<S2SStudentResponse> findAllStudents() {
+        return userRepository.findByRole_RoleTitle(RoleTitle.STUDENT)
+                .stream()
+                .map(userMapper::toS2SStudentResponse)
+                .toList();
+    }
+
+    @Override
+    public S2SStudentResponse findByStudentId(Long studentId) {
+        User user = userRepository.findByRole_RoleTitleAndId(RoleTitle.STUDENT, studentId);
+        if (user == null) {
+            throw new ApplicationException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        return userMapper.toS2SStudentResponse(user);
+    }
+
+    @Override
+    public Map<Long, String> getStudentNamesByIds(Set<Long> ids) {
+        List<User> students = userRepository.findAllByRole_RoleTitleAndIdIn(RoleTitle.STUDENT, ids);
+
+        return students.stream()
+                .collect(Collectors.toMap(User::getId, User::getFullName));
+    }
+
+    @Override
+    public Map<Long, TeacherValidationResponse> getTeacherDetailsByIds(Set<Long> teacherIds) {
+        log.info("Getting teacher details for {} IDs", teacherIds.size());
+
+        List<User> teachers = userRepository.findAllByRole_RoleTitleAndIdIn(RoleTitle.TEACHER, teacherIds);
+
+        return teachers.stream()
+                .collect(Collectors.toMap(
+                        User::getId,
+                        user -> TeacherValidationResponse.builder()
+                                .exists(true)
+                                .fullName(user.getFullName())
+                                .email(user.getEmail())
+                                .build()
+                ));
     }
 }
 

@@ -3,6 +3,7 @@ package org.endipi.enrollment.resource;
 import lombok.RequiredArgsConstructor;
 import org.endipi.enrollment.dto.request.CourseOfferingRequest;
 import org.endipi.enrollment.dto.response.ApiResponse;
+import org.endipi.enrollment.dto.response.CourseOfferingDetailsResponse;
 import org.endipi.enrollment.dto.response.CourseOfferingResponse;
 import org.endipi.enrollment.service.CourseOfferingService;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -101,5 +104,17 @@ public class CourseOfferingResource {
     public ResponseEntity<Boolean> validateCourseOffering(@PathVariable Long courseOfferingId) {
         boolean isValid = courseOfferingService.validateCourseOffering(courseOfferingId);
         return ResponseEntity.ok(isValid);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/batch-details")
+    public Map<Long, CourseOfferingDetailsResponse> getCourseOfferingDetailsByIds(@RequestParam Set<Long> courseOfferingIds) {
+        return courseOfferingService.getCourseOfferingDetailsByIds(courseOfferingIds);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/s2s/all")
+    public List<CourseOfferingDetailsResponse> getAllCourseOfferingsWithDetails() {
+        return courseOfferingService.getAllCourseOfferingsWithDetails();
     }
 }
