@@ -120,6 +120,14 @@ public class UserResource {
     }
 
     // S2S ENDPOINT -> no ApiResponse wrapper for clarity
+    @GetMapping("/signed-url/{fileName}")
+    public ResponseEntity<String> generateSignedUrl(@PathVariable String fileName) {
+        String signedUrl = userService.getSignedUrlForUserAvatar(fileName);
+
+        return ResponseEntity.ok(signedUrl);
+    }
+
+    // S2S ENDPOINT -> no ApiResponse wrapper for clarity
     @GetMapping("/teachers/{teacherId}/validate")
     public ResponseEntity<TeacherValidationResponse> validateTeacher(@PathVariable Long teacherId) {
         TeacherValidationResponse validation = userService.validateTeacher(teacherId);

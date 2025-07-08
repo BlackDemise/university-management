@@ -30,6 +30,8 @@ const UserUpdate = () => {
     const [avatarPreview, setAvatarPreview] = useState(null);
     const [avatarUploading, setAvatarUploading] = useState(false);
     const [avatarUploadSuccess, setAvatarUploadSuccess] = useState(false);
+    const [avatarSignedUrl, setAvatarSignedUrl] = useState(null);
+    const [loadingAvatarUrl, setLoadingAvatarUrl] = useState(false);
 
     // Form data state
     const [formData, setFormData] = useState({
@@ -81,6 +83,25 @@ const UserUpdate = () => {
         }
     };
 
+    // Load signed URL for avatar
+    const loadAvatarSignedUrl = async (fileName) => {
+        if (!fileName) {
+            setAvatarSignedUrl(null);
+            return;
+        }
+
+        try {
+            setLoadingAvatarUrl(true);
+            const response = await userService.getSignedUrlForUserAvatar(fileName);
+            setAvatarSignedUrl(response.result || response);
+        } catch (err) {
+            console.error('Error loading avatar signed URL:', err);
+            setAvatarSignedUrl(null);
+        } finally {
+            setLoadingAvatarUrl(false);
+        }
+    };
+
     // Load user data for edit mode
     const loadUserData = async () => {
         if (!isEditMode) return;
@@ -121,6 +142,11 @@ const UserUpdate = () => {
                 degree: user.teacherResponse?.degree || ''
             });
 
+            // Load avatar signed URL if user has an avatar
+            if (user.avatarUrl) {
+                await loadAvatarSignedUrl(user.avatarUrl);
+            }
+
         } catch (err) {
             setError('Không thể tải thông tin người dùng. Vui lòng thử lại.');
             console.error('Error loading user data:', err);
@@ -151,7 +177,7 @@ const UserUpdate = () => {
                 await loadUserData();
             }
         };
-        
+
         initializeComponent();
     }, [id]);
 
@@ -172,14 +198,14 @@ const UserUpdate = () => {
             }
 
             setAvatarFile(file);
-            
+
             // Create preview
             const reader = new FileReader();
             reader.onload = (e) => {
                 setAvatarPreview(e.target.result);
             };
             reader.readAsDataURL(file);
-            
+
             // Reset upload status
             setAvatarUploadSuccess(false);
         }
@@ -201,10 +227,10 @@ const UserUpdate = () => {
 
             toast.success('Tải ảnh đại diện thành công!');
             setAvatarUploadSuccess(true);
-            
+
             // Reload user data to get updated avatar URL
             await loadUserData();
-            
+
             // Clear file selection
             setAvatarFile(null);
             setAvatarPreview(null);
@@ -221,7 +247,7 @@ const UserUpdate = () => {
         setAvatarFile(null);
         setAvatarPreview(null);
         setAvatarUploadSuccess(false);
-        
+
         // Clear file input
         const fileInput = document.getElementById('avatarFileInput');
         if (fileInput) {
@@ -454,19 +480,21 @@ const UserUpdate = () => {
                                             <Col md={4} className="text-center">
                                                 <div className="mb-3">
                                                     <label className="text-muted small mb-2 d-block">Ảnh hiện tại</label>
-                                                    <div 
+                                                    <div
                                                         className="bg-light border rounded d-flex align-items-center justify-content-center"
                                                         style={{ width: '120px', height: '120px', margin: '0 auto' }}
                                                     >
-                                                        {formData.avatarUrl ? (
-                                                            <img 
-                                                                src={formData.avatarUrl} 
+                                                        {loadingAvatarUrl ? (
+                                                            <Spinner animation="border" variant="primary" size="sm" />
+                                                        ) : avatarSignedUrl ? (
+                                                            <img
+                                                                src={avatarSignedUrl}
                                                                 alt="Current avatar"
                                                                 className="rounded"
-                                                                style={{ 
-                                                                    width: '100%', 
-                                                                    height: '100%', 
-                                                                    objectFit: 'cover' 
+                                                                style={{
+                                                                    width: '100%',
+                                                                    height: '100%',
+                                                                    objectFit: 'cover'
                                                                 }}
                                                                 onError={(e) => {
                                                                     e.target.style.display = 'none';
@@ -474,13 +502,15 @@ const UserUpdate = () => {
                                                                 }}
                                                             />
                                                         ) : null}
-                                                        
-                                                        <div 
+
+                                                        <div
                                                             className="text-center text-muted"
-                                                            style={{ display: formData.avatarUrl ? 'none' : 'block' }}
+                                                            style={{ display: (avatarSignedUrl && !loadingAvatarUrl) ? 'none' : 'block' }}
                                                         >
                                                             <FontAwesomeIcon icon={faUser} size="2x" className="mb-1" />
-                                                            <div className="small">Chưa có ảnh</div>
+                                                            <div className="small">
+                                                                {loadingAvatarUrl ? 'Đang tải...' : 'Chưa có ảnh'}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -491,18 +521,18 @@ const UserUpdate = () => {
                                                 <Col md={4} className="text-center">
                                                     <div className="mb-3">
                                                         <label className="text-muted small mb-2 d-block">Xem trước</label>
-                                                        <div 
+                                                        <div
                                                             className="bg-light border rounded d-flex align-items-center justify-content-center"
                                                             style={{ width: '120px', height: '120px', margin: '0 auto' }}
                                                         >
-                                                            <img 
-                                                                src={avatarPreview} 
+                                                            <img
+                                                                src={avatarPreview}
                                                                 alt="Avatar preview"
                                                                 className="rounded"
-                                                                style={{ 
-                                                                    width: '100%', 
-                                                                    height: '100%', 
-                                                                    objectFit: 'cover' 
+                                                                style={{
+                                                                    width: '100%',
+                                                                    height: '100%',
+                                                                    objectFit: 'cover'
                                                                 }}
                                                             />
                                                         </div>
@@ -706,7 +736,6 @@ const UserUpdate = () => {
                                 </Card.Body>
                             </Card>
                         </Col>
-
                         {/* Student Information */}
                         {formData.role === 'STUDENT' && (
                             <Col lg={12} className="mb-4">

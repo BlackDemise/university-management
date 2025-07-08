@@ -59,6 +59,7 @@ import CourseSessionList from "./components/assessment/session/CourseSessionList
 import CourseSessionDetails from "./components/assessment/session/CourseSessionDetails.jsx";
 import CourseSessionUpdate from "./components/assessment/session/CourseSessionUpdate.jsx";
 import ImageUploader from "./components/test/ImageUploader.jsx";
+import ExcelUploader from "./components/test/ExcelUploader.jsx";
 
 function App() {
     return (
@@ -601,6 +602,9 @@ function App() {
 
                         {/*Image uploader testing*/}
                         <Route path="/image/upload" element={<ImageUploader/>}/>
+
+                        {/*Excel uploader testing*/}
+                        <Route path="/excel/upload" element={<ExcelUploader/>}/>
 
                         {/* Default redirect to login */}
                         <Route path="/" element={<Navigate to="/login" replace/>}/>

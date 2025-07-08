@@ -60,6 +60,22 @@ public class GCSResource {
     }
 
     /**
+     * Generate a signed URL for a file in GCS
+     * @param fileName
+     * @return
+     */
+    @GetMapping("/signed-url/{fileName}")
+    public ResponseEntity<String> getSignedUrl(@PathVariable String fileName) {
+        try {
+            String signedUrl = gcsService.generateSignedUrl(fileName);
+            return ResponseEntity.ok(signedUrl);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error generating signed URL: " + e.getMessage());
+        }
+    }
+
+    /**
      * Delete a file from GCS
      */
     @DeleteMapping("/delete/{fileName}")

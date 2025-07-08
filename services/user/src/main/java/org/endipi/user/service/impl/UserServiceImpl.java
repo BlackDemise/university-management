@@ -246,7 +246,7 @@ public class UserServiceImpl implements UserService {
             }
 
             // Update user avatar URL
-            user.setAvatarUrl(avatarUrl);
+            user.setAvatarUrl(renamedFile.getOriginalFilename());
             user = userRepository.save(user);
 
             log.info("Successfully updated avatar URL for user ID: {}", userId);
@@ -668,5 +668,10 @@ public class UserServiceImpl implements UserService {
                                 .email(user.getEmail())
                                 .build()
                 ));
+    }
+
+    @Override
+    public String getSignedUrlForUserAvatar(String fileName) {
+        return mediaServiceClient.generateSignedUrl(fileName);
     }
 }

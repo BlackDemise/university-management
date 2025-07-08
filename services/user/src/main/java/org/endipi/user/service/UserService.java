@@ -52,4 +52,6 @@ public interface UserService {
 
     // New batch method for cross-service optimization
     Map<Long, TeacherValidationResponse> getTeacherDetailsByIds(Set<Long> teacherIds);
+
+    String getSignedUrlForUserAvatar(String fileName);
 }
