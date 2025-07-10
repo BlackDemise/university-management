@@ -109,6 +109,57 @@ const userService = {
       throw error;
     }
   },
+
+  /**
+   * Validate Excel file for user import
+   * @param {FormData} formData - FormData containing the Excel file
+   * @returns {Promise} - Promise with validation result
+   */
+  validateExcelFile: async (formData) => {
+    try {
+      const response = await API.post(`/v1/user/excel/validate`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Import users from Excel file
+   * @param {FormData} formData - FormData containing the Excel file
+   * @returns {Promise} - Promise with import result
+   */
+  importUsersFromExcel: async (formData) => {
+    try {
+      const response = await API.post(`/v1/user/excel/import`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Download Excel template for user import
+   * @returns {Promise} - Promise with Excel file blob
+   */
+  downloadExcelTemplate: async () => {
+    try {
+      const response = await API.get(`/v1/user/excel/template`, {
+        responseType: "blob",
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 export default userService;

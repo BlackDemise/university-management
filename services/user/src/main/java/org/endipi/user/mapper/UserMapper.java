@@ -18,6 +18,7 @@ public interface UserMapper {
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "teacher", ignore = true)
     @Mapping(target = "student", ignore = true)
+    @Mapping(target = "birthDate", source = "birthDate", dateFormat = "yyyy-MM-dd")
     @Mapping(target = "role",
             expression = "java(roleRepository.findByRoleTitle(org.endipi.user.enums.role.RoleTitle.valueOf(userRequest.getRole())).orElse(null))")
     User toEntity(UserRequest userRequest,
@@ -27,6 +28,7 @@ public interface UserMapper {
             expression = "java(user.getRole().getRoleTitle().getRoleTitle())")
     @Mapping(target = "teacherResponse", source = "teacher")
     @Mapping(target = "studentResponse", source = "student")
+    @Mapping(target = "birthDate", source = "birthDate", dateFormat = "dd-MM-yyyy")
     @Mapping(target = "role",
             expression = "java(user.getRole().getRoleTitle().name())")
     UserResponse toResponse(User user);
@@ -34,6 +36,7 @@ public interface UserMapper {
     @Mapping(target = "teacher", ignore = true)
     @Mapping(target = "student", ignore = true)
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "birthDate", source = "birthDate", dateFormat = "dd-MM-yyyy")
     @Mapping(target = "role",
             expression = "java(roleRepository.findByRoleTitle(org.endipi.user.enums.role.RoleTitle.valueOf(userRequest.getRole())).orElse(null))")
     void updateFromRequest(UserRequest userRequest, @MappingTarget User user, @Context RoleRepository roleRepository);
@@ -53,5 +56,6 @@ public interface UserMapper {
     @Mapping(target = "studentStatus", expression = "java(user.getStudent().getStudentStatus().getStudentStatus())")
     @Mapping(target = "courseYear", source = "user.student.courseYear")
     @Mapping(target = "majorId", source = "user.student.majorId")
+    @Mapping(target = "birthDate", source = "user.birthDate", dateFormat = "dd-MM-yyyy")
     S2SStudentResponse toS2SStudentResponse(User user);
 }

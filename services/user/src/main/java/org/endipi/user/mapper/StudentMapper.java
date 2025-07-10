@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 @Mapper(componentModel = "spring")
 public interface StudentMapper {
     @Mapping(target = "user", ignore = true)
-    @Mapping(target = "birthDate", source = "birthDate", dateFormat = "dd-MM-yyyy")
     @Mapping(target = "studentStatus",
             expression = "java(org.endipi.user.enums.student.StudentStatus.valueOf(studentRequest.getStudentStatus()))")
     Student toEntity(StudentRequest studentRequest);
@@ -20,7 +19,6 @@ public interface StudentMapper {
     StudentResponse toResponse(Student student);
 
     @Mapping(target = "user", ignore = true)
-    @Mapping(target = "birthDate", source = "birthDate", dateFormat = "dd-MM-yyyy")
     @Mapping(target = "studentStatus",
             expression = "java(org.endipi.user.enums.student.StudentStatus.valueOf(studentRequest.getStudentStatus()))")
     void updateFromRequest(StudentRequest studentRequest, @MappingTarget Student student);

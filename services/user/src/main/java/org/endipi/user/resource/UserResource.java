@@ -2,6 +2,8 @@ package org.endipi.user.resource;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.endipi.user.dto.excel.BatchImportResult;
+import org.endipi.user.dto.excel.ValidationResult;
 import org.endipi.user.dto.request.UserRequest;
 import org.endipi.user.dto.response.ApiResponse;
 import org.endipi.user.dto.response.StudentValidationResponse;
@@ -9,6 +11,7 @@ import org.endipi.user.dto.response.TeacherValidationResponse;
 import org.endipi.user.dto.response.UserResponse;
 import org.endipi.user.dto.s2s.S2SStudentResponse;
 import org.endipi.user.dto.s2s.S2STeacherResponse;
+import org.endipi.user.service.ExcelUserImportService;
 import org.endipi.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -26,6 +29,7 @@ import java.util.Set;
 @RequestMapping("/api/v1/user")
 public class UserResource {
     private final UserService userService;
+    private final ExcelUserImportService excelUserImportService;
 
     @GetMapping("/all")
     public ResponseEntity<?> findAll() {
@@ -191,5 +195,56 @@ public class UserResource {
     @GetMapping("/s2s/teacher/batch-details")
     public Map<Long, TeacherValidationResponse> getTeacherDetailsByIds(@RequestParam Set<Long> teacherIds) {
         return userService.getTeacherDetailsByIds(teacherIds);
+    }
+
+    // =============================================================================
+    // EXCEL IMPORT ENDPOINTS
+    // =============================================================================
+
+    /**
+     * Validates Excel file for user import
+     */
+    @PostMapping(value = "/excel/validate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> validateExcelFile(@RequestParam("file") MultipartFile file) {
+        ValidationResult validationResult = excelUserImportService.validateExcelFile(file);
+
+        ApiResponse<String, ValidationResult> apiResponse = ApiResponse.<String, ValidationResult>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.OK.value())
+                .message("Validation completed")
+                .result(validationResult)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    /**
+     * Imports users from Excel file
+     */
+    @PostMapping(value = "/excel/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> importUsersFromExcel(@RequestParam("file") MultipartFile file) {
+        BatchImportResult importResult = excelUserImportService.importUsersFromExcel(file);
+
+        ApiResponse<String, BatchImportResult> apiResponse = ApiResponse.<String, BatchImportResult>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.OK.value())
+                .message("Import completed")
+                .result(importResult)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    /**
+     * Downloads sample Excel template for user import
+     */
+    @GetMapping("/excel/template")
+    public ResponseEntity<byte[]> downloadSampleTemplate() {
+        byte[] template = excelUserImportService.generateSampleTemplate();
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=user-import-template.xlsx")
+                .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .body(template);
     }
 }

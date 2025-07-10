@@ -49,7 +49,7 @@ spring:
             - id: media-service
               uri: lb://MEDIA-SERVICE
               predicates:
-                - Path=/api/v1/files/**,/api/v1/gcs/**
+                - Path=/api/v1/files/**,/api/v1/gcs/**,/api/v1/excel/**
 
 server:
   port: 8222

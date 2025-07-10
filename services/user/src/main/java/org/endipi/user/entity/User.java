@@ -3,6 +3,8 @@ package org.endipi.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Getter
 @Setter
@@ -32,6 +34,8 @@ public class User {
     private String email;
 
     private String password;
+
+    private LocalDate birthDate;
 
     @OneToOne(mappedBy = "user")
     private Teacher teacher;

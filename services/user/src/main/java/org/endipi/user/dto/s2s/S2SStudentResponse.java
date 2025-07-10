@@ -20,4 +20,5 @@ public class S2SStudentResponse {
     private String studentStatus;
     private Integer courseYear;
     private Long majorId;
+    private String birthDate;
 }

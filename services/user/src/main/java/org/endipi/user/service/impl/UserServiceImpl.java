@@ -422,11 +422,7 @@ public class UserServiceImpl implements UserService {
                 throw new ApplicationException(ErrorCode.STUDENT_INFO_REQUIRED);
             }
 
-            // Validate birthDate
-            String birthDate = studentRequest.getBirthDate();
-            if (birthDate == null || birthDate.isBlank()) {
-                throw new ApplicationException(ErrorCode.STUDENT_INFO_REQUIRED);
-            }
+            // Note: birthDate validation is now handled at User level, not Student level
 
             // Validate courseYear
             Integer courseYear = studentRequest.getCourseYear();

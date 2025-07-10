@@ -10,7 +10,6 @@ import lombok.*;
 public class StudentResponse {
     private Long id;
     private String studentCode;
-    private String birthDate;
     private Integer courseYear;
     private String studentStatus;
 }

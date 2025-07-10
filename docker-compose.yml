@@ -118,6 +118,25 @@ services:
       retries: 3
       start_period: 90s
 
+  # Media Service (File Storage)
+  media-service:
+    build: ./services/media
+    container_name: media-service
+    depends_on:
+      maven-deps:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8006:8006"
+    networks:
+      - university-network
+    restart: unless-stopped
+
   # Auth Service
   auth-service:
     build: ./services/auth

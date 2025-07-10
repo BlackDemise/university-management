@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.endipi.user.enums.student.StudentStatus;
 
-import java.time.LocalDate;
-
 @Entity
 @Getter
 @Setter
@@ -19,8 +17,6 @@ public class Student {
 
     @Column(unique = true, nullable = false)
     private String studentCode;
-
-    private LocalDate birthDate;
 
     private Integer courseYear;
 
