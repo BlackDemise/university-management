@@ -43,10 +43,6 @@ CREATE TABLE IF NOT EXISTS major
 (
     id
 ),
-    UNIQUE KEY UK_major_name
-(
-    name
-),
     CONSTRAINT FK_major_department FOREIGN KEY
 (
     department_id

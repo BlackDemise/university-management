@@ -80,9 +80,12 @@ public class GlobalExceptionHandler {
         // Smart message parsing based on constraint violation
         String errorDetails = ex.getMessage().toLowerCase();
 
+        // Too database-dependent, make sure to migrate to validate and throw in service layer later.
         if (errorDetails.contains("duplicate") || errorDetails.contains("unique")) {
-            if (errorDetails.contains("name") || errorDetails.contains("uk_name") || errorDetails.contains("department_name")) {
+            if (errorDetails.contains("department.uk_department_name")) {
                 fieldErrors.put("name", "Tên khoa/phòng ban này đã được sử dụng! Vui lòng sử dụng tên khác.");
+            } else if (errorDetails.contains("major.uk_major_name_department")) {
+                fieldErrors.put("name", "Tên ngành học này đã tồn tại trong khoa được chọn! Vui lòng sử dụng tên khác.");
             } else {
                 message = "Thông tin này đã được sử dụng! Vui lòng kiểm tra lại.";
             }

@@ -11,6 +11,9 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"name", "department_id"}, name = "uk_major_name_department")
+})
 public class Major {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
