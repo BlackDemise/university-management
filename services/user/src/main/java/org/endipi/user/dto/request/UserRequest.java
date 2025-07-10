@@ -1,6 +1,9 @@
 package org.endipi.user.dto.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 @Getter
@@ -10,20 +13,25 @@ import lombok.*;
 @AllArgsConstructor
 public class UserRequest {
     private Long id;
-    private String fullName; //ok
+
+    @NotBlank(message = "Họ và tên không được để trống!")
+    private String fullName;
 
     @NotBlank(message = "Email không được để trống!")
-    private String email; //ok
+    @Email(message = "Email không đúng định dạng!")
+    private String email;
 
-    private String role; //ok
-    private String phone; //ok
+    @NotBlank(message = "Vai trò không được để trống!")
+    private String role;
+
+    private String phone;
     private String avatarUrl;
 
     /// CCCD in Vietnam
-    private String identityNumber; //ok
-    private String permanentAddress; //ok
-    private String currentAddress; //ok
-    private String birthDate; //ok
+    private String identityNumber;
+    private String permanentAddress;
+    private String currentAddress;
+    private String birthDate;
 
     // @Valid -> this will cause confusion if role == "STUDENT" but teacherRequest is included,
     // so we will validate this via service layer instead

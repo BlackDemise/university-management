@@ -1,5 +1,6 @@
 package org.endipi.academic.resource;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.endipi.academic.dto.request.DepartmentRequest;
 import org.endipi.academic.dto.response.ApiResponse;
@@ -67,7 +68,7 @@ public class DepartmentResource {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody DepartmentRequest departmentRequest) {
+    public ResponseEntity<?> save(@Valid @RequestBody DepartmentRequest departmentRequest) {
         DepartmentResponse departmentResponse = departmentService.saveWithRetry(departmentRequest);
 
         ApiResponse<String, DepartmentResponse> apiResponse = ApiResponse.<String, DepartmentResponse>builder()

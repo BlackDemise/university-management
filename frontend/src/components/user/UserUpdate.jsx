@@ -283,6 +283,51 @@ const UserUpdate = () => {
     }
   };
 
+  // Map server field names to frontend form field names
+  const mapServerErrorsToFormFields = (serverErrors) => {
+    const fieldMapping = {
+      // Map server field names to frontend form field names
+      "studentRequest.studentCode": "studentCode",
+      "teacherRequest.teacherCode": "teacherCode",
+      "studentRequest.courseYear": "courseYear",
+      "teacherRequest.academicRank": "academicRank",
+      "teacherRequest.degree": "degree",
+      // Add more mappings as needed
+    };
+
+    const mappedErrors = {};
+    Object.entries(serverErrors).forEach(([serverField, message]) => {
+      const frontendField = fieldMapping[serverField] || serverField;
+      mappedErrors[frontendField] = message;
+    });
+
+    return mappedErrors;
+  };
+
+  // Process server-side validation errors
+  const processServerErrors = (error) => {
+    console.error("Server error:", error);
+
+    if (error.response && error.response.status === 400) {
+      const errorData = error.response.data;
+
+      // Check if server returned field-specific errors
+      if (errorData.result && typeof errorData.result === "object") {
+        // Map server field names to frontend field names
+        const mappedErrors = mapServerErrorsToFormFields(errorData.result);
+
+        // Server returned field-specific errors
+        setFormErrors(mappedErrors);
+        toast.error(
+          errorData.message || "Vui lòng kiểm tra lại thông tin đã nhập"
+        );
+        return true; // Indicates field-specific errors were handled
+      }
+    }
+
+    return false; // Indicates generic error handling should proceed
+  };
+
   // Handle input changes
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -290,7 +335,7 @@ const UserUpdate = () => {
       [field]: value,
     }));
 
-    // Clear specific field error when user starts typing
+    // Clear both client-side AND server-side field errors when user starts typing
     if (formErrors[field]) {
       setFormErrors((prev) => ({
         ...prev,
@@ -339,6 +384,9 @@ const UserUpdate = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Clear previous server errors before validation
+    setFormErrors({});
+
     if (!validateForm()) {
       toast.error("Vui lòng kiểm tra lại thông tin đã nhập");
       return;
@@ -377,7 +425,7 @@ const UserUpdate = () => {
         };
       }
 
-      const response = await userService.saveUser(requestData);
+      await userService.saveUser(requestData);
 
       const successMessage = isEditMode
         ? "Cập nhật thông tin người dùng thành công"
@@ -392,11 +440,17 @@ const UserUpdate = () => {
         navigate("/admin/users/all");
       }
     } catch (err) {
-      console.error("Error saving user:", err);
-      const errorMessage = isEditMode
-        ? "Lỗi khi cập nhật thông tin người dùng"
-        : "Lỗi khi tạo người dùng mới";
-      toast.error(errorMessage);
+      // Try to process server-side validation errors first
+      const handledAsFieldErrors = processServerErrors(err);
+
+      if (!handledAsFieldErrors) {
+        // Fall back to generic error handling
+        console.error("Error saving user:", err);
+        const errorMessage = isEditMode
+          ? "Lỗi khi cập nhật thông tin người dùng"
+          : "Lỗi khi tạo người dùng mới";
+        toast.error(errorMessage);
+      }
     } finally {
       setSaving(false);
     }

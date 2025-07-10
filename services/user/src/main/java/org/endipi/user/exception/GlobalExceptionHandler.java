@@ -54,6 +54,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
     }
 
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ResponseEntity<?> handleCustomValidationException(ValidationException ex) {
+        ApiResponse<String, Object> apiResponse = ApiResponse.<String, Object>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .message("Tồn tại thông tin không hợp lệ!")
+                .result(ex.getFieldErrors())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
+    }
+
     @ExceptionHandler(value = AuthenticationException.class)
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
     ResponseEntity<?> handleAuthenticationException(AuthenticationException ae) {
@@ -88,18 +101,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleDatabaseConstraintViolation(Exception ex) {
         log.error("Database constraint violation: {}", ex.getMessage(), ex);
 
-        String message = "Dữ liệu không hợp lệ hoặc đã tồn tại trong hệ thống!";
+        String message = "Tồn tại thông tin không hợp lệ!";
+        Map<String, String> fieldErrors = new java.util.HashMap<>();
 
         // Smart message parsing based on constraint violation
         String errorDetails = ex.getMessage().toLowerCase();
 
         if (errorDetails.contains("duplicate") || errorDetails.contains("unique")) {
             if (errorDetails.contains("email") || errorDetails.contains("uk_email")) {
-                message = "Email này đã được sử dụng! Vui lòng sử dụng email khác.";
+                fieldErrors.put("email", "Email này đã được sử dụng! Vui lòng sử dụng email khác.");
             } else if (errorDetails.contains("teacher_code") || errorDetails.contains("teachercode")) {
-                message = "Mã giảng viên đã được sử dụng! Vui lòng sử dụng mã khác.";
+                fieldErrors.put("teacherCode", "Mã giảng viên đã được sử dụng! Vui lòng sử dụng mã khác.");
             } else if (errorDetails.contains("student_code") || errorDetails.contains("studentcode")) {
-                message = "Mã sinh viên đã được sử dụng! Vui lòng sử dụng mã khác.";
+                fieldErrors.put("studentCode", "Mã sinh viên đã được sử dụng! Vui lòng sử dụng mã khác.");
             } else {
                 message = "Thông tin này đã được sử dụng! Vui lòng kiểm tra lại.";
             }
@@ -109,10 +123,14 @@ public class GlobalExceptionHandler {
             message = "Thông tin bắt buộc bị thiếu! Vui lòng điền đầy đủ thông tin.";
         }
 
+        // If we have field-specific errors, return them in the result
+        Object result = fieldErrors.isEmpty() ? null : fieldErrors;
+
         ApiResponse<String, Object> apiResponse = ApiResponse.<String, Object>builder()
                 .timestamp(System.currentTimeMillis())
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .message(message)
+                .result(result)
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);

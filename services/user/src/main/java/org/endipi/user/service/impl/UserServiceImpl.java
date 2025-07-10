@@ -19,6 +19,7 @@ import org.endipi.user.enums.error.ErrorCode;
 import org.endipi.user.enums.role.RoleTitle;
 import org.endipi.user.enums.student.StudentStatus;
 import org.endipi.user.exception.ApplicationException;
+import org.endipi.user.exception.ValidationException;
 import org.endipi.user.mapper.StudentMapper;
 import org.endipi.user.mapper.TeacherMapper;
 import org.endipi.user.mapper.UserMapper;
@@ -360,6 +361,7 @@ public class UserServiceImpl implements UserService {
 
     private void validateUserRequest(UserRequest userRequest) {
         String role = userRequest.getRole();
+        Map<String, String> fieldErrors = new java.util.HashMap<>();
 
         String teacherRole = RoleTitle.TEACHER.name();
         String studentRole = RoleTitle.STUDENT.name();
@@ -368,72 +370,75 @@ public class UserServiceImpl implements UserService {
             TeacherRequest teacherRequest = userRequest.getTeacherRequest();
             // Must have teacher data when role is TEACHER
             if (userRequest.getTeacherRequest() == null) {
-                throw new ApplicationException(ErrorCode.TEACHER_INFO_REQUIRED);
-            }
+                fieldErrors.put("teacherCode", "Thông tin giảng viên là bắt buộc khi vai trò là Giảng viên");
+            } else {
+                // Should NOT have student data when role is TEACHER
+                if (userRequest.getStudentRequest() != null) {
+                    throw new ApplicationException(ErrorCode.CONFLICTING_ROLE_DATA);
+                }
 
-            // Should NOT have student data when role is TEACHER
-            if (userRequest.getStudentRequest() != null) {
-                throw new ApplicationException(ErrorCode.CONFLICTING_ROLE_DATA);
-            }
+                // Validate teacherCode
+                String teacherCode = teacherRequest.getTeacherCode();
+                if (teacherCode == null || teacherCode.isBlank()) {
+                    fieldErrors.put("teacherCode", "Mã giảng viên không được để trống!");
+                }
 
-            // Validate teacherCode
-            String teacherCode = teacherRequest.getTeacherCode();
-            if (teacherCode == null || teacherCode.isBlank()) {
-                throw new ApplicationException(ErrorCode.TEACHER_INFO_REQUIRED);
-            }
+                // Validate academicRank
+                String academicRank = teacherRequest.getAcademicRank();
+                if (academicRank == null || academicRank.isBlank()) {
+                    fieldErrors.put("academicRank", "Học hàm không được để trống!");
+                }
 
-            // Validate academicRank
-            String academicRank = teacherRequest.getAcademicRank();
-            if (academicRank == null || academicRank.isBlank()) {
-                throw new ApplicationException(ErrorCode.TEACHER_INFO_REQUIRED);
-            }
-
-            // Validate degree
-            String degree = teacherRequest.getDegree();
-            if (degree == null || degree.isBlank()) {
-                throw new ApplicationException(ErrorCode.TEACHER_INFO_REQUIRED);
+                // Validate degree
+                String degree = teacherRequest.getDegree();
+                if (degree == null || degree.isBlank()) {
+                    fieldErrors.put("degree", "Học vị không được để trống!");
+                }
             }
         } else if (studentRole.equals(role)) {
             StudentRequest studentRequest = userRequest.getStudentRequest();
 
             // Must have student data when role is STUDENT
             if (studentRequest == null) {
-                throw new ApplicationException(ErrorCode.STUDENT_INFO_REQUIRED);
-            }
+                fieldErrors.put("studentCode", "Thông tin sinh viên là bắt buộc khi vai trò là Sinh viên");
+            } else {
+                // Should NOT have teacher data when role is STUDENT
+                if (userRequest.getTeacherRequest() != null) {
+                    throw new ApplicationException(ErrorCode.CONFLICTING_ROLE_DATA);
+                }
 
-            // Should NOT have teacher data when role is STUDENT
-            if (userRequest.getTeacherRequest() != null) {
-                throw new ApplicationException(ErrorCode.CONFLICTING_ROLE_DATA);
-            }
+                // Validate studentStatus enum
+                String studentStatus = studentRequest.getStudentStatus();
+                if (studentStatus == null || studentStatus.isBlank()) {
+                    fieldErrors.put("studentStatus", "Trạng thái sinh viên không được để trống!");
+                }
 
-            // Validate studentStatus enum
-            String studentStatus = studentRequest.getStudentStatus();
-            if (studentStatus == null || studentStatus.isBlank()) {
-                throw new ApplicationException(ErrorCode.STUDENT_STATUS_REQUIRED);
-            }
+                if (studentStatus != null && !isValidStudentStatus(studentStatus)) {
+                    fieldErrors.put("studentStatus", "Trạng thái sinh viên không hợp lệ!");
+                }
 
-            if (!isValidStudentStatus(studentRequest.getStudentStatus())) {
-                throw new ApplicationException(ErrorCode.INVALID_STUDENT_STATUS);
-            }
+                // Validate studentCode
+                String studentCode = studentRequest.getStudentCode();
+                if (studentCode == null || studentCode.isBlank()) {
+                    fieldErrors.put("studentCode", "Mã sinh viên không được để trống!");
+                }
 
-            // Validate studentCode
-            String studentCode = studentRequest.getStudentCode();
-            if (studentCode == null || studentCode.isBlank()) {
-                throw new ApplicationException(ErrorCode.STUDENT_INFO_REQUIRED);
-            }
-
-            // Note: birthDate validation is now handled at User level, not Student level
-
-            // Validate courseYear
-            Integer courseYear = studentRequest.getCourseYear();
-            if (courseYear == null || courseYear < 1) {
-                throw new ApplicationException(ErrorCode.STUDENT_INFO_REQUIRED);
+                // Validate courseYear
+                Integer courseYear = studentRequest.getCourseYear();
+                if (courseYear == null || courseYear < 1) {
+                    fieldErrors.put("courseYear", "Khóa học phải là số nguyên dương!");
+                }
             }
         } else {
             // For other roles (ADMIN, etc.), should not have teacher/student data
             if (userRequest.getTeacherRequest() != null || userRequest.getStudentRequest() != null) {
                 throw new ApplicationException(ErrorCode.UNNECESSARY_ROLE_DATA);
             }
+        }
+
+        // Throw ValidationException if there are field errors
+        if (!fieldErrors.isEmpty()) {
+            throw new ValidationException(fieldErrors);
         }
     }
 
