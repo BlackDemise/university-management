@@ -144,7 +144,7 @@ const UserDetails = () => {
 
   if (loading) {
     return (
-      <MainLayout activeMenu="all-users">
+      <MainLayout activeMenu="users">
         <div className="container-fluid pt-3 pb-5">
           <div className="text-center py-5">
             <Spinner animation="border" variant="primary" />
@@ -157,7 +157,7 @@ const UserDetails = () => {
 
   if (error) {
     return (
-      <MainLayout activeMenu="all-users">
+      <MainLayout activeMenu="users">
         <div className="container-fluid pt-3 pb-5">
           <Alert variant="danger">{error}</Alert>
           <Button
@@ -174,7 +174,7 @@ const UserDetails = () => {
 
   if (isNotFound) {
     return (
-      <MainLayout activeMenu="all-users">
+      <MainLayout activeMenu="users">
         <div className="container-fluid pt-3 pb-5">
           <div className="text-center py-5">
             <div className="mb-4">

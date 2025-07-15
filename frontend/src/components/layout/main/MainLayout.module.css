@@ -17,11 +17,11 @@
     overflow-y: auto;
     position: relative;
 
-    /* 🆕 Add flexbox for footer positioning */
+    /* Add flexbox for footer positioning */
     display: flex;
     flex-direction: column;
 
-    /* 🆕 Add padding-left for content breathing room */
+    /* Add padding-left for content breathing room */
     padding-left: 25px;
     padding-right: 25px;
 }
