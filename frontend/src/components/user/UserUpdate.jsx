@@ -466,7 +466,7 @@ const UserUpdate = () => {
 
   if (loading || loadingRoles) {
     return (
-      <MainLayout activeMenu="all-users">
+      <MainLayout activeMenu="users">
         <div className="container-fluid pt-3 pb-5">
           <div className="text-center py-5">
             <Spinner animation="border" variant="primary" />
@@ -479,7 +479,7 @@ const UserUpdate = () => {
 
   if (error) {
     return (
-      <MainLayout activeMenu="all-users">
+      <MainLayout activeMenu="users">
         <div className="container-fluid pt-3 pb-5">
           <Alert variant="danger">{error}</Alert>
           <Button
@@ -495,7 +495,7 @@ const UserUpdate = () => {
   }
 
   return (
-    <MainLayout activeMenu="all-users">
+    <MainLayout activeMenu="users">
       <div className="container-fluid pt-3 pb-5">
         {/* Header */}
         <div className="d-flex justify-content-between align-items-center mb-4">

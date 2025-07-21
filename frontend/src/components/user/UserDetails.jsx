@@ -211,7 +211,7 @@ const UserDetails = () => {
   }
 
   return (
-    <MainLayout activeMenu="all-users">
+    <MainLayout activeMenu="users">
       <div className="container-fluid pt-3 pb-5">
         {/* Header */}
         <div className="d-flex justify-content-between align-items-center mb-4">

@@ -1,6 +1,6 @@
-import { jwtDecode } from 'jwt-decode';
-import { toast } from 'react-hot-toast';
-import { navigationManager } from './NavigationManager.js';
+import {jwtDecode} from 'jwt-decode';
+import {toast} from 'react-hot-toast';
+import {navigationManager} from './NavigationManager.js';
 
 /**
  * AuthManager - Single source of truth for authentication state and logic
@@ -402,8 +402,7 @@ class AuthManager {
         this.refreshPromise = this._performTokenRefresh();
         
         try {
-            const newToken = await this.refreshPromise;
-            return newToken;
+            return await this.refreshPromise;
         } finally {
             this.refreshPromise = null;
             this.state.isRefreshing = false;
