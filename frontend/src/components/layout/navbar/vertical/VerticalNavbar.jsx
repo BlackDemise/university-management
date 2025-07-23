@@ -272,7 +272,13 @@ function VerticalNavbar({
       item.submenu ? [...item.submenu, item] : [item]
     );
 
-    const activeItem = allItems.find((item) => item.path === currentPath);
+    const activeItem = allItems.find((item) => {
+      // For exact match (higher priority)
+      if (item.path === currentPath) return true;
+
+      // For partial match (Details/Update pages)
+      return currentPath.startsWith(item.path + '/');
+    });
 
     if (activeItem) {
       setActiveMenu(activeItem.id);
@@ -324,9 +330,21 @@ function VerticalNavbar({
 
   const isMenuActive = (item) => {
     if (item.path === location.pathname) return true;
+
+    // Check if current path starts with this item's path (for Details/Update pages)
+    if (location.pathname.startsWith(item.path + '/')) return true;
+
+    // Check submenu items
     if (item.submenu) {
-      return item.submenu.some((subItem) => subItem.path === location.pathname);
+      return item.submenu.some((subItem) => {
+        // Exact match
+        if (subItem.path === location.pathname) return true;
+        // Partial match for sub-pages
+        return location.pathname.startsWith(subItem.path + '/');
+      });
     }
+
+    // Fallback to activeMenu comparison
     return activeMenu === item.id;
   };
 
