@@ -167,7 +167,7 @@ const DepartmentUpdate = () => {
 
   if (loading) {
     return (
-      <MainLayout activeMenu="academic">
+      <MainLayout activeMenu="departments">
         <div className="container-fluid pt-3 pb-5">
           <div className="text-center py-5">
             <Spinner animation="border" variant="primary" />
@@ -179,7 +179,7 @@ const DepartmentUpdate = () => {
   }
 
   return (
-    <MainLayout activeMenu="academic">
+    <MainLayout activeMenu="departments">
       <div className="container-fluid pt-3 pb-5">
         {/* Header */}
         <div className="d-flex justify-content-between align-items-center mb-4">
