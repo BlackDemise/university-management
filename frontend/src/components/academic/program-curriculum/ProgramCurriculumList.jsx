@@ -329,7 +329,7 @@ const ProgramCurriculumList = () => {
                                     <Table striped bordered hover>
                                         <thead className="table-dark">
                                             <tr>
-                                                <th>ID</th>
+                                                <th>Mã Ngành</th>
                                                 <th>Tên Ngành</th>
                                                 <th>Tổng số môn học</th>
                                                 <th>Tổng tín chỉ lý thuyết</th>

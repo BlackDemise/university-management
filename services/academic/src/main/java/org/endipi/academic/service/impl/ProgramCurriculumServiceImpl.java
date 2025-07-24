@@ -3,11 +3,14 @@ package org.endipi.academic.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.endipi.academic.dto.request.ProgramCurriculumRequest;
+import org.endipi.academic.dto.response.CourseResponse;
 import org.endipi.academic.dto.response.MajorCurriculumResponse;
 import org.endipi.academic.dto.response.ProgramCurriculumResponse;
+import org.endipi.academic.entity.Course;
 import org.endipi.academic.entity.ProgramCurriculum;
 import org.endipi.academic.enums.error.ErrorCode;
 import org.endipi.academic.exception.ApplicationException;
+import org.endipi.academic.mapper.CourseMapper;
 import org.endipi.academic.mapper.ProgramCurriculumMapper;
 import org.endipi.academic.repository.CourseRepository;
 import org.endipi.academic.repository.MajorRepository;
@@ -29,9 +32,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProgramCurriculumServiceImpl implements ProgramCurriculumService {
     private final ProgramCurriculumRepository programCurriculumRepository;
-    private final ProgramCurriculumMapper programCurriculumMapper;
     private final MajorRepository majorRepository;
     private final CourseRepository courseRepository;
+    private final ProgramCurriculumMapper programCurriculumMapper;
+    private final CourseMapper courseMapper;
 
     @Value("${retry.program-curriculum.attempts}")
     private long retryAttempts;
@@ -63,6 +67,33 @@ public class ProgramCurriculumServiceImpl implements ProgramCurriculumService {
                     programCurriculumRepository.findAll(pageable)
                             .map(programCurriculumMapper::toResponse);
         };
+    }
+
+    @Override
+    public List<CourseResponse> findAllCoursesInMajor(Long majorId) {
+        if (majorId == null) {
+            throw new ApplicationException(ErrorCode.MAJOR_ID_NOT_PROVIDED);
+        }
+
+        List<ProgramCurriculum> programCurriculums = programCurriculumRepository.findByMajorId(majorId);
+        if (programCurriculums.isEmpty()) {
+            throw new ApplicationException(ErrorCode.PROGRAM_CURRICULUM_NOT_FOUND);
+        }
+
+        List<Long> majorIds = programCurriculums.stream()
+                .map(pc -> {
+                    if (pc.getMajor() == null || pc.getMajor().getId() == null) {
+                        throw new ApplicationException(ErrorCode.MAJOR_NOT_FOUND);
+                    }
+                    return pc.getMajor().getId();
+                })
+                .toList();
+
+        List<Course> coursesInMajor = courseRepository.findAllByMajorIdIn(majorIds);
+
+        return coursesInMajor.stream()
+                .map(courseMapper::toResponse)
+                .toList();
     }
 
     @Override

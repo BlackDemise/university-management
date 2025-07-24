@@ -16,6 +16,7 @@ public enum ErrorCode {
     INVALID_SEMESTER_RECOMMENDED(400, "Học kỳ đề nghị ít nhất là 0!", HttpStatus.BAD_REQUEST),
     INVALID_COURSE_TYPE(400, "Loại môn học không hợp lệ!", HttpStatus.BAD_REQUEST),
     INVALID_PREREQUISITE_ADDITION(400, "Không thể thêm môn học tiên quyết cho môn học này! Hãy kiểm tra lại.", HttpStatus.BAD_REQUEST),
+    MAJOR_ID_NOT_PROVIDED(400, "Chưa cung cấp mã ngành!", HttpStatus.BAD_REQUEST),
 
     /**
      * 401 Unauthorized
@@ -51,7 +52,6 @@ public enum ErrorCode {
      * 503 Service Unavailable
      */
     USER_SERVICE_UNAVAILABLE(503, "Dịch vụ người dùng hiện đang gặp vấn đề! Vui lòng thử lại sau.", HttpStatus.SERVICE_UNAVAILABLE);
-
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

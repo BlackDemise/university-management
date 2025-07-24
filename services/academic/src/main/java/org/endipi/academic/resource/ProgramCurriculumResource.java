@@ -33,6 +33,7 @@ public class ProgramCurriculumResource {
         return ResponseEntity.ok(apiResponse);
     }
 
+
     @GetMapping("/all/page")
     public ResponseEntity<?> getAllProgramCurriculums(
             @RequestParam(defaultValue = "0") int page,
@@ -89,6 +90,20 @@ public class ProgramCurriculumResource {
                 .timestamp(System.currentTimeMillis())
                 .statusCode(HttpStatus.OK.value())
                 .message("OK")
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/{majorId}/all-courses")
+    public ResponseEntity<?> findAllCoursesByMajorId(@PathVariable Long majorId) {
+        List<CourseResponse> courseResponses = programCurriculumService.findAllCoursesInMajor(majorId);
+
+        ApiResponse<String, List<CourseResponse>> apiResponse = ApiResponse.<String, List<CourseResponse>>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.OK.value())
+                .message("OK")
+                .result(courseResponses)
                 .build();
 
         return ResponseEntity.ok(apiResponse);

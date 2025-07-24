@@ -38,32 +38,23 @@ const ProgramCurriculumDetails = () => {
             setError(null);
             setIsNotFound(false);
 
-            // 🚧 PLACEHOLDER DATA - Replace when backend is ready
-            console.warn('🚧 Using placeholder program curriculum details data - implement backend endpoint');
+            // Load the program curriculum details from backend
+            const response = await programCurriculumService.getProgramCurriculumById(id);
             
-            // Simulate API call delay
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Placeholder curriculum data
-            const placeholderCurriculum = {
-                id: parseInt(id),
-                majorName: "Công nghệ thông tin",
-                majorId: 1,
-                majorDescription: "Chương trình đào tạo bằng cử nhân Công nghệ thông tin nhằm trang bị cho sinh viên kiến thức cơ bản và chuyên sâu về công nghệ thông tin, phát triển kỹ năng lập trình, thiết kế hệ thống và quản lý dự án phần mềm.",
-                totalCourses: 45,
-                totalCredits: 140,
-                mandatoryCourses: 35,
-                electiveCourses: 10,
-                departmentName: "Khoa Công nghệ thông tin",
-                createdAt: "2024-01-15",
-                updatedAt: "2024-01-20",
-                status: "ACTIVE"
-            };
-
-            if (placeholderCurriculum.id === parseInt(id)) {
-                setProgramCurriculum(placeholderCurriculum);
-                // Load courses for this curriculum
-                await loadCurriculumCourses();
+            if (response.result) {
+                const curriculumData = response.result;
+                
+                // Set the program curriculum state
+                setProgramCurriculum({
+                    id: curriculumData.id,
+                    courseId: curriculumData.courseId,
+                    majorId: curriculumData.majorId,
+                    isMandatory: curriculumData.isMandatory,
+                    semesterRecommended: curriculumData.semesterRecommended
+                });
+                
+                // Load courses for this major
+                await loadCurriculumCourses(curriculumData.majorId);
             } else {
                 setIsNotFound(true);
             }
@@ -86,11 +77,16 @@ const ProgramCurriculumDetails = () => {
     };
 
     // Load courses in curriculum
-    const loadCurriculumCourses = async () => {
+    const loadCurriculumCourses = async (majorId) => {
+        if (!majorId) {
+            console.warn('No majorId provided for loading courses');
+            return;
+        }
+        
         try {
             setCoursesLoading(true);
             
-            const response = await programCurriculumService.getCurriculumCourses(id);
+            const response = await programCurriculumService.getCurriculumCourses(majorId);
             
             if (response.result) {
                 setCourses(response.result);
@@ -214,8 +210,9 @@ const ProgramCurriculumDetails = () => {
         );
     }
 
-    const mandatoryCoursesCount = courses.filter(course => course.isMandatory).length;
-    const electiveCoursesCount = courses.filter(course => !course.isMandatory).length;
+    const mandatoryCoursesCount = courses.filter(course => course.isMandatory === true).length;
+    const electiveCoursesCount = courses.filter(course => course.isMandatory === false).length;
+    const unknownStatusCount = courses.filter(course => course.isMandatory == null).length;
     const totalCreditsCalculated = courses.reduce((sum, course) => 
         sum + (course.creditsTheory || 0) + (course.creditsPractical || 0), 0
     );
@@ -256,28 +253,41 @@ const ProgramCurriculumDetails = () => {
                             <Card.Header className="bg-light border-0">
                                 <h5 className="mb-0 d-flex align-items-center">
                                     <FontAwesomeIcon icon={faGraduationCap} className="me-2 text-primary" />
-                                    Thông Tin Ngành Học
+                                    Thông Tin Chương Trình Đào Tạo
                                 </h5>
                             </Card.Header>
                             <Card.Body>
                                 <Row>
                                     <Col md={8}>
                                         <div className="mb-3">
-                                            <label className="form-label fw-medium text-secondary">Tên Ngành</label>
+                                            <label className="form-label fw-medium text-secondary">ID Chương Trình</label>
                                             <p className="form-control-plaintext fw-bold text-primary fs-5">
-                                                {programCurriculum.majorName}
+                                                #{programCurriculum.id}
                                             </p>
                                         </div>
                                         <div className="mb-3">
-                                            <label className="form-label fw-medium text-secondary">Mô Tả</label>
-                                            <p className="form-control-plaintext">
-                                                {programCurriculum.majorDescription || 'Chưa có mô tả'}
-                                            </p>
-                                        </div>
-                                        <div className="mb-3">
-                                            <label className="form-label fw-medium text-secondary">Khoa</label>
+                                            <label className="form-label fw-medium text-secondary">ID Ngành Học</label>
                                             <p className="form-control-plaintext fw-medium">
-                                                {programCurriculum.departmentName || 'Chưa xác định'}
+                                                {programCurriculum.majorId}
+                                            </p>
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label fw-medium text-secondary">ID Môn Học</label>
+                                            <p className="form-control-plaintext fw-medium">
+                                                {programCurriculum.courseId}
+                                            </p>
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label fw-medium text-secondary">Trạng Thái</label>
+                                            <p className="form-control-plaintext">
+                                                <Badge bg={programCurriculum.isMandatory ? 'success' : 'warning'}>
+                                                    {programCurriculum.isMandatory ? 'Bắt buộc' : 'Tự chọn'}
+                                                </Badge>
+                                                {programCurriculum.semesterRecommended && (
+                                                    <Badge bg="info" className="ms-2">
+                                                        HK {programCurriculum.semesterRecommended}
+                                                    </Badge>
+                                                )}
                                             </p>
                                         </div>
                                     </Col>
@@ -328,8 +338,8 @@ const ProgramCurriculumDetails = () => {
                                     <Button
                                         variant="outline-secondary"
                                         size="sm"
-                                        onClick={loadCurriculumCourses}
-                                        disabled={coursesLoading}
+                                        onClick={() => loadCurriculumCourses(programCurriculum?.majorId)}
+                                        disabled={coursesLoading || !programCurriculum?.majorId}
                                     >
                                         <FontAwesomeIcon icon={faRefresh} className="me-1" />
                                         Làm Mới
@@ -367,7 +377,10 @@ const ProgramCurriculumDetails = () => {
                                                     <tbody>
                                                         {courses.map((course, index) => {
                                                             const totalCredits = (course.creditsTheory || 0) + (course.creditsPractical || 0);
-                                                            const mandatoryStatus = getMandatoryStatus(course.isMandatory);
+                                                            // CourseResponse doesn't include curriculum-specific fields
+                                                            // We'll show default values for these
+                                                            const isMandatory = course.isMandatory ?? null; // This will be null from CourseResponse
+                                                            const semesterRecommended = course.semesterRecommended ?? null; // This will be null from CourseResponse
                                                             
                                                             return (
                                                                 <tr key={course.id}>
@@ -391,17 +404,24 @@ const ProgramCurriculumDetails = () => {
                                                                     <td className="text-center">{course.creditsPractical || 0}</td>
                                                                     <td className="text-center fw-medium">{totalCredits}</td>
                                                                     <td className="text-center">
-                                                                        <Badge bg={mandatoryStatus.variant}>
-                                                                            <FontAwesomeIcon 
-                                                                                icon={mandatoryStatus.icon} 
-                                                                                className="me-1" 
-                                                                            />
-                                                                            {mandatoryStatus.text}
-                                                                        </Badge>
+                                                                        {isMandatory !== null ? (
+                                                                            <Badge bg={isMandatory ? 'success' : 'warning'}>
+                                                                                <FontAwesomeIcon 
+                                                                                    icon={isMandatory ? faCheckCircle : faTimesCircle} 
+                                                                                    className="me-1" 
+                                                                                />
+                                                                                {isMandatory ? 'Bắt buộc' : 'Tự chọn'}
+                                                                            </Badge>
+                                                                        ) : (
+                                                                            <Badge bg="secondary">
+                                                                                <FontAwesomeIcon icon={faExclamationTriangle} className="me-1" />
+                                                                                N/A
+                                                                            </Badge>
+                                                                        )}
                                                                     </td>
                                                                     <td className="text-center">
                                                                         <Badge bg="secondary">
-                                                                            HK {course.semesterRecommended || 'N/A'}
+                                                                            {semesterRecommended ? `HK ${semesterRecommended}` : 'N/A'}
                                                                         </Badge>
                                                                     </td>
                                                                 </tr>
@@ -444,27 +464,43 @@ const ProgramCurriculumDetails = () => {
                                 </Card.Header>
                                 <Card.Body>
                                     <Row className="text-center">
-                                        <Col md={3}>
+                                        <Col md={2}>
                                             <div className="border-end pe-3">
                                                 <div className="display-6 fw-bold text-primary">{courses.length}</div>
                                                 <small className="text-muted">Tổng Môn Học</small>
                                             </div>
                                         </Col>
-                                        <Col md={3}>
+                                        <Col md={2}>
                                             <div className="border-end pe-3">
                                                 <div className="display-6 fw-bold text-success">{mandatoryCoursesCount}</div>
-                                                <small className="text-muted">Môn Bắt Buộc</small>
+                                                <small className="text-muted">Bắt Buộc</small>
                                             </div>
                                         </Col>
-                                        <Col md={3}>
+                                        <Col md={2}>
                                             <div className="border-end pe-3">
                                                 <div className="display-6 fw-bold text-warning">{electiveCoursesCount}</div>
-                                                <small className="text-muted">Môn Tự Chọn</small>
+                                                <small className="text-muted">Tự Chọn</small>
                                             </div>
                                         </Col>
-                                        <Col md={3}>
-                                            <div className="display-6 fw-bold text-info">{totalCreditsCalculated}</div>
-                                            <small className="text-muted">Tổng Tín Chỉ</small>
+                                        <Col md={2}>
+                                            <div className="border-end pe-3">
+                                                <div className="display-6 fw-bold text-secondary">{unknownStatusCount}</div>
+                                                <small className="text-muted">Chưa Phân Loại</small>
+                                            </div>
+                                        </Col>
+                                        <Col md={2}>
+                                            <div className="border-end pe-3">
+                                                <div className="display-6 fw-bold text-info">{totalCreditsCalculated}</div>
+                                                <small className="text-muted">Tổng Tín Chỉ</small>
+                                            </div>
+                                        </Col>
+                                        <Col md={2}>
+                                            <div>
+                                                <div className="display-6 fw-bold text-dark">
+                                                    {courses.length > 0 ? Math.round(totalCreditsCalculated / courses.length * 10) / 10 : 0}
+                                                </div>
+                                                <small className="text-muted">TC Trung Bình</small>
+                                            </div>
                                         </Col>
                                     </Row>
                                 </Card.Body>

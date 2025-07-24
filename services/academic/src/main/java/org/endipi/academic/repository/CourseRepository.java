@@ -33,6 +33,16 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
            "JOIN m.department d")
     List<CourseDepartmentProjection> findAllCoursesWithDepartments();
 
+    /// Support the conversion after finding all ProgramCurriculums,
+    /// then convert to Course
+    @Query("""
+           SELECT c FROM Course c
+           JOIN c.programCurriculums pc
+           JOIN pc.major m
+           WHERE m.id in :majorIds
+           """)
+    List<Course> findAllByMajorIdIn(List<Long> majorIds);
+
     // Projection interface for structured results
     interface CourseDepartmentProjection {
         Long getCourseId();

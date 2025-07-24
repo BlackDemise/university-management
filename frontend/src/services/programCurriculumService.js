@@ -146,46 +146,41 @@ const programCurriculumService = {
   },
 
   /**
-   * Get courses in a specific program curriculum
-   * @param {number} programCurriculumId - Program Curriculum ID
+   * Get courses in a major's curriculum
+   * @param {number} majorId - Major ID  
    * @returns {Promise} - Promise with courses in curriculum
-   *
-   * 🚧 BACKEND TODO: Implement endpoint to get courses in curriculum
-   * Expected endpoint: GET /v1/program-curriculum/{id}/courses
+   * 
+   * ✅ BACKEND IMPLEMENTED: GET /v1/program-curriculum/{majorId}/all-courses
    */
-  getCurriculumCourses: async (programCurriculumId) => {
+  getCurriculumCourses: async (majorId) => {
     try {
       const response = await API.get(
-        `/v1/program-curriculum/${programCurriculumId}/courses`
+        `/v1/program-curriculum/${majorId}/all-courses`
       );
       return response.data;
     } catch (error) {
-      // Placeholder data for development
+      // Fallback for development - this should not be needed anymore
       console.warn(
-        "🚧 Using placeholder curriculum courses data - implement backend endpoint"
+        "⚠️ Backend endpoint failed, using placeholder data"
       );
       return {
         result: [
-          // Placeholder course data with curriculum-specific fields
+          // Placeholder course data
           {
             id: 1,
-            code: "CS101",
+            code: "CS101", 
             name: "Lập trình căn bản",
             creditsTheory: 2,
             creditsPractical: 1,
-            courseType: "CORE",
-            isMandatory: true,
-            semesterRecommended: 1,
+            courseType: "SPECIALIZED",
           },
           {
             id: 2,
             code: "MATH101",
-            name: "Toán cao cấp 1",
+            name: "Toán cao cấp 1", 
             creditsTheory: 3,
             creditsPractical: 0,
             courseType: "GENERAL",
-            isMandatory: true,
-            semesterRecommended: 1,
           },
         ],
       };
