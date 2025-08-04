@@ -9,7 +9,7 @@ import {
 import { toast } from 'react-hot-toast';
 import semesterService from "../../../services/semesterService.js";
 import MainLayout from "../../layout/main/MainLayout.jsx";
-import { formatDate } from "../../../utils/formatterUtil.js";
+import {formatDate, formatDateWithDayMonthYear} from "../../../utils/formatterUtil.js";
 
 const SemesterDetails = () => {
     const { id } = useParams();
@@ -246,7 +246,7 @@ const SemesterDetails = () => {
                                                         <FontAwesomeIcon icon={faCalendarDay} className="me-1" />
                                                         Ngày Bắt Đầu
                                                     </label>
-                                                    <div className="fw-medium">{formatDate(semester.startDate)}</div>
+                                                    <div className="fw-medium">{formatDateWithDayMonthYear(semester.startDate)}</div>
                                                 </div>
 
                                                 <div className="mb-3">
@@ -254,7 +254,7 @@ const SemesterDetails = () => {
                                                         <FontAwesomeIcon icon={faCalendarWeek} className="me-1" />
                                                         Ngày Kết Thúc
                                                     </label>
-                                                    <div className="fw-medium">{formatDate(semester.endDate)}</div>
+                                                    <div className="fw-medium">{formatDateWithDayMonthYear(semester.endDate)}</div>
                                                 </div>
 
                                                 <div className="mb-3">
@@ -297,7 +297,7 @@ const SemesterDetails = () => {
                                             <div className="border-top pt-3 mt-3">
                                                 <small className="text-muted">
                                                     <FontAwesomeIcon icon={faCalendarAlt} className="me-1" />
-                                                    Từ {formatDate(semester.startDate)} đến {formatDate(semester.endDate)}
+                                                    Từ {formatDateWithDayMonthYear(semester.startDate)} đến {formatDateWithDayMonthYear(semester.endDate)}
                                                 </small>
                                             </div>
                                         </div>

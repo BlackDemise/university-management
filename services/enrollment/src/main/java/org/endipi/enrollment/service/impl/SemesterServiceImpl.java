@@ -7,6 +7,7 @@ import org.endipi.enrollment.dto.response.SemesterResponse;
 import org.endipi.enrollment.entity.Semester;
 import org.endipi.enrollment.enums.error.ErrorCode;
 import org.endipi.enrollment.exception.ApplicationException;
+import org.endipi.enrollment.exception.ValidationException;
 import org.endipi.enrollment.mapper.SemesterMapper;
 import org.endipi.enrollment.repository.SemesterRepository;
 import org.endipi.enrollment.service.SemesterService;
@@ -19,7 +20,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -98,18 +101,22 @@ public class SemesterServiceImpl implements SemesterService {
 
     private SemesterResponse save(SemesterRequest request) {
         Semester semester;
+        Semester initialSemester;
         boolean isUpdate = request.getId() != null;
 
         if (isUpdate) {
             semester = semesterRepository.findById(request.getId())
                     .orElseThrow(() -> new ApplicationException(ErrorCode.SEMESTER_NOT_FOUND));
+            initialSemester = semesterRepository.findById(request.getId())
+                    .orElseThrow(() -> new ApplicationException(ErrorCode.SEMESTER_NOT_FOUND));
             semesterMapper.updateFromRequest(request, semester);
         } else {
             semester = semesterMapper.toEntity(request);
+            initialSemester = semester;
         }
 
         // Business rule validations
-        validateBusinessRules(semester, isUpdate);
+        validateBusinessRules(semester, initialSemester, isUpdate);
 
         semester = semesterRepository.save(semester);
 
@@ -119,21 +126,59 @@ public class SemesterServiceImpl implements SemesterService {
         return semesterMapper.toResponse(semester);
     }
 
-    private void validateBusinessRules(Semester semester, boolean isUpdate) {
+    private void validateBusinessRules(Semester semester, Semester initialSemester, boolean isUpdate) {
+        Map<String, String> errorDetails = new HashMap<>();
+
         // 1. Validate date logic: startDate should be before endDate
-        if (semester.getStartDate() != null && semester.getEndDate() != null) {
+        if (semester.getStartDate() == null) {
+            errorDetails.put("emptyStartDate", "Ngày bắt đầu không được để trống!");
+        } else if (semester.getEndDate() == null) {
+            errorDetails.put("emptyEndDate", "Ngày kết thúc không được để trống!");
+        } else {
             if (semester.getStartDate().isAfter(semester.getEndDate())) {
-                throw new ApplicationException(ErrorCode.INVALID_SEMESTER_DATES);
+                errorDetails.put("invalidDateRange", "Ngày bắt đầu phải trước ngày kết thúc!");
+            }
+        }
+        // Finish step 1
+
+        // 2. Check for overlapping semesters
+        List<Semester> overlappingSemesters = semesterRepository.findOverlappingSemesters(
+                semester.getStartDate(), semester.getEndDate());
+        if (!overlappingSemesters.isEmpty()) {
+            StringBuilder overlappingNames = new StringBuilder();
+            for (Semester s : overlappingSemesters) {
+                if (!s.getId().equals(semester.getId())) {
+                    overlappingNames.append(s.getName())
+                            .append(", ");
+                }
+            }
+
+            // Remove the right-trailing comma
+            if (!overlappingNames.isEmpty()) {
+                overlappingNames.setLength(overlappingNames.length() - 2);
+                errorDetails.put("overlappingSemestersError", "Học kỳ này có thời gian trùng với các học kỳ: " + overlappingNames);
+            }
+        }
+        // Finish step 2
+
+        // 3. Validate semester name uniqueness
+        String checkedSemesterName = semester.getName();
+        Semester checkedSemester = semesterRepository.findByName(checkedSemesterName)
+                .orElse(null);
+
+        if (isUpdate) {
+            if (checkedSemester != null && !initialSemester.getName().equals(checkedSemester.getName())) {
+                errorDetails.put("duplicateName", "Tên học kỳ đã tồn tại! Vui lòng chọn tên khác.");
+            }
+        } else {
+            if (checkedSemester != null) {
+                errorDetails.put("duplicateName", "Tên học kỳ đã tồn tại! Vui lòng chọn tên khác.");
             }
         }
 
-        // 2. Check for overlapping semesters (optional business rule)
-        // TODO: Add custom repository method to check for overlaps
-
-        // 3. Validate semester name uniqueness
-        // TODO: Add custom repository method to check name uniqueness
-
-        log.info("Validating business rules for semester: {} ({} - {})",
-                semester.getName(), semester.getStartDate(), semester.getEndDate());
+        if (!errorDetails.isEmpty()) {
+            throw new ValidationException(errorDetails);
+        }
+        // Finish step 3
     }
 }

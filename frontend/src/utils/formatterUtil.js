@@ -26,6 +26,26 @@ export const formatDate = (dateString, options = {}) => {
     }
 };
 
+export const formatDateWithDayMonthYear = (dateString, option = {}) =>  {
+    if (!dateString) return 'N/A';
+
+    const defaultOptions = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    };
+
+    const dateOptions = { ...defaultOptions, ...option };
+
+    try {
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('vi-VN', dateOptions).format(date);
+    } catch (error) {
+        console.error('Error formatting date:', error);
+        return 'Invalid Date';
+    }
+}
+
 /**
  * Format price with currency
  * @param {number} price - The price to format

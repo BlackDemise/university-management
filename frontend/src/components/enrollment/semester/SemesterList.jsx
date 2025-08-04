@@ -25,7 +25,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import semesterService from "../../../services/semesterService.js";
 import MainLayout from "../../layout/main/MainLayout.jsx";
-import { formatDate } from "../../../utils/formatterUtil.js";
+import {formatDate, formatDateWithDayMonthYear} from "../../../utils/formatterUtil.js";
 
 const SemesterList = () => {
   const navigate = useNavigate();
@@ -345,8 +345,8 @@ const SemesterList = () => {
                     <tr>
                       <th className="border-0">ID</th>
                       <th className="border-0">Tên Học Kỳ</th>
-                      <th className="border-0">Ngày Bắt Đầu</th>
-                      <th className="border-0">Ngày Kết Thúc</th>
+                      <th className="border-0">Ngày Bắt Đầu (dd/MM/yyyy)</th>
+                      <th className="border-0">Ngày Kết Thúc (dd/MM/yyyy)</th>
                       <th className="border-0">Trạng Thái</th>
                       <th className="border-0" style={{ width: "100px" }}></th>
                     </tr>
@@ -364,8 +364,8 @@ const SemesterList = () => {
                             />
                             {semester.name}
                           </td>
-                          <td>{formatDate(semester.startDate)}</td>
-                          <td>{formatDate(semester.endDate)}</td>
+                          <td>{formatDateWithDayMonthYear(semester.startDate)}</td>
+                          <td>{formatDateWithDayMonthYear(semester.endDate)}</td>
                           <td>
                             <Badge bg={status.variant}>{status.status}</Badge>
                           </td>

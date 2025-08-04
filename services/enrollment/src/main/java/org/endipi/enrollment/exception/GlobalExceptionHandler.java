@@ -50,6 +50,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
     }
 
+    @ExceptionHandler(value = ValidationException.class)
+    @ResponseStatus(value = HttpStatus.CONFLICT) // Categoried this as "conflicted" (with business rule)
+    public ResponseEntity<?> handleCustomValidationException(ValidationException ex) {
+        ApiResponse<String, Object> apiResponse = ApiResponse.<String, Object>builder()
+                .timestamp(System.currentTimeMillis())
+                .statusCode(HttpStatus.CONFLICT.value())
+                .message("Tồn tại thông tin không hợp lệ!")
+                .result(ex.getFieldErrors())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(apiResponse);
+    }
+
     @ExceptionHandler(value = AuthenticationException.class)
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
     ResponseEntity<?> handleAuthenticationException(AuthenticationException ae) {

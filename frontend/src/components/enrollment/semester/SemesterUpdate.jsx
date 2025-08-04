@@ -127,6 +127,8 @@ const SemesterUpdate = () => {
 
         try {
             setSaving(true);
+            setError(null);
+            setFormErrors({}); // Clear previous backend errors
 
             // Prepare request data
             const requestData = {
@@ -135,6 +137,8 @@ const SemesterUpdate = () => {
                 startDate: formData.startDate,
                 endDate: formData.endDate
             };
+
+            console.log(requestData);
 
             const response = await semesterService.saveSemester(requestData);
 
@@ -146,12 +150,62 @@ const SemesterUpdate = () => {
             navigate('/admin/enrollment/semesters');
 
         } catch (err) {
-            const errorMessage = isEditMode
-                ? 'Lỗi khi cập nhật học kỳ'
-                : 'Lỗi khi tạo học kỳ';
-
-            toast.error(errorMessage);
             console.error('Error saving semester:', err);
+            
+            // Handle ValidationException (HTTP 409 - Conflict)
+            if (err.response && err.response.status === 409) {
+                const backendErrors = err.response.data?.result || {};
+                const mappedErrors = {};
+                let generalErrors = [];
+
+                // Map backend error keys to frontend form field names
+                Object.entries(backendErrors).forEach(([key, message]) => {
+                    switch (key) {
+                        case 'emptyStartDate':
+                            mappedErrors.startDate = message;
+                            break;
+                        case 'emptyEndDate':
+                            mappedErrors.endDate = message;
+                            break;
+                        case 'invalidDateRange':
+                            mappedErrors.endDate = message;
+                            break;
+                        case 'duplicateName':
+                            mappedErrors.name = message;
+                            break;
+                        case 'overlappingSemestersError':
+                            generalErrors.push(message);
+                            break;
+                        default:
+                            // Any other validation errors as general errors
+                            generalErrors.push(message);
+                            break;
+                    }
+                });
+
+                // Set field-specific errors
+                setFormErrors(mappedErrors);
+
+                // Set general errors
+                if (generalErrors.length > 0) {
+                    setError(generalErrors.join(' '));
+                }
+
+                // Show appropriate toast message
+                if (Object.keys(mappedErrors).length > 0 || generalErrors.length > 0) {
+                    toast.error('Vui lòng kiểm tra lại thông tin đã nhập');
+                } else {
+                    toast.error('Tồn tại thông tin không hợp lệ!');
+                }
+            } else {
+                // Handle other types of errors
+                const errorMessage = isEditMode
+                    ? 'Lỗi khi cập nhật học kỳ'
+                    : 'Lỗi khi tạo học kỳ';
+
+                toast.error(errorMessage);
+                setError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.');
+            }
         } finally {
             setSaving(false);
         }
@@ -294,19 +348,24 @@ const SemesterUpdate = () => {
                                                         Thời Gian Học Kỳ
                                                     </h6>
                                                     <div className="text-muted">
-                                                        Từ <strong>{new Date(formData.startDate).toLocaleDateString('vi-VN')}</strong> đến <strong>{new Date(formData.endDate).toLocaleDateString('vi-VN')}</strong>
                                                         {(() => {
                                                             const start = new Date(formData.startDate);
                                                             const end = new Date(formData.endDate);
-                                                            const diffTime = Math.abs(end - start);
+                                                            const diffTime = end - start;
                                                             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                                            
+
                                                             if (diffDays > 0) {
                                                                 const months = Math.floor(diffDays / 30);
                                                                 const days = diffDays % 30;
-                                                                return ` (${months > 0 ? `${months} tháng ` : ''}${days} ngày)`;
+                                                                return (
+                                                                    <>
+                                                                        Từ <strong>{start.toLocaleDateString('vi-VN')}</strong> đến <strong>{end.toLocaleDateString('vi-VN')}</strong>
+                                                                        {` (${months > 0 ? `${months} tháng ` : ''}${days} ngày)`}
+                                                                    </>
+                                                                );
+                                                            } else {
+                                                                return <span className="text-danger">Hãy kiểm tra lại ngày bắt đầu và ngày kết thúc</span>;
                                                             }
-                                                            return '';
                                                         })()}
                                                     </div>
                                                 </div>

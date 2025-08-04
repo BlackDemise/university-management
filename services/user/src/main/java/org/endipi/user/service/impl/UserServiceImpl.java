@@ -49,10 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -361,7 +358,7 @@ public class UserServiceImpl implements UserService {
 
     private void validateUserRequest(UserRequest userRequest) {
         String role = userRequest.getRole();
-        Map<String, String> fieldErrors = new java.util.HashMap<>();
+        Map<String, String> fieldErrors = new HashMap<>();
 
         String teacherRole = RoleTitle.TEACHER.name();
         String studentRole = RoleTitle.STUDENT.name();
