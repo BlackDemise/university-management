@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +66,7 @@ public class SemesterServiceImpl implements SemesterService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
         Semester semester = semesterRepository.findById(id)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.SEMESTER_NOT_FOUND));
