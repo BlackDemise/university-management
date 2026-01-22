@@ -1,6 +1,5 @@
 package org.endipi.media.resource;
 
-import com.google.cloud.storage.StorageException;
 import lombok.RequiredArgsConstructor;
 import org.endipi.media.service.GCSService;
 import org.springframework.http.HttpHeaders;
@@ -53,7 +52,7 @@ public class GCSResource {
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(content);
-        } catch (StorageException e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(null);
         }
@@ -97,5 +96,39 @@ public class GCSResource {
     @GetMapping("/bucket/all")
     public ResponseEntity<String> getAllFiles() {
         return ResponseEntity.ok(gcsService.getAllFiles(null));
+    }
+
+    /**
+     * Serve files from local storage (replacement for GCS signed URLs)
+     */
+    @GetMapping("/files/{fileName}")
+    public ResponseEntity<byte[]> serveFile(@PathVariable String fileName) {
+        byte[] content = gcsService.downloadFile(fileName);
+        if (content == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Determine content type from file extension
+        MediaType mediaType = getMediaTypeForFileName(fileName);
+        
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .body(content);
+    }
+
+    private MediaType getMediaTypeForFileName(String fileName) {
+        String lowerCaseName = fileName.toLowerCase();
+        if (lowerCaseName.endsWith(".png")) {
+            return MediaType.IMAGE_PNG;
+        } else if (lowerCaseName.endsWith(".gif")) {
+            return MediaType.IMAGE_GIF;
+        } else if (lowerCaseName.endsWith(".jpg") || lowerCaseName.endsWith(".jpeg")) {
+            return MediaType.IMAGE_JPEG;
+        } else if (lowerCaseName.endsWith(".webp")) {
+            return MediaType.valueOf("image/webp");
+        } else if (lowerCaseName.endsWith(".pdf")) {
+            return MediaType.APPLICATION_PDF;
+        }
+        return MediaType.APPLICATION_OCTET_STREAM;
     }
 }

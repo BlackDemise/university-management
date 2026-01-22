@@ -28,7 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
-		<spring-cloud-gcp.version>6.1.1</spring-cloud-gcp.version>
+		<!-- <spring-cloud-gcp.version>6.1.1</spring-cloud-gcp.version> -->
 		<spring-cloud.version>2025.0.0</spring-cloud.version>
 	</properties>
 	<dependencyManagement>
@@ -40,6 +40,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<!-- GCS dependency management removed - using local storage instead
 			<dependency>
 				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-dependencies</artifactId>
@@ -47,6 +48,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			-->
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
@@ -73,10 +75,12 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-config</artifactId>
 		</dependency>
+		<!-- GCS dependency removed - using local storage instead
 		<dependency>
 			<groupId>com.google.cloud</groupId>
 			<artifactId>spring-cloud-gcp-starter-storage</artifactId>
 		</dependency>
+		-->
 	</dependencies>
 
 	<build>

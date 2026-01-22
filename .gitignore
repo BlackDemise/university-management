@@ -1,8 +1,5 @@
 ### Global ###
 .idea/
-*.md
-*.doc
-*.docx
 ### 'Global' Done ###
 
 #################################
@@ -41,10 +38,6 @@
 ### VS Code ###
 **/**/.vscode/
 ### 'All services' Done ###
-
-### GCP Key ###
-services/media/src/main/resources/gcp-key.json
-### GCP Key ###
 
 ### Client ###
 # Logs

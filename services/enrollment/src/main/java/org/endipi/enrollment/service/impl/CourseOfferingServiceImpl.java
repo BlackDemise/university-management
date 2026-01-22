@@ -46,8 +46,10 @@ public class CourseOfferingServiceImpl implements CourseOfferingService {
 
     @Override
     public List<CourseOfferingResponse> findAll() {
-        return courseOfferingRepository.findAllWithCurrentStudents()
-                .stream()
+        List<CourseOffering> offerings = courseOfferingRepository.findAllWithCurrentStudents();
+        offerings.forEach(co -> co.setCurrentStudents(co.getCourseRegistrations().size()));
+
+        return offerings.stream()
                 .map(courseOffering -> courseOfferingMapper.toResponse(courseOffering, userServiceClient, courseServiceClient))
                 .toList();
     }

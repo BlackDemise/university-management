@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS auth_user
     UNIQUE KEY UK_email (email)
 );
 
+-- Default password is 12345
 INSERT INTO auth_user (id, email, password, role, full_name)
 VALUES (1, 'admin@university.edu', '$2a$12$0APqcb0XWdY8Hy9kiE2QuOuzsHwc6lhAuQpvJwKEzAAUiWf0UOeMK', 'ADMIN',
         'Admin User'),

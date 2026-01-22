@@ -1,6 +1,5 @@
 package org.endipi.enrollment.repository;
 
-import org.endipi.enrollment.dto.response.CourseOfferingResponse;
 import org.endipi.enrollment.entity.CourseOffering;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,21 +17,11 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
     Page<CourseOffering> findByCloseTimeBefore(LocalDateTime before, Pageable pageable);
 
     // Supply correct currentStudents for findAll()
+    // Use a LEFT JOIN here and calculate current students in service later (optimize this later)
     @Query("""
-            select new org.endipi.enrollment.entity.CourseOffering(
-                        co.id,
-                        co.maxStudents,
-                        cast(count(cr.id) as int),
-                        co.openTime,
-                        co.closeTime,
-                        co.courseId,
-                        co.semester,
-                        co.teacherId,
-                        co.courseRegistrations
-            )
-            from CourseOffering co
-            join fetch co.courseRegistrations cr
-            join fetch co.semester
-            """)
+        select distinct co from CourseOffering co
+        left join fetch co.courseRegistrations
+        left join fetch co.semester
+        """)
     List<CourseOffering> findAllWithCurrentStudents();
 }
